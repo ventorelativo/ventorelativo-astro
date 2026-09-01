@@ -16,10 +16,15 @@
     "@astrojs/markdown-satteri": "^0.4.0",
     "@astrojs/mdx": "^8.0.0",
     "@astrojs/netlify": "^8.2.5",
+    "@astrojs/react": "^6.0.5",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource-variable/outfit": "^5.3.0",
+    "@keystatic/astro": "^6.0.0",
+    "@keystatic/core": "^0.6.9",
     "astro": "^7.2.10",
-    "bigger-picture": "^1.1.20"
+    "bigger-picture": "^1.1.20",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

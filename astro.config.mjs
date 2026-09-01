@@ -2,6 +2,8 @@
 import { defineConfig } from 'astro/config';
 
 import mdx from '@astrojs/mdx';
+import react from '@astrojs/react';
+import keystatic from '@keystatic/astro';
 
 import sitemap from '@astrojs/sitemap';
 
@@ -22,6 +24,12 @@ const site =
   process.env.CONTEXT === 'production'
     ? (process.env.URL ?? FALLBACK_SITE)
     : (process.env.DEPLOY_PRIME_URL ?? process.env.URL ?? FALLBACK_SITE);
+
+/**
+ * True during `astro build`, false under `astro dev`. Astro sets NODE_ENV for
+ * the build; nothing else in this config depends on it.
+ */
+const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
   site,
@@ -67,6 +75,19 @@ export default defineConfig({
   // would do for prose, but the migrated bodies carry call-to-action buttons
   // and link cards that belong in components rather than in raw HTML (§2.4),
   // and Keystatic's content field writes .mdx.
+  /*
+    Keystatic is a development-time tool for now.
+
+    It injects two server-rendered routes (`/keystatic/[...params]` and
+    `/api/keystatic/[...params]`), and this site has no adapter, so including it
+    in a production build would either fail or force `mode: "server"` and the
+    3.6 MB function AGENTS.md rule 3 exists to avoid. In local storage mode the
+    admin writes to the working copy anyway — it is only useful on a machine
+    that has the repo checked out.
+
+    Phase 3 flips storage to GitHub mode, adds the Netlify adapter and ships
+    those two routes with `prerender = false`. Then this condition goes away.
+  */
   integrations: [
     mdx(),
     /*
@@ -85,6 +106,7 @@ export default defineConfig({
         return item;
       },
     }),
+    ...(IS_PRODUCTION_BUILD ? [] : [react(), keystatic()]),
   ],
 
   vite: {

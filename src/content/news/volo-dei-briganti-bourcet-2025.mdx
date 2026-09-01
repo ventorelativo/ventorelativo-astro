@@ -9,9 +9,6 @@ category: Eventi
 draft: true
 ---
 
-import ActionLink from '../../components/mdx/ActionLink.astro';
-import Facts from '../../components/mdx/Facts.astro';
-
 Torna il nostro appuntamento d'autunno con una nuova avventura targata
 **VentoRelativo Parapendio Club**: il **Volo dei Briganti**, un'uscita
 **Hike & Fly** tra i sentieri e i panorami selvaggi del
@@ -44,7 +41,14 @@ tutti 🍷🌰🍞
 Per aiutarci a organizzare al meglio l'evento, ti chiediamo di segnalare la tua
 partecipazione compilando il breve sondaggio qui sotto:
 
-<ActionLink href="https://framadate.org/volo-dei-briganti-2025">Iscriviti al Volo dei Briganti su Framadate</ActionLink>
+<ActionLinks
+  links={[
+    {
+      label: 'Iscriviti al Volo dei Briganti su Framadate',
+      href: 'https://framadate.org/volo-dei-briganti-2025',
+    },
+  ]}
+/>
 
 ---
 
@@ -53,7 +57,15 @@ partecipazione compilando il breve sondaggio qui sotto:
 Per conoscere meglio il decollo, l'atterraggio e le caratteristiche del sito di
 volo del Bourcet, visita la pagina dedicata:
 
-<ActionLink href="/siti/bourcet" variant="outline">Scopri il sito di volo del Bourcet</ActionLink>
+<ActionLinks
+  links={[
+    {
+      label: 'Scopri il sito di volo del Bourcet',
+      href: '/siti/bourcet',
+      variant: 'outline',
+    },
+  ]}
+/>
 
 ---
 

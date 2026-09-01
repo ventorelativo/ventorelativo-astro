@@ -8,9 +8,6 @@ image:
 category: Competizioni
 ---
 
-import ActionLink from '../../components/mdx/ActionLink.astro';
-import Facts from '../../components/mdx/Facts.astro';
-
 Questo sabato **16 maggio** il cielo di **Montoso** ospita una tappa del
 campionato regionale di parapendio. VentoRelativo è tra i co-organizzatori: è il
 momento di volare tutti insieme e far vedere che siamo presenti.
@@ -29,7 +26,13 @@ momento di volare tutti insieme e far vedere che siamo presenti.
 Puoi partecipare come pilota o dare una mano a terra nell'organizzazione, ogni
 presenza conta. Le iscrizioni sono ancora aperte!
 
-<p class="actions">
-  <ActionLink href="https://ccpiemonte.it/">Info e iscrizioni →</ActionLink>
-  <ActionLink href="https://maps.app.goo.gl/Gfa3e6btSm449HCC7" variant="outline">Atterraggio su Maps</ActionLink>
-</p>
+<ActionLinks
+  links={[
+    { label: 'Info e iscrizioni →', href: 'https://ccpiemonte.it/' },
+    {
+      label: 'Atterraggio su Maps',
+      href: 'https://maps.app.goo.gl/Gfa3e6btSm449HCC7',
+      variant: 'outline',
+    },
+  ]}
+/>

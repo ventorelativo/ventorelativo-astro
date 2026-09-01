@@ -1,0 +1,43 @@
+---
+/**
+ * A row of call-to-action links inside a body (MIGRATION-PLAN.md §2.4).
+ *
+ * Replaces the `<a class="btn btn-primary btn-sm">` anchors the Drupal bodies
+ * carried: those hard-coded Bootstrap classes into editor-authored HTML, and
+ * when Bootstrap left every one of them would have become an unstyled link.
+ *
+ * A *list* of links rather than one component per button, because that is what
+ * Keystatic can model well: an editor inserts one "Pulsanti" block and adds
+ * rows to it. A component whose children are inline text — `<ActionLink>Testo
+ * </ActionLink>` — is something Keystatic refuses outright
+ * ("mdxJsxTextElement has unexpected children"), and it is the wrong shape for
+ * an editor anyway.
+ */
+interface Link {
+  label: string;
+  href: string;
+  variant?: 'primary' | 'outline';
+}
+
+interface Props {
+  links: Link[];
+}
+
+const { links } = Astro.props;
+const isExternal = (href: string) => /^https?:\/\//.test(href);
+---
+
+<p class="actions">
+  {
+    links.map(({ label, href, variant = 'primary' }) => (
+      <a
+        href={href}
+        class:list={['button', variant === 'outline' && 'button--outline']}
+        target={isExternal(href) ? '_blank' : undefined}
+        rel={isExternal(href) ? 'noopener noreferrer' : undefined}
+      >
+        {label}
+      </a>
+    ))
+  }
+</p>

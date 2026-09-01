@@ -9,6 +9,23 @@ Before starting: `npm install`, then `npm run dev`, then open
 
 ---
 
+## Edit news, flight sites or the fixed pages — without touching files
+
+```
+npm run dev
+```
+
+then open <http://localhost:4321/keystatic>. That is a full editor: news posts,
+the fourteen flight sites, and the three fixed pages, with image upload and a
+rich-text body. It writes to the files in this working copy, so your changes
+show up as ordinary edits to commit.
+
+It runs only under `npm run dev` for now — it needs a server, and the published
+site deliberately has none. Phase 3 moves it to the live site, where the club
+edits in a browser and Netlify rebuilds on save.
+
+Everything below is the same job done by hand, which is still fine.
+
 ## Change the club name, slogan, email or site description
 
 [`src/consts.ts`](../src/consts.ts) — the `SITE` object. The description is the

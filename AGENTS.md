@@ -27,12 +27,17 @@ fourteen flight sites, `/styleguide`. Two content collections — `news` and
 `sites` — defined in `src/content.config.ts`, with MDX bodies in
 `src/content/`.
 
+Also built: every fixed page (`/voli`, `/iscrizioni`, `/contatti` with a
+Netlify form, its thank-you page, `/404`), the SEO layer (sitemap, robots,
+per-page social cards, schema.org, cookie-free analytics), and **Keystatic in
+local mode** — `npm run dev`, then http://localhost:4321/keystatic.
+
 **Not built yet:**
-- `/voli`, `/iscrizioni`, `/contatti` (+ form and thank-you page), `/404`. The
-  nav links to these and they 404 today.
-- The SEO layer: sitemap, RSS, OG images, JSON-LD, analytics beacon.
-- **No Keystatic**, no CMS, no admin route (Phase 3).
+- **Keystatic is development-only.** It needs server-rendered routes, so it is
+  excluded from production builds until Phase 3 brings the adapter and GitHub
+  storage. Do not add it to the production integration list.
 - **No Netlify adapter**, no server-rendered route (Phase 3).
+- RSS: dropped by decision, not oversight (see MIGRATION-PLAN.md S9).
 - **Nothing map-related** (Phase 4): no `map-features` collection, no geo data,
   no per-site maps, feature tables, XContest links or `/api/navdata/*` files.
   The site pages carry `TODO(Phase 4)` markers where those go.
@@ -94,7 +99,16 @@ something real.
 9. **Flight-computer data (`/api/navdata/*`, Phase 4) is safety-critical.** Pilots
    load it into their instruments. Any change there must diff clean against the
    archived Drupal output. Do not improvise its format.
-10. **UI copy is Italian.** Code, comments and documentation are English.
+10. **UI copy is Italian.** Code, comments and documentation are English. That
+    includes Keystatic's field labels — volunteers read them.
+11. **Three lists describe content, and they must agree.** A field added to a
+    collection needs updating in `src/content.config.ts` (what the build
+    accepts), `keystatic.config.ts` (what an editor can type) and, for body
+    components, `src/components/mdx/components.ts` (what renders). Zod is the
+    backstop: drift fails the build rather than the page.
+12. **Content files must not contain `import` statements.** Keystatic refuses
+    to open an entry that has one. Body components are handed to `<Content
+    components={MDX_COMPONENTS} />` instead.
 
 ## Performance
 

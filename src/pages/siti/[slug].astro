@@ -10,6 +10,7 @@ import { getCollection, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import Badge from '../../components/Badge.astro';
+import { MDX_COMPONENTS } from '../../components/mdx/components';
 
 export async function getStaticPaths() {
   const sites = await getCollection('sites');
@@ -43,7 +44,7 @@ const { Content } = await render(entry);
 
   {/* TODO(Phase 4): this site's map, then the feature table and XContest links. */}
 
-  <Content />
+  <Content components={MDX_COMPONENTS} />
 
   {images.length > 0 && <Gallery images={images} title="Immagini" />}
 </EntryLayout>

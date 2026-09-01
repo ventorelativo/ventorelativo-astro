@@ -14,6 +14,7 @@ import { getCollection, render } from 'astro:content';
 import { Image } from 'astro:assets';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Badge from '../../components/Badge.astro';
+import { MDX_COMPONENTS } from '../../components/mdx/components';
 import { formatDate, isoDate } from '../../utils/date';
 
 export async function getStaticPaths() {
@@ -67,7 +68,13 @@ const { Content } = await render(entry);
     )
   }
 
-  <Content />
+  {/*
+    Components are handed to the body rather than imported inside it. MDX can
+    do either, but an `import` line in a content file is something Keystatic
+    refuses to parse — and something no club volunteer should have to type.
+    See src/components/mdx/components.ts.
+  */}
+  <Content components={MDX_COMPONENTS} />
 </EntryLayout>
 
 <style>
