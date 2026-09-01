@@ -1,0 +1,48 @@
+# Ventorelativo — Astro build.
+# Cache rules ported from the Drupal repo's netlify.toml; see MIGRATION-PLAN.md §1.2 (S14).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Redirects (MIGRATION-PLAN.md S10, S11).
+#
+# These live here rather than in astro.config's `redirects` option: without a
+# host adapter Astro emits meta-refresh HTML pages instead of real 301s, and a
+# client-side hop passes no ranking signal. Netlify handles them at the edge.
+
+# The one redirect entity in the Drupal site (S10).
+[[redirects]]
+  from = "/contact/contatti"
+  to = "/contatti"
+  status = 301
+  force = true
+
+# /home and / served identical content in Drupal — duplicate content (S11).
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+  force = true
+
+# Astro fingerprints everything under /_astro/ with a content hash, so those URLs
+# change whenever the contents do — safe to cache forever. HTML is deliberately
+# left on Netlify's revalidate-always default so content updates go live at once.
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Flight-computer data (Phase 4). Small, and pilots should get the current file.
+[[headers]]
+  for = "/api/navdata/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

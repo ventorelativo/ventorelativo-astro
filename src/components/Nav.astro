@@ -1,0 +1,223 @@
+---
+/**
+ * Primary navigation (G4) and the mobile drawer (G5).
+ *
+ * The Drupal theme used Bootstrap's `offcanvas-lg`, which needs Bootstrap's JS
+ * bundle and hand-rolls its own focus handling. MIGRATION-PLAN.md §6.2 flagged
+ * that as one of the accessibility issues to fix rather than port, so the
+ * drawer is a native <dialog> opened with showModal(): the browser supplies the
+ * focus trap, the Escape handler, inert-ing of background content, and the
+ * top-layer stacking for free.
+ *
+ * One list, rendered once. Wide viewports show it inline; narrow ones show it
+ * inside the dialog. No duplicated markup, so no duplicated landmarks.
+ */
+import { NAV } from '../consts';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+---
+
+<nav class="nav" aria-label="Navigazione principale">
+  <button
+    type="button"
+    class="nav__trigger"
+    aria-label="Apri il menu"
+    data-nav-open
+  >
+    <svg viewBox="0 0 16 16" width="24" height="24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        fill-rule="evenodd"
+        d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
+      ></path>
+    </svg>
+  </button>
+
+  <dialog class="nav__drawer" data-nav-drawer aria-label="Menu">
+    <div class="nav__drawer-head">
+      <button
+        type="button"
+        class="nav__close"
+        aria-label="Chiudi il menu"
+        data-nav-close
+      >
+        <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M2.146 2.146a.5.5 0 0 1 .708 0L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854a.5.5 0 0 1 0-.708"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <ul class="nav__list">
+      {
+        NAV.map(({ label, href }) => (
+          <li>
+            <a href={href} aria-current={isCurrent(href) ? 'page' : undefined}>
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </dialog>
+</nav>
+
+<style>
+  /* ---------------------------------------------------------- shared list */
+
+  .nav__list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav__list a {
+    display: block;
+    color: var(--color-text-strong);
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    border-bottom: 2px solid transparent;
+    transition:
+      color var(--transition),
+      border-color var(--transition);
+  }
+
+  .nav__list a:hover {
+    color: var(--color-accent);
+  }
+
+  .nav__list a[aria-current='page'] {
+    color: var(--color-accent);
+    border-bottom-color: currentColor;
+  }
+
+  /* --------------------------------------------------------- narrow: drawer */
+
+  .nav__trigger,
+  .nav__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xs);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-text-strong);
+    cursor: pointer;
+  }
+
+  .nav__drawer {
+    width: min(20rem, 85vw);
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0 0 0 auto;
+    padding: var(--space-md);
+    border: 0;
+    border-inline-start: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .nav__drawer::backdrop {
+    background-color: light-dark(#0f172a4d, #00000080);
+    backdrop-filter: blur(2px);
+  }
+
+  .nav__drawer-head {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--space-md);
+  }
+
+  .nav__drawer .nav__list {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .nav__drawer .nav__list a {
+    padding-block: var(--space-2xs);
+    font-size: var(--text-lg);
+    border-bottom: 0;
+  }
+
+  .nav__drawer .nav__list a[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+
+  /* ---------------------------------------------------------- wide: inline */
+
+  @media (width >= 52rem) {
+    .nav__trigger {
+      display: none;
+    }
+
+    /* The dialog stops being a dialog and becomes an inline list. `display`
+       is what gates <dialog> visibility, so this needs !important to beat the
+       UA sheet's `dialog:not([open]) { display: none }`. */
+    .nav__drawer {
+      display: contents !important;
+    }
+
+    .nav__drawer-head {
+      display: none;
+    }
+
+    .nav__drawer .nav__list {
+      flex-direction: row;
+      gap: var(--space-md);
+    }
+
+    .nav__drawer .nav__list a {
+      padding-block: 0.35rem;
+      font-size: var(--text-sm);
+    }
+
+    .nav__drawer .nav__list a[aria-current='page'] {
+      text-decoration: none;
+    }
+  }
+</style>
+
+<script>
+  const WIDE = '(width >= 52rem)';
+
+  function init() {
+    const drawer = document.querySelector<HTMLDialogElement>('[data-nav-drawer]');
+    const open = document.querySelector<HTMLButtonElement>('[data-nav-open]');
+    const close = document.querySelector<HTMLButtonElement>('[data-nav-close]');
+    if (!drawer || !open || !close) return;
+
+    open.addEventListener('click', () => drawer.showModal());
+    close.addEventListener('click', () => drawer.close());
+
+    // Clicking the backdrop closes it. The dialog fills its own box, so a click
+    // whose target is the dialog element itself landed outside the content.
+    drawer.addEventListener('click', (event) => {
+      if (event.target === drawer) drawer.close();
+    });
+
+    // Following a link inside the drawer should close it — matters when the
+    // destination is the current page (an in-page anchor won't remount).
+    drawer.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) drawer.close();
+    });
+
+    // If the viewport grows past the breakpoint while the dialog is open, it
+    // would stay modal and trap focus around a nav that now looks inline.
+    const wide = window.matchMedia(WIDE);
+    wide.addEventListener('change', (event) => {
+      if (event.matches && drawer.open) drawer.close();
+    });
+  }
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -1,0 +1,169 @@
+---
+/**
+ * Homepage (C2).
+ *
+ * Ports the Drupal front page: full-bleed hero, centred branding, CTA row, and
+ * the image credit that `vr_creditiimmagine` showed only here (G8).
+ *
+ * Two changes from the Drupal version:
+ *  - The hero was a CSS `image-set()` background on `main::before` plus a
+ *    hand-written preload hint in helper.module. It's a real <Picture> now, so
+ *    Astro generates the avif/webp variants and the browser discovers the LCP
+ *    image in the markup instead of after CSS parses.
+ *  - The three CTAs were raw Bootstrap anchors inside the body HTML. They are
+ *    structured data here, which is what §2.4 called for; Phase 2 moves this
+ *    array into a Keystatic `home` singleton.
+ */
+import { Picture } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Logo from '../components/Logo.astro';
+import { SITE } from '../consts';
+import hero from '../assets/homepage.jpg';
+
+// TODO(Phase 2): Keystatic `home` singleton.
+const CTAS = [
+  { label: 'Siti di volo', href: '/siti', primary: true },
+  { label: 'News', href: '/news', primary: false },
+  { label: 'Iscrizioni', href: '/iscrizioni', primary: false },
+];
+
+const IMAGE_CREDIT = {
+  text: 'Elisa Cerruti - Unsplash',
+  href: 'https://unsplash.com/photos/a-view-of-a-mountain-range-covered-in-fog-98wjqBqQJKc',
+};
+---
+
+<BaseLayout
+  title="Parapendio Club a Pinerolo, Val Chisone e Val Pellice"
+  bare
+  imageCredit={IMAGE_CREDIT}
+>
+  <section class="hero">
+    <Picture
+      src={hero}
+      formats={['avif', 'webp']}
+      widths={[800, 1200, 1600]}
+      sizes="100vw"
+      alt=""
+      loading="eager"
+      fetchpriority="high"
+      class="hero__bg"
+    />
+
+    <div class="hero__content container">
+      <Logo height="8rem" />
+      <h1 class="hero__title">{SITE.name}</h1>
+      <p class="hero__slogan">{SITE.slogan}</p>
+
+      <p class="hero__ctas">
+        {
+          CTAS.map(({ label, href, primary }) => (
+            <a href={href} class:list={['button', !primary && 'button--outline']}>
+              {label}
+            </a>
+          ))
+        }
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    flex: 1;
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    overflow: hidden;
+    text-align: center;
+
+    /*
+      The hero is treated differently per scheme, deliberately.
+      No `color-scheme` override here — each mode gets its own character:
+
+      LIGHT: a pale, hazy wash with dark text, as the Drupal theme had it. The
+      photo is a dusk shot, so the white scrim needed to make dark text legible
+      also bleaches the mountains out — that softness is the intended look, not
+      a defect, and it keeps interior pages and the homepage feeling related.
+
+      DARK: a much lighter scrim, so the photograph stays intact and the snow
+      and ridgeline read properly behind light text.
+
+      Both are expressed as one light-dark() pair per gradient stop, so there is
+      still a single place to tune each.
+    */
+    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.64), rgb(22 25 28 / 0.35));
+    --hero-scrim-bottom: light-dark(rgb(255 255 255 / 0.84), rgb(22 25 28 / 0.65));
+  }
+
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Matches the old theme's `right 20% bottom` background-position. */
+    object-position: 80% bottom;
+    z-index: -2;
+  }
+
+  /*
+    Legibility scrim. The light values fold in what the Drupal theme achieved
+    with `opacity: .8` on the image plus a 55%→80% white gradient — same result,
+    one mechanism, so the image itself stays at full opacity in both modes.
+  */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      to bottom,
+      var(--hero-scrim-top),
+      var(--hero-scrim-bottom)
+    );
+  }
+
+  .hero__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding-block: var(--header-height);
+  }
+
+  .hero__title {
+    margin-block-start: var(--space-2xs);
+    font-size: var(--text-2xl);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .hero__slogan {
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-md);
+  }
+
+  /* The default outline border is a UI-surface grey and disappears against a
+     photograph. Over the hero it derives from the text colour instead, plus a
+     faint scrim so the label never lands on a bright patch of sky. */
+  .hero__ctas :global(.button--outline) {
+    border-color: color-mix(in srgb, currentColor 45%, transparent);
+    background-color: color-mix(in srgb, var(--color-bg) 25%, transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  .hero__ctas :global(.button--outline:hover) {
+    border-color: currentColor;
+    background-color: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  }
+</style>

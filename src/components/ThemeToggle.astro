@@ -1,0 +1,133 @@
+---
+/**
+ * Light / dark / auto theme toggle.
+ *
+ * Replaces the Drupal `helper` module's toggle block (G10). Two differences
+ * from the original:
+ *
+ * 1. The markup lived in a `block_content` body in Drupal — editable content
+ *    that no editor should ever have been able to break. It's a component now.
+ * 2. It sets `data-theme` on <html>, which flips `color-scheme` (see
+ *    tokens.css). Every colour follows from that one property.
+ *
+ * The no-flash script that reads localStorage before first paint lives in
+ * BaseLayout's <head>; this component only renders the control.
+ */
+
+const OPTIONS = [
+  { value: 'light', label: 'Chiaro' },
+  { value: 'dark', label: 'Scuro' },
+  { value: 'auto', label: 'Auto' },
+] as const;
+---
+
+<fieldset class="theme-toggle">
+  <legend class="visually-hidden">Tema del sito</legend>
+  {
+    OPTIONS.map(({ value, label }) => (
+      <>
+        <input type="radio" name="theme" id={`theme-${value}`} value={value} />
+        <label for={`theme-${value}`}>{label}</label>
+      </>
+    ))
+  }
+</fieldset>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    margin: 0;
+    padding: 2px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-bg);
+  }
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  label {
+    padding: 0.25em 0.75em;
+    border-radius: var(--radius-pill);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color var(--transition),
+      color var(--transition);
+  }
+
+  label:hover {
+    color: var(--color-text-strong);
+  }
+
+  input:checked + label {
+    background-color: var(--color-accent-subtle);
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  /* The inputs are visually hidden, so mirror their focus onto the label. */
+  input:focus-visible + label {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = 'theme';
+  type Theme = 'light' | 'dark' | 'auto';
+
+  const isTheme = (v: unknown): v is Theme =>
+    v === 'light' || v === 'dark' || v === 'auto';
+
+  function apply(theme: Theme) {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  }
+
+  function stored(): Theme {
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      return isTheme(v) ? v : 'auto';
+    } catch {
+      // Private mode / blocked storage — fall back to following the OS.
+      return 'auto';
+    }
+  }
+
+  function init() {
+    const current = stored();
+
+    for (const input of document.querySelectorAll<HTMLInputElement>(
+      '.theme-toggle input[name="theme"]',
+    )) {
+      input.checked = input.value === current;
+      input.addEventListener('change', () => {
+        if (!input.checked || !isTheme(input.value)) return;
+        apply(input.value);
+        try {
+          localStorage.setItem(STORAGE_KEY, input.value);
+        } catch {
+          // Preference just won't persist. The page still works.
+        }
+      });
+    }
+  }
+
+  init();
+  // Re-bind after client-side navigation.
+  document.addEventListener('astro:after-swap', init);
+</script>

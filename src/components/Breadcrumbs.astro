@@ -1,0 +1,120 @@
+---
+/**
+ * Breadcrumb trail (G6).
+ *
+ * Reproduces the easy_breadcrumb settings from
+ * `config/easy_breadcrumb.settings.yml`:
+ *   include_home_segment: true   -> always starts at Home (rendered as an icon,
+ *                                   matching the old breadcrumb.html.twig)
+ *   include_title_segment: true  -> current page is the last, unlinked crumb
+ *   hide_single_home_item: true  -> nothing renders when Home is the only crumb
+ *
+ * Intermediate segments are derived from the URL. The optional `title` prop
+ * overrides the last crumb's label, which is what
+ * `title_from_page_when_available: true` did.
+ */
+
+interface Props {
+  /** Label for the final crumb. Defaults to a title-cased URL segment. */
+  title?: string;
+  /** Labels for intermediate segments, keyed by path, e.g. { '/siti': 'Siti di volo' }. */
+  labels?: Record<string, string>;
+}
+
+const { title, labels = {} } = Astro.props;
+
+const segments = Astro.url.pathname.split('/').filter(Boolean);
+
+const humanise = (segment: string) =>
+  segment.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+const crumbs = segments.map((segment, i) => {
+  const href = `/${segments.slice(0, i + 1).join('/')}`;
+  const isLast = i === segments.length - 1;
+  return {
+    href,
+    label: (isLast ? title : undefined) ?? labels[href] ?? humanise(segment),
+    isLast,
+  };
+});
+
+// hide_single_home_item: on the front page there is nothing but Home.
+const show = crumbs.length > 0;
+---
+
+{
+  show && (
+    <nav class="breadcrumbs" aria-label="Percorso di navigazione">
+      <ol>
+        <li>
+          <a href="/">
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5Z"
+              />
+            </svg>
+            <span class="visually-hidden">Home</span>
+          </a>
+        </li>
+        {crumbs.map(({ href, label, isLast }) => (
+          <li>
+            {isLast ? (
+              <span aria-current="page">{label}</span>
+            ) : (
+              <a href={href}>{label}</a>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+  }
+
+  /* Chevron separator, matching the old `breadcrumb-chevron` treatment. */
+  li + li::before {
+    content: '';
+    width: 0.4em;
+    height: 0.4em;
+    border-top: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;
+    rotate: 45deg;
+    opacity: 0.5;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  [aria-current='page'] {
+    color: var(--color-text-strong);
+    font-weight: 500;
+  }
+</style>

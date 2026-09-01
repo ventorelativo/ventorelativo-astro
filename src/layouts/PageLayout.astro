@@ -1,0 +1,50 @@
+---
+/**
+ * Standard interior page: breadcrumbs, h1, content.
+ *
+ * Equivalent to the Drupal one-column Layout Builder stack with the page-title
+ * and breadcrumb blocks placed — which was every page except the front (where
+ * `vr_page_title` was hidden by a request_path visibility condition, G9).
+ */
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Optional standfirst under the h1. */
+  intro?: string;
+  /** Labels for intermediate breadcrumb segments, e.g. { '/siti': 'Siti di volo' }. */
+  breadcrumbLabels?: Record<string, string>;
+}
+
+const { title, description, intro, breadcrumbLabels } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container">
+    <Breadcrumbs title={title} labels={breadcrumbLabels} />
+
+    <header class="page__head">
+      <h1>{title}</h1>
+      {intro && <p class="page__intro">{intro}</p>}
+    </header>
+
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  .page__head {
+    margin-block: var(--space-md) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .page__intro {
+    max-width: var(--prose-width);
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+</style>

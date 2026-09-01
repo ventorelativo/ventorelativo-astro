@@ -1,0 +1,124 @@
+---
+/**
+ * Site footer (G7, G8).
+ *
+ * Ports the five footer-region blocks from Drupal:
+ *   vr_socialmedia      -> social links       (block_content, Facebook only)
+ *   vr_footer           -> footer menu        (empty in content/, omitted)
+ *   vr_gtranslate       -> GTranslate widget  (G11, wired up in Phase 2)
+ *   vr_themetoggle      -> <ThemeToggle>      (G10)
+ *   vr_creditiimmagine  -> image credit, front page only (G8)
+ *
+ * The social links and legal line become Keystatic singletons in Phase 2; they
+ * are inline here so the shell is reviewable.
+ */
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  /** Photo credit, rendered only where one is passed (front page today). */
+  imageCredit?: { text: string; href: string };
+}
+
+const { imageCredit } = Astro.props;
+
+// TODO(Phase 2): Keystatic `social` singleton.
+const SOCIAL = [
+  {
+    name: 'Facebook',
+    href: 'https://www.facebook.com/ventorelativo',
+    path: 'M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z',
+  },
+];
+
+// TODO(Phase 2): Keystatic `footer` singleton. From block_content "Footer".
+const LEGAL = '[rimosso]';
+---
+
+<footer class="footer">
+  <div class="footer__inner container">
+    <ul class="footer__social">
+      {
+        SOCIAL.map(({ name, href, path }) => (
+          <li>
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
+                <path fill="currentColor" d={path} />
+              </svg>
+              <span class="visually-hidden">{name}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="footer__legal">{LEGAL}</p>
+
+    <div class="footer__controls">
+      {/* TODO(Phase 2): GTranslate widget (G11) goes here. */}
+      <ThemeToggle />
+    </div>
+  </div>
+
+  {
+    imageCredit && (
+      <p class="footer__credit container">
+        Foto: <a href={imageCredit.href}>{imageCredit.text}</a>
+      </p>
+    )
+  }
+</footer>
+
+<style>
+  .footer {
+    margin-block-start: auto;
+    padding-block: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg-subtle);
+    font-size: var(--text-sm);
+  }
+
+  .footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+
+  .footer__social {
+    display: flex;
+    gap: var(--space-2xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .footer__social a {
+    display: flex;
+    padding: var(--space-2xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+  }
+
+  .footer__social a:hover {
+    color: var(--color-accent);
+  }
+
+  .footer__legal {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .footer__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .footer__credit {
+    margin-block-start: var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    text-align: end;
+  }
+</style>

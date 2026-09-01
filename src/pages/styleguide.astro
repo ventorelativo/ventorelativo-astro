@@ -1,0 +1,152 @@
+---
+/**
+ * Design-system reference page — Phase 1 only.
+ *
+ * Exercises every primitive in one place so the design direction (D11) can be
+ * reviewed before real content exists, and so the interior page shell
+ * (PageLayout + Breadcrumbs + heading scale) has something to render.
+ *
+ * DELETE THIS FILE at the end of Phase 2. It is a scaffold, not a feature, and
+ * it deliberately reuses the /styleguide path the Drupal `twbstools` module
+ * exposed — which the migration plan lists as dropped.
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+
+const SWATCHES = [
+  ['--color-bg', 'Sfondo'],
+  ['--color-bg-subtle', 'Sfondo tenue'],
+  ['--color-bg-raised', 'Sfondo rialzato'],
+  ['--color-border', 'Bordo'],
+  ['--color-accent', 'Accento'],
+  ['--color-accent-subtle', 'Accento tenue'],
+  ['--brand-yellow', 'Giallo'],
+];
+
+const TYPE = [
+  ['--text-3xl', 'h1 — Siti di volo'],
+  ['--text-2xl', 'h2 — Montoso'],
+  ['--text-xl', 'h3 — Decolli e atterraggi'],
+  ['--text-lg', 'Testo grande'],
+  ['--text-base', 'Testo base'],
+  ['--text-sm', 'Testo piccolo'],
+  ['--text-xs', 'Testo minimo'],
+];
+---
+
+<PageLayout
+  title="Styleguide"
+  intro="Riferimento del design system. Pagina temporanea di Fase 1."
+>
+  <div class="stack">
+    <section>
+      <h2>Colori</h2>
+      <ul class="swatches">
+        {
+          SWATCHES.map(([token, label]) => (
+            <li>
+              <span class="swatch" style={`background:var(${token})`} />
+              <strong>{label}</strong>
+              <code>{token}</code>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2>Tipografia</h2>
+      <ul class="type">
+        {
+          TYPE.map(([token, sample]) => (
+            <li style={`font-size:var(${token})`}>
+              {sample} <code>{token}</code>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2>Bottoni</h2>
+      <p class="row">
+        <a href="#" class="button">Primario</a>
+        <a href="#" class="button button--outline">Secondario</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>Testo lungo</h2>
+      <div class="prose">
+        <p>
+          Il sito di volo Montoso offre un'esperienza mozzafiato nel cuore delle
+          Alpi italiane. Situato a circa 1.600 metri di altitudine, questo sito è
+          apprezzato dai parapendisti per la sua esposizione sud-est, che regala
+          condizioni di volo ideali per la maggior parte dell'anno.
+        </p>
+        <h3>Caratteristiche</h3>
+        <ul>
+          <li>Vista panoramica sulla pianura padana</li>
+          <li>Decollo ampio e erboso</li>
+          <li>Atterraggio ufficiale a Bagnolo Piemonte</li>
+        </ul>
+        <p>
+          Maggiori informazioni sui <a href="/siti">siti di volo</a> del club.
+        </p>
+      </div>
+    </section>
+  </div>
+</PageLayout>
+
+<style>
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+  }
+
+  .swatches li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  .swatch {
+    height: 3.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .type {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    list-style: none;
+    padding: 0;
+    line-height: var(--leading-snug);
+  }
+
+  code {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+</style>

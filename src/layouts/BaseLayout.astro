@@ -1,0 +1,122 @@
+---
+/**
+ * The document shell: <head>, header, main, footer.
+ *
+ * Phase 1 covers the chrome (G1–G13). The SEO component, JSON-LD and OG image
+ * generation (S1–S7) land in Phase 2 — the minimum viable meta is inline here
+ * so pages aren't shipping without a title or description in the meantime.
+ */
+import '@fontsource-variable/outfit';
+import '../styles/global.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../consts';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Homepage variant: header sits over the hero, main fills the viewport. */
+  bare?: boolean;
+  imageCredit?: { text: string; href: string };
+}
+
+const {
+  title,
+  description = SITE.description,
+  bare = false,
+  imageCredit,
+} = Astro.props;
+
+// metatag.metatag_defaults.global.yml: '[current-page:title] | [site:name]'
+const pageTitle = title ? `${title} | ${SITE.name}` : SITE.name;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {/* Favicons copied verbatim from the vr theme (S6). */}
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#5bbad5" />
+
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title ?? SITE.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+
+    {/*
+      Theme resolution before first paint. Must stay inline and synchronous —
+      an external or deferred script would let the light theme paint first and
+      flash. Mirrors the old helper/theme-toggle.js bootstrap, except it only
+      sets data-theme; the colours follow from color-scheme (see tokens.css).
+    */}
+    <script is:inline>
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'light' || stored === 'dark') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch {
+        /* Blocked storage: fall through to the OS preference. */
+      }
+    </script>
+  </head>
+
+  <body>
+    <a href="#main" class="skip-link">Vai al contenuto principale</a>
+
+    <Header transparent={bare} />
+
+    <main id="main" class:list={['main', bare && 'main--bare']}>
+      <slot />
+    </main>
+
+    <Footer imageCredit={imageCredit} />
+
+    <style>
+      .skip-link {
+        position: absolute;
+        inset-block-start: var(--space-2xs);
+        inset-inline-start: var(--space-2xs);
+        z-index: 200;
+        padding: var(--space-2xs) var(--space-sm);
+        border-radius: var(--radius-sm);
+        background-color: var(--color-bg);
+        color: var(--color-accent);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-200%);
+      }
+
+      .skip-link:focus {
+        transform: none;
+      }
+
+      /* Clears the fixed header. */
+      .main {
+        flex: 1;
+        padding-block: calc(var(--header-height) + var(--space-lg))
+          var(--space-2xl);
+      }
+
+      /* Homepage: the hero owns the viewport, header floats over it. */
+      .main--bare {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+      }
+    </style>
+  </body>
+</html>
