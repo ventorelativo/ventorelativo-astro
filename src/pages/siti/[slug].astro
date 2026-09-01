@@ -9,6 +9,7 @@
 import { getCollection, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Gallery from '../../components/Gallery.astro';
+import Badge from '../../components/Badge.astro';
 
 export async function getStaticPaths() {
   const sites = await getCollection('sites');
@@ -16,7 +17,11 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { title, summary, images } = entry.data;
+const { title, summary, images, tags } = entry.data;
+
+// `summary` is deliberately not rendered here, as on news articles: it is the
+// card blurb and the meta description (D7), and on the page it only repeated
+// the Località / Altitudine / Esposizione the body opens with.
 const { Content } = await render(entry);
 ---
 
@@ -24,8 +29,18 @@ const { Content } = await render(entry);
   title={title}
   description={summary}
   breadcrumbLabels={{ '/siti': 'Siti di volo' }}
+  image={images[0]?.src}
+  imageAlt={images[0]?.alt}
 >
-  <p class="summary" slot="meta">{summary}</p>
+  {
+    tags.length > 0 && (
+      <p class="tags" slot="meta">
+        {tags.map((tag) => (
+          <Badge label={tag} />
+        ))}
+      </p>
+    )
+  }
 
   {/* TODO(Phase 4): this site's map, then the feature table and XContest links. */}
 
@@ -35,12 +50,10 @@ const { Content } = await render(entry);
 </EntryLayout>
 
 <style>
-  /* The specs triplet, set as data rather than prose — same treatment as the
-     card it also fills. */
-  .summary {
-    color: var(--color-text-muted);
-    font-size: var(--text-lg);
-    font-variant-numeric: tabular-nums;
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
   }
 
 </style>

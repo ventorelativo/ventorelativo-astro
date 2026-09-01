@@ -3,6 +3,8 @@ import { defineConfig } from 'astro/config';
 
 import mdx from '@astrojs/mdx';
 
+import sitemap from '@astrojs/sitemap';
+
 /**
  * The canonical origin, used for sitemap URLs, canonical tags and OG images.
  *
@@ -65,7 +67,25 @@ export default defineConfig({
   // would do for prose, but the migrated bodies carry call-to-action buttons
   // and link cards that belong in components rather than in raw HTML (§2.4),
   // and Keystatic's content field writes .mdx.
-  integrations: [mdx()],
+  integrations: [
+    mdx(),
+    /*
+      S8. The Drupal `simple_sitemap` gave everything 0.5 and set one custom
+      priority: `/` at 1.0. `/contatti` was listed as a custom link but also at
+      0.5, so it needs nothing special here despite what the plan says.
+
+      /styleguide is excluded: it is a development reference, deleted at the end
+      of Phase 2, and has no business in search results meanwhile.
+    */
+    sitemap({
+      filter: (page) => !page.includes('/styleguide'),
+      serialize(item) {
+        const path = new URL(item.url).pathname;
+        item.priority = path === '/' ? 1.0 : 0.5;
+        return item;
+      },
+    }),
+  ],
 
   vite: {
     /*

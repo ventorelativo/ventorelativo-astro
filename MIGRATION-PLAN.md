@@ -110,13 +110,13 @@ so this doubles as the acceptance checklist.
 | S6 | Favicons set (16/32/apple-touch/mstile/safari-pinned-tab/webmanifest) | Copy `favicons/` to `public/` verbatim |
 | S7 | `SportsClub` JSON-LD (name, sport, areaServed, sameAs) | `<JsonLd>` component in base layout |
 | S8 | `simple_sitemap` → `/sitemap.xml` (30 URLs, custom priorities for `/` and `/contatti`) | `@astrojs/sitemap` with a `serialize` for priorities |
-| S9 | News RSS feed (`news` view `feed_1`, path `rss.xml`) — **defined but not in the static export** | `@astrojs/rss` at `/rss.xml`. Small win: it starts working |
+| S9 | News RSS feed (`news` view `feed_1`, path `rss.xml`) — **defined but not in the static export** | ❌ **Dropped in Phase 2 at the club's request.** It never worked on the old site either, and nothing subscribes to it |
 | S10 | Redirect `/contact/contatti` → `/contatti` (301) | `_redirects` / `netlify.toml` |
 | S11 | `/home` and `/` both resolve to the same node (duplicate content) | **Fix**: `/home` → `/` 301 |
 | S12 | Quicklink prefetch | Astro `prefetch: { defaultStrategy: 'viewport' }` |
 | S13 | `minifyhtml` | Astro's built-in HTML minification |
 | S14 | Long-cache headers for `/themes/*`, `/core/*`, `/sites/default/files/{css,js,styles}/*` | `_headers` for `/_astro/*` (content-hashed) |
-| S15 | Hero LCP preload hint (`homepage.avif`) | `<link rel="preload">` in the homepage head |
+| S15 | Hero LCP preload hint (`homepage.avif`) | **Not needed.** The hint existed because the hero was a CSS `image-set()` background on `main::before`, invisible to the preload scanner. It is a real `<Picture>` now, first in the markup with `fetchpriority="high"`, so the scanner finds it in the initial HTML |
 | **S16** | *(none today — no analytics module installed)* | **New:** Cloudflare Web Analytics beacon before `</body>`. Works on Netlify-hosted sites with no DNS/proxy change; cookie-free, so no cookie banner. See §6.1 |
 
 ### 1.3 Pages & content
@@ -366,6 +366,20 @@ single `tags` field and it got attached to both content types. Montoso ends up t
 
 Only 1 of 14 sites is tagged at all, and 4 terms across 5 pieces of content does not
 justify five archive pages.
+
+**Correction (Phase 2, 2026-09-01).** The table above is wrong about the sites. Reading
+`field_tags` across all 14 `sito` nodes, **five** are tagged, not one:
+
+| Site | Tags |
+|---|---|
+| Le Grange | Adatto ai principianti |
+| Monte Cucetto, Monte Freidur, Punta Ceresa | Hike&Fly |
+| Montoso | Adatto ai principianti, Competizioni |
+
+"Adatto ai principianti" and "Hike&Fly" describe the site, which is exactly the site
+attribute point 3 below imagined adding "later". So site tags ship in Phase 2 as a plain
+`tags: string[]` on the entry, rendered as non-linking pills on the card and the page.
+What stays dropped is the shared vocabulary, the relationship and the archive routes.
 
 **Recommendation:**
 
@@ -741,7 +755,7 @@ This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the commi
 | **D10** | **Stripe vs Satispay Business** | §5. Fee vs full automation. | **Committee decision, parked.** Not being worked on. The site ships complete without it — `/iscrizioni` keeps the existing Satispay links until the committee rules. |
 | ~~**D11**~~ | ~~Design direction~~ | — | ✅ **RESOLVED: refined minimal**, *amended in Phase 2 — see the note under §6.2.* Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
 | ~~**D12**~~ | ~~Content freeze / dual-run~~ | — | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover. |
-| ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~ | — | ✅ **RESOLVED: reshape.** `tags` collection and `/tags/*` archives dropped. News gets a `category` select (`Eventi \| Competizioni \| Hike&Fly`) rendered as a badge. Site tagging dropped; "Adatto ai principianti" noted as the first candidate if site attributes are added later. See §2.5. |
+| ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~ | — | ✅ **RESOLVED: reshape**, *amended in Phase 2.* `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all** — §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links. |
 
 ### 6.1 Hosting: why Netlify, and where Cloudflare still fits
 

@@ -11,6 +11,9 @@ import '../styles/global.css';
 
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import SEO from '../components/SEO.astro';
+import JsonLd from '../components/JsonLd.astro';
+import Analytics from '../components/Analytics.astro';
 import { SITE } from '../consts';
 
 interface Props {
@@ -18,13 +21,22 @@ interface Props {
   description?: string;
   /** Homepage variant: header sits over the hero, main fills the viewport. */
   bare?: boolean;
+  /** Social card image for this page; falls back to the club's card. */
+  image?: ImageMetadata;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
 }
 
-const { title, description = SITE.description, bare = false } = Astro.props;
-
-// metatag.metatag_defaults.global.yml: '[current-page:title] | [site:name]'
-const pageTitle = title ? `${title} | ${SITE.name}` : SITE.name;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const {
+  title,
+  description = SITE.description,
+  bare = false,
+  image,
+  imageAlt,
+  type,
+  publishedTime,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -33,9 +45,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>{pageTitle}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      imageAlt={imageAlt}
+      type={type}
+      publishedTime={publishedTime}
+    />
 
     {/* Favicons copied verbatim from the vr theme (S6). */}
     <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -45,11 +62,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="manifest" href="/favicons/site.webmanifest" />
     <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#5bbad5" />
 
-    <meta property="og:site_name" content={SITE.name} />
-    <meta property="og:title" content={title ?? SITE.name} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:type" content="website" />
+    <JsonLd />
 
     {/*
       Theme resolution before first paint. Must stay inline and synchronous —
@@ -79,6 +92,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     </main>
 
     <Footer />
+
+    <Analytics />
 
     <style>
       .skip-link {

@@ -1,0 +1,33 @@
+---
+/**
+ * Cloudflare Web Analytics (S16).
+ *
+ * The old site had no analytics at all — this is new. Cloudflare's beacon was
+ * chosen because it sets no cookies and stores no personal data, so the site
+ * needs no consent banner: a banner would be a bigger imposition on visitors
+ * than the measurement is worth.
+ *
+ * It is the one third-party request on the site, ~7 kB, `defer`red so it never
+ * blocks rendering and never runs before the page is usable. That is a real
+ * cost against the budget in docs/performance.md, and the honest alternative is
+ * server-side analytics (Netlify's, paid) which costs the visitor nothing at
+ * all. Worth revisiting if the numbers are never actually read.
+ *
+ * The token is public by nature — it ends up in the HTML — but it is read from
+ * the environment rather than committed, so a fork or a deploy preview does not
+ * report into the club's dashboard. Set PUBLIC_CF_BEACON_TOKEN in Netlify's UI.
+ * Absent, this renders nothing, which is what happens locally.
+ */
+const token = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+---
+
+{
+  token && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token })}
+    />
+  )
+}

@@ -1,0 +1,35 @@
+---
+/**
+ * SportsClub structured data (S7).
+ *
+ * Ported from `helper_page_attachments()`, which built this payload and
+ * attached it to every page — search engines read it from whichever page they
+ * crawl. Worth noting: it never actually shipped. There is no `ld+json` in the
+ * archived build at all, so the module must post-date the last deploy. This is
+ * the first time the club will have structured data in production.
+ *
+ * `set:html` rather than an expression: Astro escapes quotes in text content,
+ * which would break the JSON.
+ */
+import { SITE } from '../consts';
+
+const site = Astro.site ?? new URL('https://www.ventorelativo.it');
+
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'SportsClub',
+  name: SITE.name,
+  alternateName: `${SITE.name} Parapendio Club`,
+  description:
+    'Parapendio club tra Pinerolo, Val Chisone e Val Pellice: informazioni per i soci, eventi del club e siti di volo della zona.',
+  sport: 'Paragliding',
+  url: site.href,
+  logo: new URL('/social-card.png', site).href,
+  image: new URL('/social-card.png', site).href,
+  email: SITE.email,
+  areaServed: ['Pinerolo', 'Val Chisone', 'Val Pellice'],
+  sameAs: ['https://www.facebook.com/ventorelativo'],
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(data)} is:inline />

@@ -13,12 +13,25 @@ interface Props {
   title: string;
   description?: string;
   breadcrumbLabels?: Record<string, string>;
+  /** Social card image for this entry (S4). */
+  image?: ImageMetadata;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
 }
 
-const { title, description, breadcrumbLabels } = Astro.props;
+const { title, description, breadcrumbLabels, image, imageAlt, type, publishedTime } =
+  Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  image={image}
+  imageAlt={imageAlt}
+  type={type}
+  publishedTime={publishedTime}
+>
   <div class="container">
     <Breadcrumbs title={title} labels={breadcrumbLabels} />
 

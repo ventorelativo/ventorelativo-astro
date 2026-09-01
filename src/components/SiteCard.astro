@@ -7,20 +7,21 @@
  * "better" for no reason other than which ones someone happened to shoot.
  *
  * Metrics measured from the old build: 6px radius, 16px padding, a 1.5rem/500
- * title in the body colour rather than the heading blue, 8px between the two
- * lines.
+ * title, 8px between the lines. The title takes the heading blue rather than
+ * the old card's body grey, so it matches every other heading on the site.
  *
  * Only the title is an anchor, stretched over the card by a pseudo-element, so
  * the whole card is clickable without the summary being read out as link text.
  */
 import type { CollectionEntry } from 'astro:content';
+import Badge from './Badge.astro';
 
 interface Props {
   entry: CollectionEntry<'sites'>;
 }
 
 const { entry } = Astro.props;
-const { title, summary } = entry.data;
+const { title, summary, tags } = entry.data;
 const href = `/siti/${entry.id}/`;
 ---
 
@@ -29,6 +30,16 @@ const href = `/siti/${entry.id}/`;
     <a href={href}>{title}</a>
   </h2>
   <p class="card__summary">{summary}</p>
+
+  {
+    tags.length > 0 && (
+      <p class="card__tags">
+        {tags.map((tag) => (
+          <Badge label={tag} />
+        ))}
+      </p>
+    )
+  }
 </article>
 
 <style>
@@ -48,11 +59,9 @@ const href = `/siti/${entry.id}/`;
     border-color: var(--color-border-strong);
   }
 
-  /* Overrides the global heading rule: card titles were the body colour on the
-     old site, not the heading blue, and a grid of blue titles reads as a list
-     of links rather than a set of cards. */
+  /* The size and weight are the old card's; the colour is the heading blue,
+     so card titles read as headings like every other heading on the site. */
   .card__title {
-    color: var(--color-text);
     font-size: 1.5rem;
     font-weight: 500;
   }
@@ -69,7 +78,7 @@ const href = `/siti/${entry.id}/`;
   }
 
   .card:hover .card__title a {
-    color: var(--color-accent);
+    color: var(--color-accent-hover);
   }
 
   /*
@@ -79,5 +88,12 @@ const href = `/siti/${entry.id}/`;
   .card__summary {
     color: var(--color-text-muted);
     font-variant-numeric: tabular-nums;
+  }
+
+  .card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin-block-start: var(--space-3xs);
   }
 </style>

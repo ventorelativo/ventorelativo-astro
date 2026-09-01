@@ -1,0 +1,84 @@
+---
+/**
+ * Per-page metadata (S1, S2, S4, S5).
+ *
+ * Replaces the Drupal `metatag` defaults. Same title pattern, same description,
+ * same canonical, same Open Graph set; Twitter's tags are added because the
+ * card type is what decides whether a shared link shows a large image or a
+ * thumbnail, and the old config left it to chance.
+ *
+ * `image` takes an entry's own picture where there is one — the news article's
+ * `field_image`, a site's first photograph — cropped to the 1280x640 the old
+ * `social_card_node` image style produced. Everything else falls back to the
+ * club's social card, which is exactly what the front page used.
+ *
+ * NOT ported: S3, the auto-generated OG image with the page title drawn over
+ * the card. It needs a build-time renderer (`astro-og-canvas`, or satori and
+ * resvg) — no cost to visitors, but a real dependency and a slower build. The
+ * plan flags it as easy to drop by accident, so this is it being dropped on
+ * purpose, with the fallback in place. Say the word and it goes in.
+ */
+import { getImage } from 'astro:assets';
+import { SITE } from '../consts';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** An entry image to use as the social card. */
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** `article` for news posts; anything else is a page. */
+  type?: 'website' | 'article';
+  /** ISO date, for articles. */
+  publishedTime?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  image,
+  imageAlt,
+  type = 'website',
+  publishedTime,
+} = Astro.props;
+
+// metatag.metatag_defaults.global.yml: '[current-page:title] | [site:name]'
+const pageTitle = title ? `${title} | ${SITE.name}` : SITE.name;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+/*
+  1280x640 to match the old `social_card` image style. The old crop was
+  centre-bottom; centre is used here because two of the three article images
+  are portrait posters whose subject is at the top, and a bottom crop threw the
+  title away.
+*/
+const social = image
+  ? await getImage({ src: image, width: 1280, height: 640, fit: 'cover', format: 'jpg' })
+  : undefined;
+
+const ogImage = new URL(social?.src ?? '/social-card.png', Astro.site);
+const ogImageAlt = imageAlt ?? 'Logo VentoRelativo';
+---
+
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:title" content={title ?? SITE.name} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:type" content={type} />
+<meta property="og:locale" content="it_IT" />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta property="og:image:width" content="1280" />
+<meta property="og:image:height" content="640" />
+
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title ?? SITE.name} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={ogImageAlt} />

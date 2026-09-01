@@ -83,6 +83,17 @@ const sites = defineCollection({
        * Montoso, Monte Cucetto, Roletto, Sarsenà and Sea di Torre.
        */
       featured: z.boolean().default(false),
+      /**
+       * Site attributes, shown as plain pills — not links.
+       *
+       * D13 dropped site tagging on the grounds that "only 1 of 14 sites is
+       * tagged at all". The export says otherwise: five are. Le Grange and
+       * Montoso are "Adatto ai principianti"; Monte Cucetto, Monte Freidur and
+       * Punta Ceresa are "Hike&Fly". Those describe the site and are worth
+       * showing. What stays dropped is the shared vocabulary and the /tags/*
+       * archive routes — this is a list of strings on the entry, nothing more.
+       */
+      tags: z.array(z.string()).default([]),
       /** `field_images`. Only Roletto (5) and Montoso (3) have any today. */
       images: z
         .array(

@@ -88,10 +88,9 @@ const href = `/news/${entry.id}/`;
     font-size: var(--text-xs);
   }
 
-  /* Overrides the global heading rule, as SiteCard does: the old card titles
-     were 1.5rem/500 in the body colour, not the heading blue. */
+  /* The size and weight are the old card's; the colour is the heading blue,
+     as it is on every other heading. */
   .card__title {
-    color: var(--color-text);
     font-size: 1.5rem;
     font-weight: 500;
   }
@@ -109,7 +108,7 @@ const href = `/news/${entry.id}/`;
   }
 
   .card:hover .card__title a {
-    color: var(--color-accent);
+    color: var(--color-accent-hover);
   }
 
   .card__summary {

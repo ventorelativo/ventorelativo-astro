@@ -28,6 +28,15 @@
   status = 301
   force = true
 
+# The old site served its sitemap at /sitemap.xml; @astrojs/sitemap writes an
+# index plus numbered parts. Anything that already knows the old URL — Search
+# Console, a crawler's memory — is sent to the index (S8).
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap-index.xml"
+  status = 301
+  force = true
+
 # Astro fingerprints everything under /_astro/ with a content hash, so those URLs
 # change whenever the contents do — safe to cache forever. HTML is deliberately
 # left on Netlify's revalidate-always default so content updates go live at once.
