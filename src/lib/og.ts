@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 3;
+const TEMPLATE_VERSION = 5;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -52,12 +52,12 @@ const dataUri = (svg: string) =>
   `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 
 /*
-  Two versions of the mark. Over a photograph the artwork's own brand blue is
-  right; on the flat brand-blue card the blue paraglider and wordmark disappear
-  into the background, so those strokes go white. The yellow works on both.
+  One mark, always in its own colours — recolouring a logo is not something a
+  site should do to its club. It sits on a light plate with a faint outline
+  instead, which keeps the blue legible on the blue card and stops the artwork
+  fighting a busy photograph.
 */
-const LOGO_ON_PHOTO = dataUri(logo);
-const LOGO_ON_BLUE = dataUri(logo.replaceAll('#1F52A6', '#ffffff'));
+const LOGO = dataUri(logo);
 
 export interface CardOptions {
   title: string;
@@ -115,14 +115,26 @@ function card(title: string, kind: string | undefined, background: string | null
             },
           },
         },
-        // The mark, top left.
+        // The mark, top left, on its plate.
         {
-          type: 'img',
+          type: 'div',
           props: {
-            src: background ? LOGO_ON_PHOTO : LOGO_ON_BLUE,
-            width: 260,
-            height: 107,
-            style: { position: 'absolute', top: 54, left: 64 },
+            style: {
+              position: 'absolute',
+              top: 48,
+              left: 56,
+              display: 'flex',
+              padding: '14px 22px',
+              borderRadius: 18,
+              backgroundColor: 'rgba(255,255,255,0.92)',
+              border: '2px solid rgba(255,255,255,0.65)',
+            },
+            children: [
+              {
+                type: 'img',
+                props: { src: LOGO, width: 240, height: 99 },
+              },
+            ],
           },
         },
         // Kind + title, bottom left.
@@ -213,12 +225,23 @@ export async function renderCard({
   );
 
   /*
-    JPEG, though the old cards were PNG. These are photographs: the same card
-    is 1.2 MB as a PNG and about 120 kB at quality 84, and every share fetches
-    it. `mozjpeg` for the better encoder at the same quality.
+    JPEG at 78 with mozjpeg, and deliberately not WebP.
+
+    Not PNG, which is what the old cards were: these are photographs, and the
+    same card is 1.2 MB as a PNG against ~75 kB here.
+
+    Not WebP either, though it would be another ~35% smaller — because nothing
+    a visitor loads is ever this file. Only link scrapers fetch it, and their
+    WebP support is uneven (Facebook and WhatsApp, which is where this club
+    shares things, have a long history of not rendering WebP cards). Trading a
+    working preview on the club's main channel for bytes no visitor pays is a
+    bad deal. Every image the *site* serves is already WebP or AVIF.
+
+    78 rather than 84: at the size a preview is actually displayed the two are
+    indistinguishable, and it takes ~25% off.
   */
   const jpg = await sharp(Buffer.from(svg))
-    .jpeg({ quality: 84, mozjpeg: true })
+    .jpeg({ quality: 78, mozjpeg: true })
     .toBuffer();
 
   await mkdir(CACHE_DIR, { recursive: true });
