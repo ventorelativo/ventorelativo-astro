@@ -19,19 +19,27 @@ someone who does not read code.
 
 ## Current state — read before planning anything
 
-Phase 1 (skeleton and design system) is complete. **Phase 2 has not started.**
-That means, as of the last update to this file:
+Phase 1 (skeleton and design system) is complete. **Phase 2 is in progress.**
+As of the last update to this file:
 
-- There are **no content collections**, no `src/content/`, no `src/content.config.ts`.
-- There is **no Keystatic**, no CMS, no admin route.
-- The only routes that exist are `/` and `/styleguide`. `/siti`, `/news`,
-  `/voli`, `/iscrizioni`, `/contatti` are **linked but not built yet** — the nav
-  points at 404s on purpose.
-- There is **no Netlify adapter** and no server-rendered route.
+**Built:** `/`, `/news/` and its two published articles, `/siti/` and all
+fourteen flight sites, `/styleguide`. Two content collections — `news` and
+`sites` — defined in `src/content.config.ts`, with MDX bodies in
+`src/content/`.
+
+**Not built yet:**
+- `/voli`, `/iscrizioni`, `/contatti` (+ form and thank-you page), `/404`. The
+  nav links to these and they 404 today.
+- The SEO layer: sitemap, RSS, OG images, JSON-LD, analytics beacon.
+- **No Keystatic**, no CMS, no admin route (Phase 3).
+- **No Netlify adapter**, no server-rendered route (Phase 3).
+- **Nothing map-related** (Phase 4): no `map-features` collection, no geo data,
+  no per-site maps, feature tables, XContest links or `/api/navdata/*` files.
+  The site pages carry `TODO(Phase 4)` markers where those go.
 
 Do not write code that imports from, or assumes the shape of, anything in that
-list. If a task needs it, that task is Phase 2 work: read
-[`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7 first and say so.
+second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7
+first and say which phase it belongs to.
 
 `MIGRATION-PLAN.md` is the source of truth for scope, for the decisions already
 made (D1–D13) and for what each phase covers. Do not re-litigate a decision
@@ -47,6 +55,7 @@ npm run preview   # serve the built output
 npm run check     # astro check — types and template diagnostics
 npm run verify    # check + build. The gate. Run before claiming done.
 npm run shot      # screenshot + measure a page in a real emulated viewport
+npm run weight    # transferred bytes by resource type (run against the build)
 ```
 
 Dev-server control (Astro manages it as a background process):
@@ -73,9 +82,11 @@ something real.
    follows from that.
 5. **Spacing, type sizes, radii and shadows come from tokens too.** If you need a
    value that does not exist, add a token; do not inline a magic number.
-6. **No new dependencies without asking.** Bootstrap and jQuery were removed
-   deliberately; the CSS layer is hand-rolled and small. This especially means no
-   CSS framework, no component library, no icon package.
+6. **No new dependencies without asking, and none that cost the page speed.**
+   Bootstrap and jQuery were removed deliberately; the CSS layer is hand-rolled
+   and small. This especially means no CSS framework, no component library, no
+   icon package. When proposing one, state its **gzipped** size, whether it can
+   be loaded lazily, and what breaks without it — see Performance below.
 7. **Never edit `dist/` or `.astro/`.** Both are generated and git-ignored.
 8. **Never modify or delete `../ventorelativo-drupal`.** It is the read-only
    reference for anything found missing later, and the byte-level source for the
@@ -84,6 +95,41 @@ something real.
    load it into their instruments. Any change there must diff clean against the
    archived Drupal output. Do not improvise its format.
 10. **UI copy is Italian.** Code, comments and documentation are English.
+
+## Performance
+
+**The target is 100/100 in PageSpeed Insights, and staying there.** Treat it as a
+constraint on what you build, not a check at the end. Most visitors are on a
+phone on mountain data.
+
+- **Zero JavaScript is the default.** A page gets none unless something on it
+  cannot work without it. Today: the theme toggle, the nav drawer, the gallery.
+- **Load it only where it is used** — an import in a component's client
+  `<script>` reaches only pages rendering that component; one in a layout
+  reaches every page.
+- **Load it only when it is needed** — anything not required for first render
+  goes behind a dynamic `import()` fired by interaction.
+- **Nothing render-blocking from a third party.** Fonts are self-hosted. No
+  script tags pointing at other people's servers.
+- **Images always through `astro:assets`**, with explicit `widths`, `sizes` and
+  `quality`; `loading="lazy"` below the fold, `fetchpriority="high"` for the LCP
+  image.
+- **Advise against bloat rather than installing it.** Say so plainly, name the
+  cost, and offer the platform feature that replaces it. `<details>`,
+  `<dialog>`, `Intl`, CSS scroll-snap and container queries between them remove
+  most of the reasons to reach for a library.
+
+Measure, do not estimate — and measure the **build**, never the dev server,
+which ships ~400 kB of Vite machinery that never reaches production:
+
+```
+npm run build && npm run preview
+npm run weight -- http://localhost:4399/siti/
+```
+
+Current budget: `/` 86 kB with 1.5 kB of JS; `/siti/` 61 kB; a photo-heavy site
+page 458 kB, almost all of it photographs. Details and the reasoning behind each
+rule: [`docs/performance.md`](docs/performance.md).
 
 ## Conventions
 
@@ -106,12 +152,14 @@ something real.
 ## Definition of done
 
 1. `npm run verify` passes — 0 errors, 0 warnings, build completes.
-2. For any visual change, measure it: `npm run shot -- <url> --measure "<sel>"`
+2. No page got heavier without a reason you can state. `npm run weight -- <url>`
+   against the build.
+3. For any visual change, measure it: `npm run shot -- <url> --measure "<sel>"`
    at **390x844 and 1440x900**, in **both colour schemes** (`--dark`). Do not
    claim a layout works from reading CSS. See [`docs/verifying-changes.md`](docs/verifying-changes.md).
-3. No new dependencies, no new global CSS, no hardcoded colours.
-4. If behaviour or structure changed, update the relevant file in `docs/`.
-5. Report honestly: what you verified, how, and what you did not.
+4. No new dependencies, no new global CSS, no hardcoded colours.
+5. If behaviour or structure changed, update the relevant file in `docs/`.
+6. Report honestly: what you verified, how, and what you did not.
 
 ## Known traps
 
@@ -123,5 +171,14 @@ something real.
   clamped to a 500px minimum width, so you get a 500px layout cropped to 390 and
   every narrow media query is wrong. Use `npm run shot`, which emulates device
   metrics over the DevTools Protocol instead.
+- **Dev-server numbers are not production numbers**, for weight or for anything
+  else. `astro dev` ships the Vite client and HMR; measure `astro preview`.
+- **A dynamic `import()` of third-party CSS can 404 at runtime.** Astro inlines
+  small stylesheets into the HTML while Vite still preloads the file it did not
+  write, and the rejected import takes the whole feature down. Import
+  third-party CSS in the component frontmatter instead.
+- **`vite.optimizeDeps.include`** is required for a dependency reached only
+  through a dynamic import inside a client script — without it the feature works
+  in the build and silently does nothing in `astro dev`.
 - **`<Picture>` and `<Image>` put your `class` on the inner `<img>`**, not on the
   `<picture>` wrapper. Positioning the wrapper needs `:global(picture)`.

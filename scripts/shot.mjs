@@ -20,9 +20,12 @@
  *     --out <dir>         where PNGs go (default: .astro/shots)
  *     --measure <sel,...> extra selectors to report boxes for
  *     --click <sel>       click this element first (menus, drawers, disclosures)
+ *     --click-wait <ms>   how long to wait after the click (default 700)
  *     --computed <sel,...> dump the computed styles that matter for a port
  *     --hover <sel>       park a real mouse pointer over this element first
  *     --reduced-motion    emulate prefers-reduced-motion: reduce
+ *     --weight            report transferred bytes by resource type
+ *     --eval <js>         evaluate an expression in the page and print it
  *     --no-shot           measure only, skip the PNGs
  */
 import { spawn } from 'node:child_process';
@@ -64,6 +67,9 @@ function parseArgs(argv) {
     computed: [],
     hover: null,
     reducedMotion: false,
+    weight: false,
+    clickWait: 700,
+    eval: null,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -73,8 +79,11 @@ function parseArgs(argv) {
     else if (a === '--out') opts.out = argv[++i];
     else if (a === '--measure') opts.measure = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--click') opts.click = argv[++i];
+    else if (a === '--click-wait') opts.clickWait = Number(argv[++i]);
+    else if (a === '--eval') opts.eval = argv[++i];
     else if (a === '--hover') opts.hover = argv[++i];
     else if (a === '--reduced-motion') opts.reducedMotion = true;
+    else if (a === '--weight') opts.weight = true;
     else if (a === '--computed')
       opts.computed = argv[++i].split(',').map((x) => x.trim());
     else if (a === '--no-shot') opts.shot = false;
@@ -108,7 +117,10 @@ class CDP {
         cdp.#pending.delete(msg.id);
         msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
       } else if (msg.method) {
-        for (const fn of cdp.#handlers.get(msg.method) ?? []) fn(msg.params);
+        // In flat mode the session is on the envelope, not in params. Merge it
+        // in so handlers can tell which page an event came from.
+        const params = { ...msg.params, sessionId: msg.sessionId };
+        for (const fn of cdp.#handlers.get(msg.method) ?? []) fn(params);
       }
     });
     return cdp;
@@ -272,6 +284,30 @@ try {
 
     await cdp.send('Page.enable', {}, sessionId);
     await cdp.send('Runtime.enable', {}, sessionId);
+
+    /*
+      Page weight, measured rather than assumed. This site's budget is small
+      and deliberate (see AGENTS.md); the only way to keep it that way is to
+      be able to see it. `encodedDataLength` is bytes on the wire, so
+      compression counts — which is what a visitor actually pays.
+    */
+    const weight = new Map();
+    if (opts.weight) {
+      await cdp.send('Network.enable', {}, sessionId);
+      const types = new Map();
+      cdp.on('Network.responseReceived', (p) => {
+        if (p.sessionId === sessionId) types.set(p.requestId, p.type);
+      });
+      cdp.on('Network.loadingFinished', (p) => {
+        if (p.sessionId !== sessionId) return;
+        const type = types.get(p.requestId) ?? 'Other';
+        const current = weight.get(type) ?? { bytes: 0, count: 0 };
+        weight.set(type, {
+          bytes: current.bytes + p.encodedDataLength,
+          count: current.count + 1,
+        });
+      });
+    }
     cdp.on('Runtime.exceptionThrown', (p) => {
       if (p.sessionId !== sessionId) return;
       console.error(
@@ -323,7 +359,7 @@ try {
         failed = true;
       }
       // Generous: what a click opens is often behind a dynamic import.
-      await new Promise((r) => setTimeout(r, 700));
+      await new Promise((r) => setTimeout(r, opts.clickWait));
     }
 
     /*
@@ -389,6 +425,27 @@ try {
             : 'not present'
         }`,
       );
+    }
+
+    if (opts.weight) {
+      const kb = (n) => `${(n / 1024).toFixed(1)} kB`;
+      const total = [...weight.values()].reduce((a, b) => a + b.bytes, 0);
+      const rows = [...weight.entries()].sort((a, b) => b[1].bytes - a[1].bytes);
+      console.log(`  transferred   ${kb(total)} over ${
+        rows.reduce((a, [, v]) => a + v.count, 0)
+      } requests`);
+      for (const [type, v] of rows) {
+        console.log(`      ${type.padEnd(12)} ${kb(v.bytes).padStart(9)}  ${v.count}`);
+      }
+    }
+
+    if (opts.eval) {
+      const { result: evaluated } = await cdp.send(
+        'Runtime.evaluate',
+        { expression: opts.eval, returnByValue: true, awaitPromise: true },
+        sessionId,
+      );
+      console.log(`  eval          ${JSON.stringify(evaluated.value ?? evaluated.description)}`);
     }
 
     for (const [sel, props] of Object.entries(m.computed)) {

@@ -17,6 +17,7 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 | [`docs/how-to.md`](docs/how-to.md) | Making a change: text, nav, colours, pages, images. Start here. |
 | [`docs/architecture.md`](docs/architecture.md) | How Astro builds this site, and why it is arranged this way. |
 | [`docs/verifying-changes.md`](docs/verifying-changes.md) | Proving a change works, plus the traps that waste an afternoon. |
+| [`docs/performance.md`](docs/performance.md) | The speed budget: 100/100 PageSpeed, and how dependencies are judged against it. |
 | [`AGENTS.md`](AGENTS.md) | Instructions for AI coding agents. `CLAUDE.md` and `.github/copilot-instructions.md` point at it. |
 
 Club members can work on this site with an AI agent without knowing Astro — see
@@ -37,6 +38,7 @@ npm run dev      # http://localhost:4321
 | `npm run check` | Astro + TypeScript diagnostics |
 | `npm run verify` | `check` + `build`. The gate before calling work done. |
 | `npm run shot` | Screenshot and measure a page in a real emulated viewport |
+| `npm run weight` | Transferred bytes by resource type — run it against the build |
 
 ## Layout
 

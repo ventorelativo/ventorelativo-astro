@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "verify": "astro check && astro build",
-    "shot": "node scripts/shot.mjs"
+    "shot": "node scripts/shot.mjs",
+    "weight": "node scripts/shot.mjs --no-shot --weight"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.0",
@@ -17,7 +18,7 @@
     "@astrojs/netlify": "^8.2.5",
     "@fontsource-variable/outfit": "^5.3.0",
     "astro": "^7.2.10",
-    "photoswipe": "^5.4.4"
+    "bigger-picture": "^1.1.20"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

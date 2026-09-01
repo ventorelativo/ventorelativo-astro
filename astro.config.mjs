@@ -37,8 +37,16 @@ export default defineConfig({
   // shape exactly. Do not change this — it is what preserves the live URLs.
   build: { format: 'directory' },
 
-  // Replaces the Drupal `quicklink` module (S12).
-  prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
+  /*
+    Replaces the Drupal `quicklink` module (S12).
+
+    `hover`, not `viewport`: /siti shows fourteen cards, and the viewport
+    strategy fetched every one of those pages the moment the grid scrolled into
+    view — 172 kB of speculative traffic, most of it never used, all of it paid
+    for on someone's mobile data. `hover` (which is touchstart on a phone) still
+    starts the fetch well before the navigation commits.
+  */
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
 
   // Dev-only. No effect on the production build.
   //
@@ -61,12 +69,12 @@ export default defineConfig({
 
   vite: {
     /*
-      PhotoSwipe is imported dynamically from a client script, which Vite does
-      not discover when it scans for dependencies at startup. Without this the
-      gallery works in a production build but silently does nothing in `astro
-      dev` — the worst kind of difference between the two.
+      Bigger Picture is imported dynamically from a client script, which Vite
+      does not discover when it scans for dependencies at startup. Without this
+      the gallery works in a production build but silently does nothing in
+      `astro dev` — the worst kind of difference between the two.
     */
-    optimizeDeps: { include: ['photoswipe', 'photoswipe/lightbox'] },
+    optimizeDeps: { include: ['bigger-picture'] },
 
     server: {
       // Vite rejects requests whose Host header it doesn't recognise (DNS

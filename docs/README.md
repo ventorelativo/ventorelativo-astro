@@ -7,6 +7,7 @@ For club members, developers, and AI agents working on the Ventorelativo site.
 | [how-to.md](how-to.md) | You want to change something: text, a nav item, a colour, a page, an image. Start here. |
 | [architecture.md](architecture.md) | You want to understand how the site is built, or you are about to change how something works rather than what it says. |
 | [verifying-changes.md](verifying-changes.md) | You have made a change and want to know it actually works. Includes the measurement tool and the known traps. |
+| [performance.md](performance.md) | Before adding any library, and whenever a page gets heavier. The site targets 100/100 in PageSpeed Insights. |
 | [../AGENTS.md](../AGENTS.md) | You are an AI agent, or you want to see the rules one is given. |
 | [../MIGRATION-PLAN.md](../MIGRATION-PLAN.md) | You want the full scope of the Drupal → Astro migration, the decisions behind it, and what each phase covers. |
 

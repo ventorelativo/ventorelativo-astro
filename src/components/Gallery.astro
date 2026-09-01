@@ -2,24 +2,36 @@
 /**
  * Image gallery with a zoomable lightbox (C10).
  *
- * The Drupal version was a Slick carousel — jQuery, a 16:9 crop and dots.
- * MIGRATION-PLAN.md proposed replacing it with a CSS scroll-snap strip, but
- * the club asked for a real lightbox, so this uses PhotoSwipe: no framework,
- * no jQuery, pinch-zoom and swipe on touch, arrow keys and Escape on desktop,
- * and it restores focus to the thumbnail it opened from.
+ * The Drupal version was a Slick carousel — jQuery, a fixed 16:9 crop, dots.
+ * MIGRATION-PLAN.md C10 proposed a CSS scroll-snap strip; the club asked for a
+ * lightbox, and chose Bigger Picture after trying it: ~8.4 KB gzipped, click /
+ * wheel / pinch to zoom, keyboard navigation, focus management, and it respects
+ * prefers-reduced-motion on its own.
  *
- * The grid itself is plain HTML and needs no JavaScript. PhotoSwipe is
- * imported inside the client <script>, so it is bundled only into the pages
- * that actually render a gallery — two of the twenty today — and the page
- * still works without it: every thumbnail is a link to the full-size image.
+ * Weight discipline (see AGENTS.md, "Performance"):
+ *  - The grid is plain HTML and needs no JavaScript at all.
+ *  - The import lives in the client <script>, so the bundle reaches only pages
+ *    that render a gallery — two of the twenty today.
+ *  - The library is behind a dynamic import fired on first click, so opening
+ *    the page costs 2 kB of listener; the 21 kB library lands only if someone
+ *    actually opens an image.
+ *  - Without JavaScript every thumbnail is still a link to the full-size file.
  *
- * PhotoSwipe needs each image's real dimensions up front, to size the viewer
- * before the file loads. `getImage()` runs the same build-time pipeline
- * `<Image>` does, so the href points at a processed, fingerprinted file rather
- * than the multi-megabyte original.
+ * `getImage()` runs the lightbox source through the same build pipeline as the
+ * thumbnails, so `data-img` points at a processed, fingerprinted webp rather
+ * than the multi-megabyte original, and its real dimensions go in the markup so
+ * the viewer can size itself before the file arrives.
  */
 import { Image, getImage } from 'astro:assets';
-import 'photoswipe/style.css';
+/*
+  The lightbox's stylesheet is imported here, not alongside the dynamic import
+  of the library. Astro's `inlineStylesheets: 'auto'` inlines a stylesheet this
+  small into the page — but Vite still emits a preload for the file it no longer
+  wrote, so `import('bigger-picture/css')` rejected on a 404 and took the whole
+  Promise.all, and the lightbox, down with it. As page CSS it is simply inlined,
+  costs no request, and cannot fail at runtime.
+*/
+import 'bigger-picture/css';
 
 interface Props {
   images: { src: ImageMetadata; alt: string }[];
@@ -33,13 +45,15 @@ const { images, title } = Astro.props;
 const LIGHTBOX_WIDTH = 1600;
 
 const full = await Promise.all(
-  images.map((img) =>
-    getImage({
-      src: img.src,
-      width: Math.min(LIGHTBOX_WIDTH, img.src.width),
-      format: 'webp',
-    }),
-  ),
+  images.map(async (img) => {
+    const width = Math.min(LIGHTBOX_WIDTH, img.src.width);
+    const generated = await getImage({ src: img.src, width, format: 'webp' });
+    return {
+      src: generated.src,
+      width,
+      height: Math.round(width * (img.src.height / img.src.width)),
+    };
+  }),
 );
 ---
 
@@ -52,22 +66,27 @@ const full = await Promise.all(
         <figure>
           <a
             href={full[i].src}
-            data-pswp-width={full[i].options.width}
-            data-pswp-height={Math.round(
-              (full[i].options.width as number) * (img.src.height / img.src.width),
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
+            data-img={full[i].src}
+            data-alt={img.alt}
+            data-width={full[i].width}
+            data-height={full[i].height}
           >
             {/*
               alt="" deliberately: the caption below carries the same words, and
               a screen reader would otherwise announce them twice.
             */}
+            {/*
+              The thumbnail is a 4:3 crop shown at ~20rem, so 640px covers a
+              2x screen. quality 70 is indistinguishable at this size and cuts
+              the grid's weight by more than half — the full-resolution frame
+              is one click away in the lightbox.
+            */}
             <Image
               src={img.src}
               alt=""
-              widths={[400, 800]}
+              widths={[320, 640]}
               sizes="(width < 48rem) 100vw, 20rem"
+              quality={70}
               loading="lazy"
             />
           </a>
@@ -126,60 +145,39 @@ const full = await Promise.all(
 </style>
 
 <script>
-  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  /*
+    The library is not imported at module scope: it is fetched on the first
+    click, so a visitor who never opens an image never downloads it. The click
+    listener is the whole of the up-front JavaScript cost.
+  */
+  type BiggerPictureInstance = {
+    open: (options: { items: NodeList | Element[]; el?: Element }) => void;
+  };
 
-  let lightbox: PhotoSwipeLightbox | undefined;
+  let bp: BiggerPictureInstance | undefined;
+
+  async function open(grid: Element, el: Element) {
+    if (!bp) {
+      const { default: BiggerPicture } = await import('bigger-picture');
+      bp = BiggerPicture({ target: document.body }) as BiggerPictureInstance;
+    }
+    bp.open({ items: grid.querySelectorAll('a'), el });
+  }
 
   function init() {
-    lightbox?.destroy();
-    if (!document.querySelector('[data-gallery]')) return;
-
-    lightbox = new PhotoSwipeLightbox({
-      gallery: '[data-gallery]',
-      children: 'a',
-      // Loaded on demand, so a page with a gallery still ships the viewer
-      // itself only when someone opens one.
-      pswpModule: () => import('photoswipe'),
-      // The caption is the accessible name for each slide.
-      bgOpacity: 0.92,
-    });
-
-    // Carry the visible caption into the viewer.
-    lightbox.on('uiRegister', () => {
-      lightbox?.pswp?.ui?.registerElement({
-        name: 'caption',
-        order: 9,
-        isButton: false,
-        appendTo: 'root',
-        onInit: (el, pswp) => {
-          el.className = 'pswp__custom-caption';
-          pswp.on('change', () => {
-            const link = pswp.currSlide?.data.element as HTMLElement | undefined;
-            el.textContent =
-              link?.closest('figure')?.querySelector('figcaption')?.textContent ?? '';
-          });
-        },
+    for (const grid of document.querySelectorAll('[data-gallery]')) {
+      grid.addEventListener('click', (event) => {
+        const link = (event.target as HTMLElement).closest('a');
+        if (!link || !grid.contains(link)) return;
+        // Let modified clicks (new tab, download) do what the visitor asked.
+        const e = event as MouseEvent;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        event.preventDefault();
+        open(grid, link);
       });
-    });
-
-    lightbox.init();
+    }
   }
 
   init();
   document.addEventListener('astro:after-swap', init);
 </script>
-
-<style is:global>
-  /* The viewer renders outside this component's tree, so its caption cannot be
-     styled by a scoped rule. */
-  .pswp__custom-caption {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline: 0;
-    padding: var(--space-sm);
-    color: #fff;
-    font-size: var(--text-sm);
-    text-align: center;
-    text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
-  }
-</style>
