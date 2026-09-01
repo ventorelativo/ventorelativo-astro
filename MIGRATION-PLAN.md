@@ -1017,6 +1017,53 @@ themselves at checkout, test with a real €10 payment, keep the bank-transfer f
 **Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
+### Phase 7 — Beyond parity *(decided, not scheduled)*
+
+Everything above restores what the Drupal site did. These are things it never did, prompted
+by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
+with the decision already taken, so none of it gets rediscovered as a "good idea" later.
+
+**1. Events on news posts, with `.ics`.** ✅ *Wanted.* Not a separate collection: a news
+post *is* the announcement, so it gains optional `event` fields — start date, optional end
+date, location — and is an event when they are filled in. That buys three things from one
+change: a "Aggiungi al calendario" `.ics` download, the **`Event` node in the schema.org
+graph that §S7 deliberately left out** because the dates only existed in prose
+(`src/lib/schema.ts` records exactly this), and a "prossimi eventi" block if one is ever
+wanted. Touches the `news` schema in §2.1, `keystatic.config.ts` and the JSON-LD.
+Half a day. The biggest genuine capability gain on this list.
+
+**2. ESLint + Prettier.** ✅ *Wanted.* The project has neither; `astro check` catches types
+and nothing catches style. Development-only, so no cost to a visitor, and it matters more
+now that club members may point AI agents at this repository. An hour.
+
+**3. WebMCP — the site exposing callable tools to a visitor's AI assistant.** ✅ *Wanted,
+deliberately not yet.* The idea fits this site unusually well: fourteen flight sites with
+altitude, exposure and attributes is exactly the shape of "find me a beginner-friendly
+south-east site under 1500m", and Phase 4 adds coordinates to make it better still. Two
+reasons to wait rather than drop it: it ships JavaScript to **every** visitor for something
+almost no visitor's browser can yet use, which is precisely the trade the performance
+budget exists to refuse (`docs/performance.md`); and the proposal is young enough that
+building against it now risks building against a version that changes.
+
+**Revisit when** browser or assistant support is real, and **after Phase 4**, so the tools
+can answer with coordinates and airspace rather than prose. Note that `/llms-full.txt`
+(S17) and the schema.org graph already give an assistant most of these answers today,
+without shipping a byte to anyone.
+
+**4. View transitions.** ⏸️ *Deferred to the end, performance first.* Astro's
+`<ClientRouter />` gives cross-page animation, and the site is half-prepared already — the
+theme toggle, nav drawer and gallery scripts all re-bind on `astro:after-swap`. But it
+ships client JavaScript to every page, so it goes in only if it is measured against the
+budget and still looks worth it. Last, if at all.
+
+**5. Table of contents on articles.** ❌ *Not wanted.* Posts are a few hundred words.
+
+**Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
+i18n routing (single locale — GTranslate covers the rest, G11), and anything requiring edge
+compute. Every page here is prerendered HTML on a CDN; there is no per-request work for a
+Worker to do, and the only server-rendered routes the site will ever have are Keystatic's
+admin, used by one or two people.
+
 ---
 
 ## Appendix: inventory sources
