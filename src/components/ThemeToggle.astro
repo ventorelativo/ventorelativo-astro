@@ -1,22 +1,24 @@
 ---
 /**
- * Light / dark / auto theme toggle.
+ * Light / dark / auto theme picker.
  *
- * Replaces the Drupal `helper` module's toggle block (G10). Two differences
- * from the original:
+ * Replaces the Drupal `helper` module's toggle block (G10), which was a
+ * Bootstrap dropdown: one button showing the *active* theme's icon, opening a
+ * menu of Chiaro / Scuro / Auto with a tick beside the current one. Same shape
+ * here, because a three-segment control is three times the footer furniture for
+ * a setting most visitors never touch.
  *
- * 1. The markup lived in a `block_content` body in Drupal — editable content
- *    that no editor should ever have been able to break. It's a component now.
- * 2. It sets `data-theme` on <html>, which flips `color-scheme` (see
- *    tokens.css). Every colour follows from that one property.
+ * Built on <details>, not the Popover API. A popover lives in the top layer,
+ * whose containing block is the viewport, so positioning it under its button
+ * needs CSS anchor positioning — not something to depend on for a footer
+ * control. <details> gives the open/close state and keyboard support for free;
+ * the script below adds only what it lacks: outside-click and Escape.
+ *
+ * The radios remain the actual control, so the browser still handles grouping,
+ * arrow-key navigation and the checked state. The summary is a label for them.
  *
  * The no-flash script that reads localStorage before first paint lives in
  * BaseLayout's <head>; this component only renders the control.
- *
- * The three options are icons rather than words. Sun / moon are the universal
- * pair, and the half-filled disc is the usual "follow the system" mark; the
- * Italian label survives as the accessible name and the hover tooltip, so
- * nothing is lost for screen readers or for anyone unsure of the glyph.
  */
 
 /* 24x24, stroke-based, matching weights — drawn inline rather than pulled from
@@ -34,44 +36,115 @@ const OPTIONS = [
   { value: 'dark', label: 'Scuro' },
   { value: 'auto', label: 'Automatico' },
 ] as const;
+
+const SVG_ATTRS = {
+  viewBox: '0 0 24 24',
+  width: 16,
+  height: 16,
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': 1.75,
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+} as const;
+
+/*
+  The tick's class lives in the spread object, not as a separate `class`
+  attribute beside it: on an element that has both, Astro's scoped-style class
+  injection overwrites the standalone `class`, and the rule silently never
+  matches — which showed up as a tick beside every option.
+*/
+const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
 ---
 
-<fieldset class="theme-toggle">
-  <legend class="visually-hidden">Tema del sito</legend>
-  {
-    OPTIONS.map(({ value, label }) => (
-      <>
-        <input type="radio" name="theme" id={`theme-${value}`} value={value} />
-        <label for={`theme-${value}`} title={label}>
-          <svg
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            set:html={ICONS[value]}
-          />
-          <span class="visually-hidden">{label}</span>
-        </label>
-      </>
-    ))
-  }
-</fieldset>
+<details class="theme-toggle" data-theme-toggle>
+  {/*
+    Rendered as `auto`, which is what the no-flash script falls back to; the
+    script below swaps in the stored theme's icon on load.
+  */}
+  <summary aria-label="Tema del sito: Automatico" data-theme-summary>
+    <svg {...SVG_ATTRS} data-theme-icon set:html={ICONS.auto} />
+  </summary>
+
+  <div class="theme-toggle__menu">
+    <fieldset>
+      <legend class="visually-hidden">Tema del sito</legend>
+      {
+        OPTIONS.map(({ value, label }) => (
+          <>
+            <input type="radio" name="theme" id={`theme-${value}`} value={value} />
+            <label for={`theme-${value}`}>
+              <svg {...SVG_ATTRS} set:html={ICONS[value]} />
+              <span>{label}</span>
+              <svg {...CHECK_ATTRS}>
+                <path d="m4.5 12.5 5 5 10-11" />
+              </svg>
+            </label>
+          </>
+        ))
+      }
+    </fieldset>
+  </div>
+</details>
 
 <style>
   .theme-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-    margin: 0;
-    padding: 2px;
+    position: relative;
+  }
+
+  summary {
+    display: flex;
+    padding: 0.375rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
     background-color: var(--color-bg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none; /* Firefox */
+    transition:
+      background-color var(--transition),
+      color var(--transition);
+  }
+
+  /* Safari/Chrome's disclosure triangle. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary:hover,
+  [open] summary {
+    color: var(--color-accent);
+    border-color: var(--color-border-strong);
+  }
+
+  summary:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .theme-toggle__menu {
+    position: absolute;
+    z-index: 50;
+    /* Opens upward: this control lives in the footer, at the bottom of the
+       page, where a downward menu would fall outside the viewport. */
+    inset-block-end: calc(100% + var(--space-2xs));
+    inset-inline-end: 0;
+    min-width: 11rem;
+    padding: var(--space-3xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+    box-shadow: var(--shadow-md);
+  }
+
+  fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
   }
 
   input {
@@ -84,32 +157,40 @@ const OPTIONS = [
 
   label {
     display: flex;
-    /* Square-ish tap target around a 16px glyph — 32x28 at the default
-       root size, so the pill keeps the height it had with text labels. */
-    padding: 0.375rem 0.5rem;
-    border-radius: var(--radius-pill);
-    color: var(--color-text-muted);
+    align-items: center;
+    gap: var(--space-2xs);
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-sm);
     cursor: pointer;
     user-select: none;
-    transition:
-      background-color var(--transition),
-      color var(--transition);
+    transition: background-color var(--transition);
   }
 
   label:hover {
-    color: var(--color-text-strong);
-  }
-
-  input:checked + label {
-    background-color: var(--color-accent-subtle);
-    color: var(--color-accent);
-    font-weight: 500;
+    background-color: var(--color-bg-subtle);
   }
 
   /* The inputs are visually hidden, so mirror their focus onto the label. */
   input:focus-visible + label {
     outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
+    outline-offset: -2px;
+  }
+
+  input:checked + label {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  /* The tick marks the active theme, as the old dropdown's check2 icon did. */
+  .check {
+    margin-inline-start: auto;
+    visibility: hidden;
+  }
+
+  input:checked + label .check {
+    visibility: visible;
   }
 </style>
 
@@ -139,15 +220,39 @@ const OPTIONS = [
   }
 
   function init() {
-    const current = stored();
+    const root = document.querySelector<HTMLDetailsElement>('[data-theme-toggle]');
+    if (!root) return;
 
-    for (const input of document.querySelectorAll<HTMLInputElement>(
-      '.theme-toggle input[name="theme"]',
-    )) {
+    const summary = root.querySelector<HTMLElement>('[data-theme-summary]');
+    const icon = root.querySelector<SVGElement>('[data-theme-icon]');
+
+    /**
+     * Mirror the chosen option onto the closed control. The glyph is copied
+     * from that option's own label rather than kept in a second map here —
+     * one definition, in the markup above.
+     */
+    function reflect(theme: Theme) {
+      const label = root!.querySelector(`label[for="theme-${theme}"]`);
+      const source = label?.querySelector('svg');
+      if (icon && source) icon.innerHTML = source.innerHTML;
+      if (summary && label) {
+        summary.setAttribute(
+          'aria-label',
+          `Tema del sito: ${label.querySelector('span')?.textContent ?? theme}`,
+        );
+      }
+    }
+
+    const current = stored();
+    reflect(current);
+
+    for (const input of root.querySelectorAll<HTMLInputElement>('input[name="theme"]')) {
       input.checked = input.value === current;
       input.addEventListener('change', () => {
         if (!input.checked || !isTheme(input.value)) return;
         apply(input.value);
+        reflect(input.value);
+        root.open = false;
         try {
           localStorage.setItem(STORAGE_KEY, input.value);
         } catch {
@@ -155,6 +260,18 @@ const OPTIONS = [
         }
       });
     }
+
+    // <details> has no light-dismiss of its own.
+    document.addEventListener('click', (event) => {
+      if (root.open && !root.contains(event.target as Node)) root.open = false;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && root.open) {
+        root.open = false;
+        root.querySelector<HTMLElement>('[data-theme-summary]')?.focus();
+      }
+    });
   }
 
   init();

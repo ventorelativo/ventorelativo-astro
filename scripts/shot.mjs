@@ -19,6 +19,7 @@
  *     --dark              emulate prefers-color-scheme: dark
  *     --out <dir>         where PNGs go (default: .astro/shots)
  *     --measure <sel,...> extra selectors to report boxes for
+ *     --click <sel>       click this element first (menus, drawers, disclosures)
  *     --no-shot           measure only, skip the PNGs
  */
 import { spawn } from 'node:child_process';
@@ -50,7 +51,14 @@ function findChrome() {
 // ----------------------------------------------------------------- CLI parse
 
 function parseArgs(argv) {
-  const opts = { sizes: [], dark: false, out: '.astro/shots', measure: [], shot: true };
+  const opts = {
+    sizes: [],
+    dark: false,
+    out: '.astro/shots',
+    measure: [],
+    shot: true,
+    click: null,
+  };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -58,6 +66,7 @@ function parseArgs(argv) {
     else if (a === '--dark') opts.dark = true;
     else if (a === '--out') opts.out = argv[++i];
     else if (a === '--measure') opts.measure = argv[++i].split(',').map((s) => s.trim());
+    else if (a === '--click') opts.click = argv[++i];
     else if (a === '--no-shot') opts.shot = false;
     else rest.push(a);
   }
@@ -233,6 +242,29 @@ try {
     await Promise.race([idle, new Promise((r) => setTimeout(r, 10_000))]);
     // Webfonts can reflow after networkIdle; one frame of slack.
     await new Promise((r) => setTimeout(r, 250));
+
+    // Open whatever needs opening before measuring: a details panel, a dialog,
+    // a drawer. Closed-state CSS is easy to review; open-state CSS is not.
+    if (opts.click) {
+      const { result: clicked } = await cdp.send(
+        'Runtime.evaluate',
+        {
+          expression: `(() => {
+            const el = document.querySelector(${JSON.stringify(opts.click)});
+            if (!el) return 'not found';
+            el.click();
+            return 'clicked';
+          })()`,
+          returnByValue: true,
+        },
+        sessionId,
+      );
+      if (clicked.value === 'not found') {
+        console.error(`  ⚠ --click ${opts.click}: no such element`);
+        failed = true;
+      }
+      await new Promise((r) => setTimeout(r, 150));
+    }
 
     const { result } = await cdp.send(
       'Runtime.evaluate',

@@ -43,8 +43,16 @@ const CTAS = [
 
     <div class="hero__content container">
       <Logo height="8rem" />
-      <h1 class="hero__title">{SITE.name}</h1>
-      <p class="hero__slogan">{SITE.slogan}</p>
+
+      {/*
+        The logo artwork already carries the wordmark and the slogan, so
+        repeating them as text beneath it reads as a stutter — and the header
+        now shows both. They stay in the DOM, visually hidden: the page still
+        needs its one <h1>, and that heading is what a screen reader announces
+        and what search engines read.
+      */}
+      <h1 class="visually-hidden">{SITE.name}</h1>
+      <p class="visually-hidden">{SITE.slogan}</p>
 
       <p class="hero__ctas">
         {
@@ -170,18 +178,6 @@ const CTAS = [
     align-items: center;
     gap: var(--space-xs);
     padding-block: var(--header-height);
-  }
-
-  .hero__title {
-    margin-block-start: var(--space-2xs);
-    font-size: var(--text-2xl);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .hero__slogan {
-    color: var(--color-text-muted);
-    font-size: var(--text-lg);
   }
 
   .hero__ctas {

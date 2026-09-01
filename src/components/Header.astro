@@ -21,24 +21,19 @@ const { transparent = false } = Astro.props;
 
 <header class:list={['header', transparent && 'header--transparent']}>
   <div class="header__inner container">
-    {
-      /*
-        The homepage hero carries the mark and the wordmark directly below this,
-        so repeating them in the header is duplication — and a "go home" link on
-        the home page is noise. The Drupal theme reached the same conclusion the
-        long way round, hiding the logo with `visibility:hidden;width:0` in
-        _front.scss. Omitted outright here.
-      */
-      !transparent && (
-        <a href="/" class="header__brand" rel="home">
-          <Logo />
-          <span class="header__names">
-            <span class="header__name">{SITE.name}</span>
-            <span class="header__slogan">{SITE.slogan}</span>
-          </span>
-        </a>
-      )
-    }
+    {/*
+      The brand shows on every page, homepage included. The hero below repeats
+      the mark, but the header is where a visitor looks for who this is, and on
+      the homepage the hero's own wordmark is visually hidden so the two do not
+      compete.
+    */}
+    <a href="/" class="header__brand" rel="home">
+      <Logo />
+      <span class="header__names">
+        <span class="header__name">{SITE.name}</span>
+        <span class="header__slogan">{SITE.slogan}</span>
+      </span>
+    </a>
 
     <Nav />
   </div>
@@ -71,14 +66,9 @@ const { transparent = false } = Astro.props;
   .header__inner {
     display: flex;
     align-items: center;
-    /* flex-end so the nav stays right-aligned when the brand is omitted. */
     justify-content: space-between;
     gap: var(--space-md);
     height: 100%;
-  }
-
-  .header--transparent .header__inner {
-    justify-content: flex-end;
   }
 
   .header__brand {
@@ -98,20 +88,22 @@ const { transparent = false } = Astro.props;
   .header__name {
     font-size: var(--text-lg);
     font-weight: 600;
-    letter-spacing: var(--tracking-tight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
   }
 
   .header__slogan {
     color: var(--color-text-muted);
     font-size: var(--text-xs);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
   }
 
-  /* The wordmark is inside the logo art, so the text is redundant beside it on
-     narrow screens — same call the old theme made in _general.scss. */
-  @media (width < 30rem) {
-    .header__names {
+  /*
+    The name stays at every width — it is how a visitor knows whose site this
+    is. Only the slogan drops on narrow screens, where the logo artwork already
+    carries it and the header would otherwise crowd the menu button.
+  */
+  @media (width < 26rem) {
+    .header__slogan {
       display: none;
     }
   }

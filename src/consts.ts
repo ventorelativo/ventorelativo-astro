@@ -8,8 +8,12 @@
  */
 
 export const SITE = {
-  /** system.site.yml: name */
-  name: 'Ventorelativo',
+  /**
+   * system.site.yml recorded this as 'Ventorelativo', but the club writes it
+   * with the internal capital — as the article bodies and the logo artwork do.
+   * Deliberate divergence from the Drupal value, not a transcription slip.
+   */
+  name: 'VentoRelativo',
   /** system.site.yml: slogan */
   slogan: 'Parapendio Club',
   /** Content language. Single locale; GTranslate handles the rest client-side. */
