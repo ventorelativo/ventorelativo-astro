@@ -22,7 +22,13 @@ show up as ordinary edits to commit.
 
 It runs only under `npm run dev` for now — it needs a server, and the published
 site deliberately has none. Phase 3 moves it to the live site, where the club
-edits in a browser and Netlify rebuilds on save.
+edits in a browser.
+
+**Batching edits.** Once it is live, Keystatic can work on a *branch*: pick one
+in the branch menu, make as many changes as you like, then merge when the batch
+is ready. With Netlify set to build only `main`, that is one rebuild for the
+whole session rather than one per save — and half-finished edits never appear on
+the public site.
 
 Everything below is the same job done by hand, which is still fine.
 
