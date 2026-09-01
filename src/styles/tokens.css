@@ -87,8 +87,8 @@
      'Outfit' is the name Google Fonts uses, kept so the stack still resolves if
      the font is ever loaded that way instead. */
   --font-sans:
-    'Outfit Variable', 'Outfit', ui-sans-serif, system-ui, -apple-system,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    'Outfit Variable', 'Outfit', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Fluid scale, ~1.25 ratio at the top end. */
   --text-xs: 0.8125rem;

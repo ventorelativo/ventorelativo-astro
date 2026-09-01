@@ -59,10 +59,12 @@ const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
 ---
 
 <details class="theme-toggle" data-theme-toggle>
-  {/*
+  {
+    /*
     Rendered as `auto`, which is what the no-flash script falls back to; the
     script below swaps in the stored theme's icon on load.
-  */}
+  */
+  }
   <summary aria-label="Tema del sito: Automatico" data-theme-summary>
     <svg {...SVG_ATTRS} data-theme-icon set:html={ICONS.auto} />
   </summary>
@@ -246,7 +248,9 @@ const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
     const current = stored();
     reflect(current);
 
-    for (const input of root.querySelectorAll<HTMLInputElement>('input[name="theme"]')) {
+    for (const input of root.querySelectorAll<HTMLInputElement>(
+      'input[name="theme"]',
+    )) {
       input.checked = input.value === current;
       input.addEventListener('change', () => {
         if (!input.checked || !isTheme(input.value)) return;

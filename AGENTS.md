@@ -8,7 +8,7 @@ Humans: read [`docs/`](docs/) instead — same material, more explanation.
 
 ## What this project is
 
-The website of **Ventorelativo**, a paragliding club (*Parapendio Club*) between
+The website of **Ventorelativo**, a paragliding club (_Parapendio Club_) between
 Pinerolo, Val Chisone and Val Pellice, Italy. **All visible content is in
 Italian.** It is a statically built [Astro](https://astro.build) site deployed to
 Netlify, replacing a Drupal 11 + Tome site that still lives, read-only, in
@@ -33,6 +33,7 @@ schema.org, cookie-free analytics) and **Keystatic in local mode** — `npm run
 dev`, then http://localhost:4321/keystatic.
 
 **Not built yet:**
+
 - **Keystatic is development-only.** It needs server-rendered routes, so it is
   excluded from production builds until Phase 3 brings the adapter and GitHub
   storage. Do not add it to the production integration list.
@@ -110,7 +111,7 @@ something real.
     backstop: drift fails the build rather than the page.
 12. **Content files must not contain `import` statements.** Keystatic refuses
     to open an entry that has one. Body components are handed to `<Content
-    components={MDX_COMPONENTS} />` instead.
+components={MDX_COMPONENTS} />` instead.
 
 ## Performance
 
@@ -154,7 +155,7 @@ rule: [`docs/performance.md`](docs/performance.md).
   session — a commit that mixes topics cannot be reverted cleanly. The detailed
   reasoning belongs in code comments and `docs/`, which is where this project
   keeps it.
-- **Comments explain *why*, not *what*.** This codebase documents decisions and
+- **Comments explain _why_, not _what_.** This codebase documents decisions and
   the traps behind them — match that. A comment that restates the code is noise;
   one that records why the obvious approach failed is why the file is readable.
 - **Component styles stay scoped** inside the `.astro` file. Only genuinely

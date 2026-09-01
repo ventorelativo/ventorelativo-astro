@@ -32,13 +32,13 @@ http://localhost:4321/  390x844  light
 
 Options:
 
-| Flag | Meaning |
-|---|---|
-| `--size 390x844` | viewport; repeatable; defaults to `390x844` and `1440x900` |
-| `--dark` | emulate `prefers-color-scheme: dark` |
-| `--measure ".a,.b"` | report the box of each selector |
-| `--out <dir>` | where PNGs land (default `.astro/shots`, git-ignored) |
-| `--no-shot` | numbers only |
+| Flag                | Meaning                                                    |
+| ------------------- | ---------------------------------------------------------- |
+| `--size 390x844`    | viewport; repeatable; defaults to `390x844` and `1440x900` |
+| `--dark`            | emulate `prefers-color-scheme: dark`                       |
+| `--measure ".a,.b"` | report the box of each selector                            |
+| `--out <dir>`       | where PNGs land (default `.astro/shots`, git-ignored)      |
+| `--no-shot`         | numbers only                                               |
 
 It exits non-zero if anything overflows the viewport horizontally, so it can gate
 a script. Screenshots can be opened by a human, or read directly by an agent that
@@ -73,7 +73,7 @@ lives somewhere unusual.
 ### The dev server can serve stale CSS
 
 **Symptom:** you edit a `<style>` block, the browser shows the old layout, and
-the markup changes from the same edit *do* appear.
+the markup changes from the same edit _do_ appear.
 
 **Cause:** Vite's transform cache for the component's style module did not
 invalidate. The page is server-rendered fresh while the stylesheet it links is

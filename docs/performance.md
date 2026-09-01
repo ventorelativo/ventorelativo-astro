@@ -12,12 +12,12 @@ This is a constraint on what gets built, not a pass at the end.
 Measured on the production build (`npm run build && npm run preview`), at
 1440×900, bytes on the wire:
 
-| Page | Total | JavaScript | CSS |
-|---|---|---|---|
-| `/` | 86 kB | 1.5 kB | 3.6 kB |
-| `/siti/` | 61 kB | 1.5 kB | 3.6 kB |
-| `/news/` | 195 kB | 1.5 kB | 3.6 kB |
-| `/siti/roletto/` | 458 kB | 2.8 kB | 3.6 kB |
+| Page             | Total  | JavaScript | CSS    |
+| ---------------- | ------ | ---------- | ------ |
+| `/`              | 86 kB  | 1.5 kB     | 3.6 kB |
+| `/siti/`         | 61 kB  | 1.5 kB     | 3.6 kB |
+| `/news/`         | 195 kB | 1.5 kB     | 3.6 kB |
+| `/siti/roletto/` | 458 kB | 2.8 kB     | 3.6 kB |
 
 Almost all of the weight is photographs. The JavaScript on a typical page is a
 theme toggle and a menu.

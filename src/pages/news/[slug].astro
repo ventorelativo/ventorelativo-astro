@@ -68,12 +68,14 @@ const { Content } = await render(entry);
     )
   }
 
-  {/*
+  {
+    /*
     Components are handed to the body rather than imported inside it. MDX can
     do either, but an `import` line in a content file is something Keystatic
     refuses to parse — and something no club volunteer should have to type.
     See src/components/mdx/components.ts.
-  */}
+  */
+  }
   <Content components={MDX_COMPONENTS} />
 </EntryLayout>
 

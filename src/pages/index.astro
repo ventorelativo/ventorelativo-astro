@@ -28,11 +28,13 @@ const CTAS = [
 ];
 ---
 
-{/*
+{
+  /*
   Title and social card from metatag.metatag_defaults.front.yml (S5): the front
   page said "Parapendio Club a Pinerolo, Val Chisone e Val Pellice" rather than
   repeating the club name, and used the static card rather than a generated one.
-*/}
+*/
+}
 <BaseLayout
   title="Parapendio Club a Pinerolo, Val Chisone e Val Pellice"
   bare
@@ -53,13 +55,15 @@ const CTAS = [
     <div class="hero__content container">
       <Logo height="8rem" />
 
-      {/*
+      {
+        /*
         The logo artwork already carries the wordmark and the slogan, so
         repeating them as text beneath it reads as a stutter — and the header
         now shows both. They stay in the DOM, visually hidden: the page still
         needs its one <h1>, and that heading is what a screen reader announces
         and what search engines read.
-      */}
+      */
+      }
       <h1 class="visually-hidden">{SITE.name}</h1>
       <p class="visually-hidden">{SITE.slogan}</p>
 
@@ -74,13 +78,15 @@ const CTAS = [
       </p>
     </div>
 
-    {/*
+    {
+      /*
       The credit sits with the picture it credits, bottom-right of <main> —
       where `vr_creditiimmagine` put it in the Drupal theme. It used to be
       passed down to the footer, which meant a global chrome component had to
       know about one page's image; now it cannot appear anywhere the photo
       isn't, because it is inside the same element.
-    */}
+    */
+    }
     <p class="hero__credit">
       Foto: <a href={HERO.credit.href} target="_blank" rel="noopener noreferrer">
         {HERO.credit.text}

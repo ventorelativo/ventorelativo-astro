@@ -24,7 +24,7 @@ It runs only under `npm run dev` for now — it needs a server, and the publishe
 site deliberately has none. Phase 3 moves it to the live site, where the club
 edits in a browser.
 
-**Batching edits.** Once it is live, Keystatic can work on a *branch*: pick one
+**Batching edits.** Once it is live, Keystatic can work on a _branch_: pick one
 in the branch menu, make as many changes as you like, then merge when the batch
 is ready. With Netlify set to build only `main`, that is one rebuild for the
 whole session rather than one per save — and half-finished edits never appear on
@@ -99,7 +99,12 @@ import { Image } from 'astro:assets';
 import lancio from '../assets/lancio.jpg';
 ---
 
-<Image src={lancio} alt="Decollo dal Montoso in una mattina limpida" widths={[600, 1200]} sizes="(width < 40rem) 100vw, 600px" />
+<Image
+  src={lancio}
+  alt="Decollo dal Montoso in una mattina limpida"
+  widths={[600, 1200]}
+  sizes="(width < 40rem) 100vw, 600px"
+/>
 ```
 
 Astro converts, resizes and fingerprints it at build time. Always write a real

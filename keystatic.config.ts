@@ -69,8 +69,7 @@ const contentComponents = {
 
   Facts: block({
     label: 'Scheda dati',
-    description:
-      'Una riga di dati brevi — es. Quando / Decollo / Atterraggio.',
+    description: 'Una riga di dati brevi — es. Quando / Decollo / Atterraggio.',
     schema: {
       items: fields.array(
         fields.object({
@@ -214,13 +213,10 @@ export default config({
           description: 'I siti in evidenza compaiono per primi nell’elenco.',
           defaultValue: false,
         }),
-        images: fields.array(
-          imageWithAlt('src/assets/sites', '../../assets/sites/'),
-          {
-            label: 'Galleria',
-            itemLabel: (props) => props.fields.alt.value || 'Immagine',
-          },
-        ),
+        images: fields.array(imageWithAlt('src/assets/sites', '../../assets/sites/'), {
+          label: 'Galleria',
+          itemLabel: (props) => props.fields.alt.value || 'Immagine',
+        }),
         content: fields.mdx({
           label: 'Descrizione',
           options: {
