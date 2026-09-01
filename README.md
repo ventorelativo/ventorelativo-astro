@@ -23,6 +23,8 @@ npm run dev      # http://localhost:4321
 | `npm run build` | Static build into `dist/` |
 | `npm run preview` | Serve the built output |
 | `npm run check` | Astro + TypeScript diagnostics |
+| `npm run verify` | `check` + `build`. The gate before calling work done. |
+| `npm run shot` | Screenshot and measure a page in a real emulated viewport |
 
 ## Layout
 
@@ -40,6 +42,7 @@ src/
     index.astro        Homepage hero.
     styleguide.astro   Design-system reference — DELETE at the end of Phase 2.
 public/                Favicons and the OG social card, copied from the vr theme.
+scripts/shot.mjs       Headless-Chrome screenshot + layout measurement, no deps.
 ```
 
 ## Things worth knowing
