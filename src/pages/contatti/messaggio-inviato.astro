@@ -1,0 +1,18 @@
+---
+/**
+ * /contatti/messaggio-inviato — where the contact form lands after a
+ * successful submission. URL preserved from Drupal.
+ */
+import PageLayout from '../../layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="Grazie!"
+  description="Il tuo messaggio è stato inviato al Parapendio Club Ventorelativo."
+  breadcrumbLabels={{ '/contatti': 'Contatti' }}
+>
+  <div class="prose">
+    <p>Il messaggio è stato inviato. Le risponderemo al più presto.</p>
+    <p><a href="/">Torna alla home</a></p>
+  </div>
+</PageLayout>

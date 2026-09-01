@@ -1,0 +1,55 @@
+---
+/**
+ * /iscrizioni (C7) — intro, membership tiers, bank-transfer fallback.
+ *
+ * The bank details stay visible whatever D10 decides: they are the zero-fee
+ * route, and the one that works when a payment provider is between contracts.
+ */
+import { getEntry, render } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+import PricingTiers from '../components/PricingTiers.astro';
+
+const page = await getEntry('pages', 'iscrizioni');
+if (!page) throw new Error('Missing src/content/pages/iscrizioni.mdx');
+const { Content } = await render(page);
+const { tiers, bankTransfer } = page.data;
+---
+
+<PageLayout title={page.data.title} description={page.data.description}>
+  <div class="prose">
+    <Content />
+  </div>
+
+  {tiers && <PricingTiers tiers={tiers} />}
+
+  {
+    bankTransfer && (
+      <section class="bank">
+        <h2>Bonifico bancario</h2>
+        <p>Alternativamente, puoi effettuare un bonifico verso:</p>
+        <p>
+          <strong>{bankTransfer.holder}</strong>
+          <br />
+          {/* `notranslate`: an IBAN must survive GTranslate untouched. */}
+          <span class="bank__iban notranslate">IBAN: {bankTransfer.iban}</span>
+        </p>
+      </section>
+    )
+  }
+</PageLayout>
+
+<style>
+  .bank {
+    margin-block-start: var(--space-xl);
+    max-width: var(--prose-width);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .bank__iban {
+    /* An IBAN is read a character at a time when someone copies it by hand. */
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+</style>

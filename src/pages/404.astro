@@ -1,0 +1,20 @@
+---
+/**
+ * 404. Astro writes this to /404.html and Netlify serves it for any unmatched
+ * path automatically — no configuration needed.
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="Pagina non trovata"
+  description="La pagina che stai cercando non esiste."
+>
+  <div class="prose">
+    <p>La pagina che stai cercando non esiste.</p>
+    <p>
+      Prova dai <a href="/siti/">siti di volo</a>, dalle
+      <a href="/news/">news</a> o torna alla <a href="/">home</a>.
+    </p>
+  </div>
+</PageLayout>

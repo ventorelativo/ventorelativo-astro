@@ -24,6 +24,9 @@
   */
   --brand-blue-bright: #7997ca;
   --brand-yellow: #fabd14;
+  /* WhatsApp's own green. The old theme used Bootstrap's `btn-success` here;
+     the brand colour is more recognisable at button size and costs nothing. */
+  --brand-whatsapp: #25d366;
 
   /* ------------------------------------------------------------- surfaces */
   --color-bg: light-dark(#ffffff, #16191c);

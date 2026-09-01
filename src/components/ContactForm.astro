@@ -1,0 +1,100 @@
+---
+/**
+ * Contact form, posting to Netlify Forms (D3).
+ *
+ * Replaces Drupal's `contact_message` form plus the `tome_netlify` module that
+ * rewrote it for static hosting. Same three fields and same recipient; the
+ * honeypot survives, the captcha stays absent, as the old config had it.
+ *
+ * How this works with no server: Netlify parses the deployed HTML at build
+ * time, finds `data-netlify`, and registers a form by its `name`. Submissions
+ * post back to the site and Netlify captures them. Two consequences worth
+ * knowing:
+ *
+ *  - The hidden `form-name` input must be present and must match `name`, or the
+ *    submission is rejected — the POST is handled by name, not by URL.
+ *  - It only works on a real Netlify deploy. Locally, submitting this form 404s;
+ *    that is expected, not a bug to chase.
+ *
+ * `action` sends the visitor to the same thank-you page the Drupal form used,
+ * so that URL keeps working.
+ */
+---
+
+<form
+  class="form"
+  name="contatti"
+  method="POST"
+  action="/contatti/messaggio-inviato/"
+  data-netlify="true"
+  netlify-honeypot="bot-field"
+>
+  <input type="hidden" name="form-name" value="contatti" />
+
+  {/* The honeypot: hidden from people, tempting to bots. Not `display: none`
+      via CSS alone — `hidden` keeps it out of the tab order too. */}
+  <p hidden>
+    <label>Non compilare questo campo: <input name="bot-field" /></label>
+  </p>
+
+  <p class="field">
+    <label for="contact-name">Il tuo nome</label>
+    <input id="contact-name" name="name" type="text" autocomplete="name" required />
+  </p>
+
+  <p class="field">
+    <label for="contact-email">Il tuo indirizzo e-mail</label>
+    <input id="contact-email" name="email" type="email" autocomplete="email" required />
+  </p>
+
+  <p class="field">
+    <label for="contact-message">Messaggio</label>
+    <textarea id="contact-message" name="message" rows="6" required></textarea>
+  </p>
+
+  <p>
+    <button class="button" type="submit">Invia</button>
+  </p>
+</form>
+
+<style>
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-width: var(--prose-width);
+    margin-block-start: var(--space-md);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  label {
+    color: var(--color-text-strong);
+    font-size: var(--text-sm);
+  }
+
+  input,
+  textarea {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+    border-color: var(--color-accent);
+  }
+</style>

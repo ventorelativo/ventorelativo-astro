@@ -1,0 +1,103 @@
+---
+/**
+ * The five XContest searches on /voli (X2).
+ *
+ * These are kept as-is from the Drupal block — same five, same order, same
+ * emoji — with one fix (MIGRATION-PLAN.md §4.4).
+ *
+ * The date-scoped URLs were built with PHP's `date()` at build time, so
+ * "Migliori giornata" froze to whenever the site was last deployed. A daily
+ * rebuild used to hide that; it was switched off, and the archived build shows
+ * `filter[date]=2026-07-10` — seven weeks stale at the time of writing.
+ *
+ * So: the build-time date goes into the markup as a floor, and a few lines of
+ * script correct it to the actual date on load. Someone without JavaScript gets
+ * what the old site gave everyone; everyone else gets today. Either way there
+ * is no reason left to rebuild this site on a schedule.
+ */
+import { searchUrl, datesFrom } from '../lib/xcontest';
+
+const today = datesFrom(new Date());
+
+interface Link {
+  icon: string;
+  label: string;
+  href: string;
+  /** Which date the script should refresh, if any. */
+  scope?: 'day' | 'month' | 'year';
+}
+
+const LINKS: Link[] = [
+  { icon: '⏱️', label: 'Recenti', href: searchUrl({ sort: 'time_start' }) },
+  {
+    icon: '🐥',
+    label: 'Migliori giornata',
+    href: searchUrl({ sort: 'pts', date: today.day }),
+    scope: 'day',
+  },
+  {
+    icon: '🐓',
+    label: 'Migliori mese',
+    href: searchUrl({ sort: 'pts', date: today.month }),
+    scope: 'month',
+  },
+  {
+    icon: '🦅',
+    label: 'Migliori anno',
+    href: searchUrl({ sort: 'pts', date: today.year }),
+    scope: 'year',
+  },
+  { icon: '🏆', label: 'Migliori sempre', href: searchUrl({ sort: 'pts' }) },
+];
+---
+
+<ul class="xc">
+  {
+    LINKS.map(({ icon, label, href, scope }) => (
+      <li>
+        <a
+          class="button"
+          href={href}
+          data-xc-scope={scope}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span aria-hidden="true">{icon}</span>
+          {label}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .xc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+<script>
+  import { datesFrom } from '../lib/xcontest';
+
+  function init() {
+    const links = document.querySelectorAll<HTMLAnchorElement>('[data-xc-scope]');
+    if (!links.length) return;
+
+    const dates = datesFrom(new Date());
+    for (const link of links) {
+      const scope = link.dataset.xcScope as keyof typeof dates;
+      if (!dates[scope]) continue;
+      const url = new URL(link.href);
+      url.searchParams.set('filter[date]', dates[scope]);
+      link.href = url.toString();
+    }
+  }
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

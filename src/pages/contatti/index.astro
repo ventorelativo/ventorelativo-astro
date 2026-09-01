@@ -1,0 +1,26 @@
+---
+/**
+ * /contatti (C8) — intro, the contact buttons, then the Netlify form.
+ */
+import { getEntry, render } from 'astro:content';
+import PageLayout from '../../layouts/PageLayout.astro';
+import ContactButtons from '../../components/ContactButtons.astro';
+import ContactForm from '../../components/ContactForm.astro';
+
+const page = await getEntry('pages', 'contatti');
+if (!page) throw new Error('Missing src/content/pages/contatti.mdx');
+const { Content } = await render(page);
+const { contacts } = page.data;
+---
+
+<PageLayout title={page.data.title} description={page.data.description}>
+  <div class="prose">
+    <Content />
+  </div>
+
+  {contacts && <ContactButtons contacts={contacts} />}
+
+  <p>Alternativamente, potete utilizzare il modulo sottostante.</p>
+
+  <ContactForm />
+</PageLayout>

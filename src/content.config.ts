@@ -95,4 +95,57 @@ const sites = defineCollection({
     }),
 });
 
-export const collections = { news, sites };
+/**
+ * Fixed pages (`/voli`, `/iscrizioni`, `/contatti`).
+ *
+ * One entry per page rather than a collection of like things — Keystatic calls
+ * these singletons, and in Phase 3 each becomes one. They are here so that the
+ * blocks §2.4 said to lift out of `full_html` (pricing tiers, contact buttons,
+ * bank details) are structured data now, editable later without a content
+ * rewrite. The prose stays in the MDX body.
+ *
+ * The schema is a union of what those three pages need, with everything
+ * page-specific optional; Keystatic will define the exact field set per
+ * singleton anyway, and Zod is here to catch what it or a hand edit gets wrong.
+ */
+const pages = defineCollection({
+  loader: glob({ base: './src/content/pages', pattern: '**/*.mdx' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+
+    /** /iscrizioni — the pricing cards (§2.4, §5). */
+    tiers: z
+      .array(
+        z.object({
+          name: z.string(),
+          /** Euros. A number so a future Stripe integration can use it. */
+          price: z.number(),
+          benefits: z.array(z.string()),
+          /** Satispay today, a Stripe Payment Link if D10 goes that way. */
+          payUrl: z.url(), // z.string().url() is deprecated in Zod 4
+          highlight: z.boolean().default(false),
+        }),
+      )
+      .optional(),
+    bankTransfer: z
+      .object({
+        holder: z.string(),
+        iban: z.string(),
+      })
+      .optional(),
+
+    /** /contatti — the phone / WhatsApp / email row (§2.4). */
+    contacts: z
+      .array(
+        z.object({
+          kind: z.enum(['phone', 'whatsapp', 'email']),
+          label: z.string(),
+          href: z.string(),
+        }),
+      )
+      .optional(),
+  }),
+});
+
+export const collections = { news, sites, pages };

@@ -1,0 +1,112 @@
+---
+/**
+ * Membership tiers on /iscrizioni (§2.4, §5).
+ *
+ * Was hand-written Bootstrap in the page body — `.card.rounded-3.shadow-sm`,
+ * `.text-bg-primary`, a `w-100 btn btn-primary stretched-link`. The data is
+ * structured now, so switching payment rail (D10, Satispay → Stripe) is a URL
+ * change in one field rather than an edit to markup an editor should not have
+ * been holding.
+ */
+interface Tier {
+  name: string;
+  price: number;
+  benefits: string[];
+  payUrl: string;
+  highlight: boolean;
+}
+
+interface Props {
+  tiers: Tier[];
+}
+
+const { tiers } = Astro.props;
+const euro = new Intl.NumberFormat('it-IT', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
+---
+
+<ul class="tiers">
+  {
+    tiers.map((tier) => (
+      <li class:list={['tier', tier.highlight && 'tier--highlight']}>
+        <h3 class="tier__name">{tier.name}</h3>
+        <p class="tier__price">{euro.format(tier.price)}</p>
+
+        <ul class="tier__benefits">
+          {tier.benefits.map((benefit) => (
+            <li>{benefit}</li>
+          ))}
+        </ul>
+
+        <a class="button tier__pay" href={tier.payUrl} target="_blank" rel="noopener noreferrer">
+          Paga con Satispay
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: var(--space-md);
+    /* Stretch, not start: with `margin-block-start: auto` on the button below,
+       equal-height cards put the two pay buttons on the same line. */
+    align-items: stretch;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 44rem;
+  }
+
+  .tier {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-raised);
+    text-align: center;
+  }
+
+  /* The old card marked the recommended tier with a full primary-coloured
+     header. A border does the same job without a block of solid blue. */
+  .tier--highlight {
+    border-color: var(--color-accent);
+  }
+
+  .tier__name {
+    font-size: var(--text-lg);
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .tier__price {
+    color: var(--color-text-strong);
+    font-size: var(--text-3xl);
+    font-weight: 300;
+    line-height: 1.1;
+  }
+
+  .tier__benefits {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin-block: var(--space-2xs) var(--space-sm);
+    padding: 0;
+    list-style: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /* Pushes the button to the bottom so buttons line up across tiers of
+     different benefit counts. */
+  .tier__pay {
+    margin-block-start: auto;
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+/**
+ * /voli (C6, X1, X2) — intro prose then the five XContest searches.
+ */
+import { getEntry, render } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+import XContestLinks from '../components/XContestLinks.astro';
+
+const page = await getEntry('pages', 'voli');
+if (!page) throw new Error('Missing src/content/pages/voli.mdx');
+const { Content } = await render(page);
+---
+
+<PageLayout title={page.data.title} description={page.data.description}>
+  <div class="prose">
+    <Content />
+  </div>
+
+  <div class="links">
+    <XContestLinks />
+  </div>
+</PageLayout>
+
+<style>
+  .links {
+    margin-block-start: var(--space-lg);
+  }
+</style>
