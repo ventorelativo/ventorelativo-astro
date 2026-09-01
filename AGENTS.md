@@ -147,6 +147,11 @@ rule: [`docs/performance.md`](docs/performance.md).
 
 ## Conventions
 
+- **One change per commit, with a brief message.** A subject line and at most a
+  short paragraph. Split unrelated fixes even when they were made in the same
+  session — a commit that mixes topics cannot be reverted cleanly. The detailed
+  reasoning belongs in code comments and `docs/`, which is where this project
+  keeps it.
 - **Comments explain *why*, not *what*.** This codebase documents decisions and
   the traps behind them — match that. A comment that restates the code is noise;
   one that records why the obvious approach failed is why the file is readable.
