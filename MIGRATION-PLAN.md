@@ -687,16 +687,33 @@ reconciled by hand.
 
 ```
 Member → Stripe Payment Link (card + Satispay) → Stripe webhook
-       → Make.com scenario → Airtable member record updated
-Wire transfer → (manual) → Airtable
+       → Make.com scenario → Google Sheet row updated
+Wire transfer → (manual) → Google Sheet
 ```
+
+**Why a Google Sheet and not Airtable** *(revised — the plan previously said Airtable):*
+
+- **No seat limit.** Airtable's free tier caps at 5 editors; a committee changes and
+  outgrows that. A Sheet can be shared with as many members as the club has.
+- **Nothing to host or learn.** Every committee member already knows a spreadsheet, and
+  hand-reconciling a wire transfer is editing a cell.
+
+What the club gives up is worth naming: a Sheet has no field types, no validation and no
+per-record permissions, so nothing stops someone typing a date into the amount column.
+Mitigations that cost nothing: keep the header row fixed, let Make.com write rather than
+humans wherever possible, and use the Sheet's built-in version history when something looks
+wrong.
+
+**Privacy.** The Sheet holds member names and emails. Share it with named committee
+accounts only — never "anyone with the link" — and keep it out of this repository, which is
+public. See the note at the end of §5.
 
 ### The pending decision
 
 | Option | Cost to the club | Automation |
 |---|---|---|
-| **Stripe Payment Link** (card + native Satispay) | 1.5% + €0.25 per transaction, both rails, Italy | Full: one webhook → Make.com → Airtable |
-| **Satispay Business direct** | 0% under €10, flat €0.20 above €10 | Separate integration + reconciliation, outside the Stripe→Make→Airtable flow |
+| **Stripe Payment Link** (card + native Satispay) | 1.5% + €0.25 per transaction, both rails, Italy | Full: one webhook → Make.com → Google Sheet |
+| **Satispay Business direct** | 0% under €10, flat €0.20 above €10 | Separate integration + reconciliation, outside the Stripe→Make→Sheet flow |
 
 Concretely, at the current tiers: a €10 Sostenitore costs €0.40 via Stripe vs €0.00 via
 Satispay Business; a €30 Socio costs €0.70 vs €0.20. **The committee decides whether that
@@ -730,12 +747,14 @@ This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the commi
 
 - Stripe Payment Links need no code on the Astro site — they are just URLs.
 - The Make.com scenario should key on Stripe's `client_reference_id` or metadata to match
-  the payer to an Airtable record; the current `external_code=Sostenitore|Socio` carries
-  the tier but not the member. Decide how a member identifies themselves at checkout
-  (Stripe Payment Links support custom fields).
+  the payer to a row; the current `external_code=Sostenitore|Socio` carries the tier but
+  not the member. Decide how a member identifies themselves at checkout (Stripe Payment
+  Links support custom fields). In Make.com the shape is *Search Rows* on that key, then
+  *Update a Row* if found or *Add a Row* if not — a Sheet has no upsert, so the scenario
+  has to branch, and without it a renewing member silently gets a duplicate row.
 - Keep the bank-transfer block visible — it stays the zero-fee route for larger amounts.
-- Airtable/Make/Stripe all live entirely outside this repo. **No member PII should ever
-  land in the Astro repo**, which is public and committed to by Keystatic.
+- The Sheet, Make and Stripe all live entirely outside this repo. **No member PII should
+  ever land in the Astro repo**, which is public and committed to by Keystatic.
 
 ---
 
@@ -1040,10 +1059,11 @@ reference for anything found missing later.
 ### Phase 6 — Membership & payments *(gated on the committee, decoupled)*
 `/iscrizioni` already shipped in Phase 2 with the **existing Satispay links and bank
 transfer**, so the site is complete and live without this. When **D10** is resolved: swap
-the `payUrl` values to Stripe Payment Links, build the Make.com → Airtable scenario, decide
-how members identify themselves at checkout, test with a real €10 payment, keep the
-bank-transfer fallback.
-**Exit:** a test payment appears correctly in Airtable.
+the `payUrl` values to Stripe Payment Links, build the Make.com → Google Sheets scenario
+(search-then-update-or-add, so renewals do not duplicate), decide how members identify
+themselves at checkout, test with a real €10 payment, keep the bank-transfer fallback.
+**Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
+the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 ---
 
