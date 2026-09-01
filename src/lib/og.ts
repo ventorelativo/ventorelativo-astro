@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 5;
+const TEMPLATE_VERSION = 6;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -46,18 +46,17 @@ const CACHE_DIR = '.astro/og-cache';
 const BRAND_BLUE = '#1f52a6';
 
 const font = await readFile('src/assets/fonts/Metropolis-Bold.ttf');
-const logo = await readFile('src/assets/logo-card.svg', 'utf8');
-
-const dataUri = (svg: string) =>
-  `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 
 /*
-  One mark, always in its own colours — recolouring a logo is not something a
-  site should do to its club. It sits on a light plate with a faint outline
-  instead, which keeps the blue legible on the blue card and stops the artwork
-  fighting a busy photograph.
+  The branding on every card is one asset: `src/assets/og-logo.svg`, the mark on
+  an oval plate. It is drawn as-is — no recolouring, no plate assembled here —
+  so replacing that file with a designed one restyles every card at once.
+  Bump TEMPLATE_VERSION when you do, or the cached cards keep the old lockup.
 */
-const LOGO = dataUri(logo);
+const LOGO_SVG = await readFile('src/assets/og-logo.svg', 'utf8');
+const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString('base64')}`;
+const LOGO_WIDTH = 300;
+const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 486) / 1078); // the asset's ratio
 
 export interface CardOptions {
   title: string;
@@ -115,26 +114,14 @@ function card(title: string, kind: string | undefined, background: string | null
             },
           },
         },
-        // The mark, top left, on its plate.
+        // The lockup, top left.
         {
-          type: 'div',
+          type: 'img',
           props: {
-            style: {
-              position: 'absolute',
-              top: 48,
-              left: 56,
-              display: 'flex',
-              padding: '14px 22px',
-              borderRadius: 18,
-              backgroundColor: 'rgba(255,255,255,0.92)',
-              border: '2px solid rgba(255,255,255,0.65)',
-            },
-            children: [
-              {
-                type: 'img',
-                props: { src: LOGO, width: 240, height: 99 },
-              },
-            ],
+            src: LOGO,
+            width: LOGO_WIDTH,
+            height: LOGO_HEIGHT,
+            style: { position: 'absolute', top: 44, left: 52 },
           },
         },
         // Kind + title, bottom left.

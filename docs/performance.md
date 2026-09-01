@@ -107,7 +107,13 @@ A cold CI build has no cache and renders all of them; if that ever matters,
 persist that directory between Netlify builds.
 
 **Bump `TEMPLATE_VERSION` in `src/lib/og.ts` when the card design changes**, or
-every existing card keeps its old pixels for ever.
+every existing card keeps its old pixels for ever. That includes replacing
+`src/assets/og-logo.svg`, the logo lockup every card draws — swap that one file
+for a designed version and all the cards follow.
+
+They are JPEG, not WebP, on purpose: only link scrapers ever fetch them, and
+Facebook and WhatsApp have a long record of not rendering WebP cards. Everything
+the site itself serves is WebP or AVIF.
 
 ## Traps
 
