@@ -36,11 +36,12 @@ reasons. Ask it to justify against [`AGENTS.md`](../AGENTS.md) before agreeing.
 
 ## Current state
 
-Phase 1 (skeleton and design system) is complete. Phase 2 (real content, and a
-CMS so editing does not require a code editor) has not started, so only `/` and
-`/styleguide` exist today and the other nav links do not resolve yet.
+Phases 1 and 2 are complete: the design system, all the content, every URL the
+old site had, the SEO layer, and a CMS that runs locally (`npm run dev`, then
+<http://localhost:4321/keystatic>).
 
-The repository is **local only** — no GitHub remote, no deployment. The live site
-is still the Drupal one. [`MIGRATION-PLAN.md`](../MIGRATION-PLAN.md) §7 tracks the
-phases; Phase 3 adds the remote and automatic deploys, Phase 5 switches the
-domain.
+The repository is still **local only** — no GitHub remote, no deployment, and the
+live site is still the Drupal one. Phase 3 adds the remote, moves the CMS to
+GitHub so the club can edit from a browser, and turns on automatic deploys;
+Phase 4 brings the maps and flight data; Phase 5 switches the domain.
+[`MIGRATION-PLAN.md`](../MIGRATION-PLAN.md) §7 tracks all of it.

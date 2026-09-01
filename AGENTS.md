@@ -19,18 +19,18 @@ someone who does not read code.
 
 ## Current state — read before planning anything
 
-Phase 1 (skeleton and design system) is complete. **Phase 2 is in progress.**
-As of the last update to this file:
+Phases 1 and 2 are complete. **Phase 3 has not started.** As of the last update
+to this file:
 
-**Built:** `/`, `/news/` and its two published articles, `/siti/` and all
-fourteen flight sites, `/styleguide`. Two content collections — `news` and
-`sites` — defined in `src/content.config.ts`, with MDX bodies in
-`src/content/`.
+**Built:** every URL the old site had. `/`, `/news/` and its two published
+articles, `/siti/` and all fourteen flight sites, `/voli`, `/iscrizioni`,
+`/contatti` with a Netlify form and its thank-you page, `/404`, plus the
+temporary `/styleguide`. Three collections — `news`, `sites`, `pages` — in
+`src/content.config.ts`, with MDX bodies in `src/content/`.
 
-Also built: every fixed page (`/voli`, `/iscrizioni`, `/contatti` with a
-Netlify form, its thank-you page, `/404`), the SEO layer (sitemap, robots,
-per-page social cards, schema.org, cookie-free analytics), and **Keystatic in
-local mode** — `npm run dev`, then http://localhost:4321/keystatic.
+Also built: the SEO layer (sitemap, robots, per-page generated social cards,
+schema.org, cookie-free analytics) and **Keystatic in local mode** — `npm run
+dev`, then http://localhost:4321/keystatic.
 
 **Not built yet:**
 - **Keystatic is development-only.** It needs server-rendered routes, so it is
@@ -38,6 +38,8 @@ local mode** — `npm run dev`, then http://localhost:4321/keystatic.
   storage. Do not add it to the production integration list.
 - **No Netlify adapter**, no server-rendered route (Phase 3).
 - RSS: dropped by decision, not oversight (see MIGRATION-PLAN.md S9).
+- `/styleguide` is a temporary design reference and should be deleted before
+  the site goes live (Phase 5).
 - **Nothing map-related** (Phase 4): no `map-features` collection, no geo data,
   no per-site maps, feature tables, XContest links or `/api/navdata/*` files.
   The site pages carry `TODO(Phase 4)` markers where those go.

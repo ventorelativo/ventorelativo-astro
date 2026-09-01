@@ -8,7 +8,8 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 
 > **Migration in progress.** [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) is the source of
 > truth for what is being built, what has been decided (D1–D13) and what is still open.
-> **Phase 1 (skeleton & design system) is done.** Phase 2 is content.
+> **Phases 1 and 2 are done** — design system, all content, every URL, SEO and
+> the CMS in local mode. Phase 3 is Keystatic on GitHub, which needs a remote.
 
 ## Documentation
 
@@ -44,8 +45,11 @@ npm run dev      # http://localhost:4321
 
 ```
 src/
-  assets/hero.ts       The homepage photo and its credit, kept as one object.
-  consts.ts            Site name, nav, club coordinates. Moves to Keystatic in Phase 2.
+  assets/              Images, the OG lockup, the Metropolis face used on cards.
+  content/             news/, sites/, pages/ — the MDX the site is built from.
+  content.config.ts    Collection schemas. Zod validates them at build.
+  lib/                 og.ts (social cards), schema.ts, xcontest.ts, breadcrumbs.ts
+  consts.ts            Site name, nav, club coordinates.
   styles/
     tokens.css         Design tokens. Colours are light-dark() pairs.
     global.css         Reset, base elements, .container / .prose / .button primitives.
@@ -55,8 +59,11 @@ src/
   components/          Header, Nav, Footer, Breadcrumbs, ThemeToggle, Logo.
   pages/
     index.astro        Homepage hero.
-    styleguide.astro   Design-system reference — DELETE at the end of Phase 2.
+    news/, siti/       Index + entry routes for the two collections.
+    og/[...route].jpg  Generated social cards, cached by content hash.
+    styleguide.astro   Design-system reference — DELETE before going live.
 public/                Favicons and the OG social card, copied from the vr theme.
+keystatic.config.ts    The editing UI's schema. Must agree with content.config.ts.
 docs/                  Documentation for humans and agents.
 scripts/shot.mjs       Headless-Chrome screenshot + layout measurement, no deps.
 ```
