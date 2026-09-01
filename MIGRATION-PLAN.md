@@ -117,6 +117,7 @@ so this doubles as the acceptance checklist.
 | S13 | `minifyhtml` | Astro's built-in HTML minification |
 | S14 | Long-cache headers for `/themes/*`, `/core/*`, `/sites/default/files/{css,js,styles}/*` | `_headers` for `/_astro/*` (content-hashed) |
 | S15 | Hero LCP preload hint (`homepage.avif`) | **Not needed.** The hint existed because the hero was a CSS `image-set()` background on `main::before`, invisible to the preload scanner. It is a real `<Picture>` now, first in the markup with `fetchpriority="high"`, so the scanner finds it in the initial HTML |
+| **S17** | *(nothing — the concept did not exist)* | ✅ **Done in Phase 2.** `/llms.txt` (index) and `/llms-full.txt` (every page's text), generated from the collections. Cheap and build-time only; be clear-eyed that it is widely published and rarely fetched — the schema.org graph and semantic HTML are what actually make the site machine-readable |
 | **S16** | *(none today — no analytics module installed)* | **New:** Cloudflare Web Analytics beacon before `</body>`. Works on Netlify-hosted sites with no DNS/proxy change; cookie-free, so no cookie banner. See §6.1 |
 
 ### 1.3 Pages & content
