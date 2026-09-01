@@ -958,6 +958,18 @@ someone later is "create a GitHub account, get repo write access".
 site, without touching a terminal.
 **Covers:** E1–E3, E9–E10.
 
+**Editing workflow to set up with it:**
+
+- **Netlify builds `main` only.** Keystatic can work on a branch, so an editor makes a
+  batch of changes and merges once — one production build per session rather than one per
+  save, and half-finished edits never reach the public site.
+- **Branch deploys on**, so the author can see their work: Netlify gives each branch a URL,
+  and Keystatic's `previewUrl` puts a Preview button on every entry, e.g.
+  `https://{branch}--<site>.netlify.app/news/{slug}/` — it substitutes `{branch}` and
+  `{slug}` from wherever the editor currently is. Note that Netlify sanitises branch names
+  in subdomains, so keep branch names free of slashes or the templated URL will not match.
+- **`/admin` → `/keystatic`** (already in `netlify.toml`) starts working here.
+
 ### Phase 4 — Map & flight-data subsystems *(the risky part, deliberately last)*
 One-off migration script: 34 features from WKT (`content/storage.*.json`) to point + shape.
 Zod geometry validation. `geo:export` / `geo:import` round-trip scripts. `featureTypes.ts`
