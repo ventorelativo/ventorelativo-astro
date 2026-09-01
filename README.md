@@ -10,6 +10,14 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 > truth for what is being built, what has been decided (D1–D13) and what is still open.
 > **Phase 1 (skeleton & design system) is done.** Phase 2 is content.
 
+## Documentation
+
+| Where | What |
+|---|---|
+| [`docs/how-to.md`](docs/how-to.md) | Making a change: text, nav, colours, pages, images. Start here. |
+| [`docs/architecture.md`](docs/architecture.md) | How Astro builds this site, and why it is arranged this way. |
+| [`docs/verifying-changes.md`](docs/verifying-changes.md) | Proving a change works, plus the traps that waste an afternoon. |
+
 ## Getting started
 
 ```
@@ -30,6 +38,7 @@ npm run dev      # http://localhost:4321
 
 ```
 src/
+  assets/hero.ts       The homepage photo and its credit, kept as one object.
   consts.ts            Site name, nav, club coordinates. Moves to Keystatic in Phase 2.
   styles/
     tokens.css         Design tokens. Colours are light-dark() pairs.
@@ -42,6 +51,7 @@ src/
     index.astro        Homepage hero.
     styleguide.astro   Design-system reference — DELETE at the end of Phase 2.
 public/                Favicons and the OG social card, copied from the vr theme.
+docs/                  Documentation for humans and agents.
 scripts/shot.mjs       Headless-Chrome screenshot + layout measurement, no deps.
 ```
 
