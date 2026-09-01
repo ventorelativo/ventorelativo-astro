@@ -71,12 +71,18 @@ const IMAGE_CREDIT = {
 <style>
   .hero {
     position: relative;
+    /*
+      Fills whatever the footer leaves — body is a 100svh flex column, so this
+      is the viewport minus the footer rather than the whole viewport. A
+      `min-height: 100svh` here would push the footer below the fold on every
+      screen size, which is exactly what it used to do.
+    */
     flex: 1;
     display: grid;
     place-items: center;
-    min-height: 100svh;
     overflow: hidden;
     text-align: center;
+
 
     /*
       The hero is treated differently per scheme, deliberately.
@@ -97,15 +103,25 @@ const IMAGE_CREDIT = {
     --hero-scrim-bottom: light-dark(rgb(255 255 255 / 0.84), rgb(22 25 28 / 0.65));
   }
 
-  .hero__bg {
+  /*
+    <Picture> applies `class` to the inner <img>, so positioning `.hero__bg`
+    alone left the wrapping <picture> in flow: a second, empty grid row that
+    `align-content: normal` (stretch) handed half the free space to, dropping
+    the content into the lower half of the hero. Take the wrapper out of flow
+    and the grid is back to a single centred row.
+  */
+  .hero :global(picture) {
     position: absolute;
     inset: 0;
+    z-index: -2;
+  }
+
+  .hero__bg {
     width: 100%;
     height: 100%;
     object-fit: cover;
     /* Matches the old theme's `right 20% bottom` background-position. */
     object-position: 80% bottom;
-    z-index: -2;
   }
 
   /*
