@@ -1,0 +1,185 @@
+---
+/**
+ * Image gallery with a zoomable lightbox (C10).
+ *
+ * The Drupal version was a Slick carousel — jQuery, a 16:9 crop and dots.
+ * MIGRATION-PLAN.md proposed replacing it with a CSS scroll-snap strip, but
+ * the club asked for a real lightbox, so this uses PhotoSwipe: no framework,
+ * no jQuery, pinch-zoom and swipe on touch, arrow keys and Escape on desktop,
+ * and it restores focus to the thumbnail it opened from.
+ *
+ * The grid itself is plain HTML and needs no JavaScript. PhotoSwipe is
+ * imported inside the client <script>, so it is bundled only into the pages
+ * that actually render a gallery — two of the twenty today — and the page
+ * still works without it: every thumbnail is a link to the full-size image.
+ *
+ * PhotoSwipe needs each image's real dimensions up front, to size the viewer
+ * before the file loads. `getImage()` runs the same build-time pipeline
+ * `<Image>` does, so the href points at a processed, fingerprinted file rather
+ * than the multi-megabyte original.
+ */
+import { Image, getImage } from 'astro:assets';
+import 'photoswipe/style.css';
+
+interface Props {
+  images: { src: ImageMetadata; alt: string }[];
+  /** Heading above the grid. Omit for none. */
+  title?: string;
+}
+
+const { images, title } = Astro.props;
+
+/** Astro never upscales, so cap the request at the source's own width. */
+const LIGHTBOX_WIDTH = 1600;
+
+const full = await Promise.all(
+  images.map((img) =>
+    getImage({
+      src: img.src,
+      width: Math.min(LIGHTBOX_WIDTH, img.src.width),
+      format: 'webp',
+    }),
+  ),
+);
+---
+
+<section class="gallery">
+  {title && <h2>{title}</h2>}
+
+  <div class="gallery__grid" data-gallery>
+    {
+      images.map((img, i) => (
+        <figure>
+          <a
+            href={full[i].src}
+            data-pswp-width={full[i].options.width}
+            data-pswp-height={Math.round(
+              (full[i].options.width as number) * (img.src.height / img.src.width),
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {/*
+              alt="" deliberately: the caption below carries the same words, and
+              a screen reader would otherwise announce them twice.
+            */}
+            <Image
+              src={img.src}
+              alt=""
+              widths={[400, 800]}
+              sizes="(width < 48rem) 100vw, 20rem"
+              loading="lazy"
+            />
+          </a>
+          <figcaption>{img.alt}</figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .gallery {
+    margin-block-start: var(--space-xl);
+  }
+
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-md);
+    margin-block-start: var(--space-md);
+  }
+
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  a {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    /* The cursor is the only affordance that these open; make it explicit. */
+    cursor: zoom-in;
+  }
+
+  a :global(img) {
+    display: block;
+    width: 100%;
+    /* A fixed ratio keeps a row of mixed portrait and landscape shots tidy.
+       Nothing is lost — the lightbox shows the whole frame. */
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: scale var(--transition);
+  }
+
+  a:hover :global(img) {
+    scale: 1.03;
+  }
+
+  figcaption {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+</style>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+
+  let lightbox: PhotoSwipeLightbox | undefined;
+
+  function init() {
+    lightbox?.destroy();
+    if (!document.querySelector('[data-gallery]')) return;
+
+    lightbox = new PhotoSwipeLightbox({
+      gallery: '[data-gallery]',
+      children: 'a',
+      // Loaded on demand, so a page with a gallery still ships the viewer
+      // itself only when someone opens one.
+      pswpModule: () => import('photoswipe'),
+      // The caption is the accessible name for each slide.
+      bgOpacity: 0.92,
+    });
+
+    // Carry the visible caption into the viewer.
+    lightbox.on('uiRegister', () => {
+      lightbox?.pswp?.ui?.registerElement({
+        name: 'caption',
+        order: 9,
+        isButton: false,
+        appendTo: 'root',
+        onInit: (el, pswp) => {
+          el.className = 'pswp__custom-caption';
+          pswp.on('change', () => {
+            const link = pswp.currSlide?.data.element as HTMLElement | undefined;
+            el.textContent =
+              link?.closest('figure')?.querySelector('figcaption')?.textContent ?? '';
+          });
+        },
+      });
+    });
+
+    lightbox.init();
+  }
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
+
+<style is:global>
+  /* The viewer renders outside this component's tree, so its caption cannot be
+     styled by a scoped rule. */
+  .pswp__custom-caption {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    padding: var(--space-sm);
+    color: #fff;
+    font-size: var(--text-sm);
+    text-align: center;
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+  }
+</style>

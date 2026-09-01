@@ -60,6 +60,14 @@ export default defineConfig({
   integrations: [mdx()],
 
   vite: {
+    /*
+      PhotoSwipe is imported dynamically from a client script, which Vite does
+      not discover when it scans for dependencies at startup. Without this the
+      gallery works in a production build but silently does nothing in `astro
+      dev` — the worst kind of difference between the two.
+    */
+    optimizeDeps: { include: ['photoswipe', 'photoswipe/lightbox'] },
+
     server: {
       // Vite rejects requests whose Host header it doesn't recognise (DNS
       // rebinding protection), which is what makes a tunnelled dev server

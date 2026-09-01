@@ -22,6 +22,7 @@
  *     --click <sel>       click this element first (menus, drawers, disclosures)
  *     --computed <sel,...> dump the computed styles that matter for a port
  *     --hover <sel>       park a real mouse pointer over this element first
+ *     --reduced-motion    emulate prefers-reduced-motion: reduce
  *     --no-shot           measure only, skip the PNGs
  */
 import { spawn } from 'node:child_process';
@@ -62,6 +63,7 @@ function parseArgs(argv) {
     click: null,
     computed: [],
     hover: null,
+    reducedMotion: false,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -72,6 +74,7 @@ function parseArgs(argv) {
     else if (a === '--measure') opts.measure = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--click') opts.click = argv[++i];
     else if (a === '--hover') opts.hover = argv[++i];
+    else if (a === '--reduced-motion') opts.reducedMotion = true;
     else if (a === '--computed')
       opts.computed = argv[++i].split(',').map((x) => x.trim());
     else if (a === '--no-shot') opts.shot = false;
@@ -150,6 +153,9 @@ function measureInPage(selectors, computedSelectors) {
   for (const el of document.querySelectorAll('body *')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
+    // Overlays legitimately park content off-screen — a lightbox's adjacent
+    // slides, a drawer waiting to slide in. Only flow content can "overflow".
+    if (el.closest('[role="dialog"], dialog, [aria-modal="true"]')) continue;
     if (r.right > vw + 0.5 || r.left < -0.5) {
       const cls = typeof el.className === 'string' ? el.className : '';
       overflow.push(
@@ -265,6 +271,14 @@ try {
     });
 
     await cdp.send('Page.enable', {}, sessionId);
+    await cdp.send('Runtime.enable', {}, sessionId);
+    cdp.on('Runtime.exceptionThrown', (p) => {
+      if (p.sessionId !== sessionId) return;
+      console.error(
+        `  ⚠ page error: ${p.exceptionDetails?.exception?.description ?? p.exceptionDetails?.text}`,
+      );
+      failed = true;
+    });
     await cdp.send('Page.setLifecycleEventsEnabled', { enabled: true }, sessionId);
     // The real fix for the 500px window floor: emulate metrics, don't resize.
     await cdp.send(
@@ -272,12 +286,11 @@ try {
       { width, height, deviceScaleFactor: 2, mobile: width < 700 },
       sessionId,
     );
-    if (opts.dark) {
-      await cdp.send(
-        'Emulation.setEmulatedMedia',
-        { features: [{ name: 'prefers-color-scheme', value: 'dark' }] },
-        sessionId,
-      );
+    const media = [];
+    if (opts.dark) media.push({ name: 'prefers-color-scheme', value: 'dark' });
+    if (opts.reducedMotion) media.push({ name: 'prefers-reduced-motion', value: 'reduce' });
+    if (media.length) {
+      await cdp.send('Emulation.setEmulatedMedia', { features: media }, sessionId);
     }
 
     const idle = cdp.once(
@@ -309,7 +322,8 @@ try {
         console.error(`  ⚠ --click ${opts.click}: no such element`);
         failed = true;
       }
-      await new Promise((r) => setTimeout(r, 150));
+      // Generous: what a click opens is often behind a dynamic import.
+      await new Promise((r) => setTimeout(r, 700));
     }
 
     /*
@@ -387,7 +401,30 @@ try {
     }
 
     if (opts.shot) {
-      const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
+      /*
+        A page running a continuous animation — a lightbox mid-transition, say —
+        can leave captureScreenshot waiting for a stable frame indefinitely.
+        Time it out and carry on: the measurements above are the part that
+        matters, and losing the PNG should not lose them too.
+      */
+      const capture = (params) =>
+        Promise.race([
+          cdp.send('Page.captureScreenshot', { format: 'png', ...params }, sessionId),
+          new Promise((r) => setTimeout(() => r(null), 8000)),
+        ]);
+      /*
+        The default capture reads the compositor surface, which never settles
+        while something animates. `fromSurface: false` renders straight from the
+        renderer instead and does settle — a little less faithful, but a picture
+        beats none.
+      */
+      const shot = (await capture({})) ?? (await capture({ fromSurface: false }));
+      if (!shot) {
+        console.error('  ⚠ screenshot timed out (page may be animating)');
+        await cdp.send('Target.closeTarget', { targetId });
+        continue;
+      }
+      const { data } = shot;
       const slug =
         new URL(opts.url).pathname.replace(/^\/|\/$/g, '').replace(/\W+/g, '-') || 'home';
       const name = `${slug}-${size}-${scheme}.png`;
