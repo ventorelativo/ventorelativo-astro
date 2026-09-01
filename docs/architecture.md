@@ -23,7 +23,7 @@ consequences worth internalising:
 - **There is no server to hold state.** Contact form submissions go to Netlify
   Forms; nothing else needs a backend.
 
-Astro's other mode (`server`, with an *adapter*) renders per request. We
+Astro's other mode (`server`, with an _adapter_) renders per request. We
 deliberately have no adapter yet: adding one emits a ~3.6 MB serverless function
 on every deploy even when every page is prerendered. It arrives in Phase 3, when
 Keystatic's admin routes genuinely need to run server-side.
@@ -32,11 +32,11 @@ Keystatic's admin routes genuinely need to run server-side.
 
 Every file in `src/pages/` becomes a URL. No router to configure.
 
-| File | URL |
-|---|---|
-| `src/pages/index.astro` | `/` |
-| `src/pages/styleguide.astro` | `/styleguide/` |
-| `src/pages/siti/[slug].astro` *(Phase 4)* | `/siti/montoso/` etc. |
+| File                                      | URL                   |
+| ----------------------------------------- | --------------------- |
+| `src/pages/index.astro`                   | `/`                   |
+| `src/pages/styleguide.astro`              | `/styleguide/`        |
+| `src/pages/siti/[slug].astro` _(Phase 4)_ | `/siti/montoso/` etc. |
 
 `build.format: 'directory'` makes Astro write `styleguide/index.html` rather than
 `styleguide.html`, so the URL is `/styleguide/`. That exactly matches what the
@@ -61,7 +61,9 @@ const items = ['a', 'b'];
 
 <style>
   /* SCOPED CSS. Astro rewrites these selectors so they only hit this file. */
-  ul { display: flex; }
+  ul {
+    display: flex;
+  }
 </style>
 
 <script>
@@ -77,11 +79,11 @@ needed) browser code. Most components in this repo have no `<script>` at all —
 ### Scoped styles, and the trap in them
 
 Astro scopes `<style>` by stamping a `data-astro-cid-*` attribute onto the
-elements *this file* writes, and rewriting selectors to match. Two things follow:
+elements _this file_ writes, and rewriting selectors to match. Two things follow:
 
 - Styling something rendered by another component does not work by default. Use
   `:global(selector)` to opt out of scoping deliberately.
-- When you put `class="x"` on a *component*, that class is forwarded to whatever
+- When you put `class="x"` on a _component_, that class is forwarded to whatever
   that component treats as its root element — which may not be the element you
   pictured.
 
@@ -117,10 +119,19 @@ fingerprints the filename for permanent caching, and — importantly — writes
 not jump as images load.
 
 ```astro
+---
 import { Picture } from 'astro:assets';
-import { HERO } from '../assets/hero';   // an import, not a path string
+// An import, not a path string — that is what makes the pipeline run.
+import { HERO } from '../assets/hero';
+---
 
-<Picture src={HERO.src} formats={['avif','webp']} widths={[800,1200,1600]} sizes="100vw" alt="" />
+<Picture
+  src={HERO.src}
+  formats={['avif', 'webp']}
+  widths={[800, 1200, 1600]}
+  sizes="100vw"
+  alt=""
+/>
 ```
 
 Put an image in `src/assets/` when you want that. Put it in `public/` only when
@@ -142,7 +153,7 @@ There is no CSS framework. Bootstrap was removed on purpose.
 - Everything else is scoped to its component.
 
 **Dark mode is one line of thinking.** Each colour is a `light-dark(a, b)` pair,
-`:root` sets `color-scheme: light dark`, and the theme toggle's *only* job is to
+`:root` sets `color-scheme: light dark`, and the theme toggle's _only_ job is to
 pin `color-scheme` to `light` or `dark` via a `data-theme` attribute. So:
 
 - "Auto" is genuinely the absence of an override, not a third palette.
@@ -156,15 +167,15 @@ stay inline and synchronous to work.
 
 ## 7. What is deliberately absent
 
-| Absent | Why | Arrives |
-|---|---|---|
-| Content collections, `src/content/` | Content migration not started | Phase 2 |
-| Keystatic CMS, `/keystatic` | Needs GitHub App + server routes | Phase 3 |
-| Netlify adapter | Dead 3.6 MB function until something needs SSR | Phase 3 |
-| Maps, flight data | Riskiest part, deliberately last | Phase 4 |
-| Any UI framework (React etc.) | Nothing here needs one | if ever |
+| Absent                              | Why                                            | Arrives |
+| ----------------------------------- | ---------------------------------------------- | ------- |
+| Content collections, `src/content/` | Content migration not started                  | Phase 2 |
+| Keystatic CMS, `/keystatic`         | Needs GitHub App + server routes               | Phase 3 |
+| Netlify adapter                     | Dead 3.6 MB function until something needs SSR | Phase 3 |
+| Maps, flight data                   | Riskiest part, deliberately last               | Phase 4 |
+| Any UI framework (React etc.)       | Nothing here needs one                         | if ever |
 
-Astro *can* run React/Vue/Svelte components as "islands" — interactive
+Astro _can_ run React/Vue/Svelte components as "islands" — interactive
 components hydrated individually while the rest stays static HTML. This site has
 no islands and needs none; the two interactive pieces are a `<dialog>` and three
 radio buttons.
