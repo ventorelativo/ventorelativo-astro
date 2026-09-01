@@ -1,0 +1,105 @@
+---
+/**
+ * A flight-site teaser (the Drupal `sito` "card-big" view mode).
+ *
+ * Same stretched-link construction as ArticleCard: only the title is an anchor,
+ * covered by a pseudo-element, so the card is clickable without the summary
+ * being read out as part of the link.
+ *
+ * Most sites have no photograph — 12 of the 14 — so the image is optional and
+ * the card is designed to look deliberate without one rather than leaving a
+ * grey hole.
+ */
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'sites'>;
+}
+
+const { entry } = Astro.props;
+const { title, summary, images } = entry.data;
+const cover = images[0];
+const href = `/siti/${entry.id}/`;
+---
+
+<article class:list={['card', !cover && 'card--plain']}>
+  {
+    cover && (
+      <Image
+        class="card__image"
+        src={cover.src}
+        alt={cover.alt}
+        widths={[400, 800]}
+        sizes="(width < 48rem) 100vw, 22rem"
+        loading="lazy"
+      />
+    )
+  }
+
+  <div class="card__body">
+    <h2 class="card__title">
+      <a href={href}>{title}</a>
+    </h2>
+    <p class="card__summary">{summary}</p>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-raised);
+    transition: border-color var(--transition);
+  }
+
+  .card:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  .card__image {
+    width: 100%;
+    height: 10rem;
+    object-fit: cover;
+  }
+
+  .card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    padding: var(--space-sm);
+  }
+
+  .card__title {
+    font-size: var(--text-lg);
+  }
+
+  .card__title a {
+    color: var(--color-text-strong);
+    text-decoration: none;
+  }
+
+  .card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .card:hover .card__title a {
+    color: var(--color-accent);
+  }
+
+  /*
+    The summary is the "1969m, S-SE, Roure (TO)" triplet — specification, not
+    prose, so it is set as data: tabular, muted, one line where it fits.
+  */
+  .card__summary {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

@@ -1,0 +1,49 @@
+---
+/**
+ * Flight sites index (C4).
+ *
+ * MIGRATION-PLAN.md schedules /siti for Phase 4, because its composition is
+ * intro → overview map → card grid → navdata links and the map is the risky
+ * part. The grid needs none of that, and without this page the "Siti" nav item
+ * — the site's most prominent link — points at a 404. So it ships now and the
+ * map drops in above the grid in Phase 4.
+ *
+ * Sort: featured first, then alphabetical, as the Drupal view did (`sticky`
+ * DESC, `title` ASC).
+ */
+import { getCollection } from 'astro:content';
+import PageLayout from '../../layouts/PageLayout.astro';
+import SiteCard from '../../components/SiteCard.astro';
+
+const sites = (await getCollection('sites')).sort((a, b) => {
+  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+  return a.data.title.localeCompare(b.data.title, 'it');
+});
+---
+
+<PageLayout
+  title="Siti di volo"
+  description="I siti di volo del Parapendio Club Ventorelativo, tra Pinerolo, Val Chisone e Val Pellice."
+>
+  {/* TODO(Phase 4): overview map of all 34 features goes here. */}
+
+  <div class="site-grid">
+    {sites.map((entry) => <SiteCard entry={entry} />)}
+  </div>
+
+  {/* TODO(Phase 4): navdata download links (OpenAir / CUP). */}
+</PageLayout>
+
+<style>
+  .site-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    /*
+      Cards size to their own content. Only 2 of the 14 sites have a photograph,
+      and stretching the other 12 to match a row that contains one leaves a tall
+      empty box where an image would be.
+    */
+    align-items: start;
+    gap: var(--space-md);
+  }
+</style>

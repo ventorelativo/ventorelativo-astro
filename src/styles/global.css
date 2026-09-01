@@ -98,6 +98,22 @@ li {
   text-wrap: pretty;
 }
 
+/*
+ * The old theme set this explicitly (`b, strong { font-weight: 600 }`) rather
+ * than leaving the UA's `bolder` to resolve, and with a 300 body that matters:
+ * `bolder` computes to 400 from a 300 parent, which is barely a difference at
+ * all — the site-spec labels in the flight-site bodies were invisible as bold.
+ *
+ * The old theme also gave these their own colour, `--bold-color: #606b7b`,
+ * *darker* than its light body text. Ours is already darker, so the equivalent
+ * move is the heading colour rather than that literal value.
+ */
+b,
+strong {
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
 a {
   color: var(--color-accent);
   text-decoration-thickness: 1px;

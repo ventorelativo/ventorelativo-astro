@@ -1,0 +1,102 @@
+---
+/**
+ * A flight site (C5). URL preserved from Drupal: /siti/<path.alias>.
+ *
+ * Composition per MIGRATION-PLAN.md §3 is title → map → body → gallery →
+ * feature table → XContest links. Everything map-derived is Phase 4; what is
+ * here is the body and the gallery, which is all the content the export holds.
+ */
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import EntryLayout from '../../layouts/EntryLayout.astro';
+
+export async function getStaticPaths() {
+  const sites = await getCollection('sites');
+  return sites.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { title, summary, images } = entry.data;
+const { Content } = await render(entry);
+---
+
+<EntryLayout
+  title={title}
+  description={summary}
+  breadcrumbLabels={{ '/siti': 'Siti di volo' }}
+>
+  <p class="summary" slot="meta">{summary}</p>
+
+  {/* TODO(Phase 4): this site's map, then the feature table and XContest links. */}
+
+  <Content />
+
+  {
+    images.length > 0 && (
+      <section class="gallery">
+        <h2>Immagini</h2>
+        <div class="gallery__grid">
+          {images.map((img) => (
+            <figure>
+              {/*
+                alt="" deliberately: the caption below carries the same words,
+                and a screen reader would otherwise announce them twice — once
+                as the image, once as its caption.
+              */}
+              <Image
+                src={img.src}
+                alt=""
+                widths={[400, 800, 1200]}
+                sizes="(width < 48rem) 100vw, 20rem"
+                loading="lazy"
+              />
+              <figcaption>{img.alt}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</EntryLayout>
+
+<style>
+  /* The specs triplet, set as data rather than prose — same treatment as the
+     card it also fills. */
+  .summary {
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gallery {
+    margin-block-start: var(--space-xl);
+  }
+
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-md);
+    margin-block-start: var(--space-md);
+  }
+
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  figure :global(img) {
+    width: 100%;
+    /* A fixed aspect keeps a row of mixed portrait and landscape shots tidy;
+       the caption carries what the crop might lose. */
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+
+  figcaption {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+</style>

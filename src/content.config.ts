@@ -58,4 +58,41 @@ const news = defineCollection({
     }),
 });
 
-export const collections = { news };
+/**
+ * Flight sites (Drupal `node:sito`).
+ *
+ * The map features each site references (`field_map_elements`, 34 of them
+ * across the 14 sites) are Phase 4 — they need the WKT → GeoJSON migration and
+ * the map component. A `mapFeatures` relationship joins this schema then.
+ */
+const sites = defineCollection({
+  loader: glob({ base: './src/content/sites', pattern: '**/*.mdx' }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      /**
+       * Required, per D7: the site specs stay as prose in the body, so this is
+       * the only structured short description there is. It carries the card,
+       * the meta description and — in Phase 4 — the map popup.
+       */
+      summary: z.string(),
+      /**
+       * From Drupal `sticky`. Sorts to the top of /siti.
+       *
+       * MIGRATION-PLAN.md §2.1 says "only Montoso"; the export has five —
+       * Montoso, Monte Cucetto, Roletto, Sarsenà and Sea di Torre.
+       */
+      featured: z.boolean().default(false),
+      /** `field_images`. Only Roletto (5) and Montoso (3) have any today. */
+      images: z
+        .array(
+          z.object({
+            src: image(),
+            alt: z.string(),
+          }),
+        )
+        .default([]),
+    }),
+});
+
+export const collections = { news, sites };
