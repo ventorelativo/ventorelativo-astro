@@ -18,15 +18,9 @@ interface Props {
   description?: string;
   /** Homepage variant: header sits over the hero, main fills the viewport. */
   bare?: boolean;
-  imageCredit?: { text: string; href: string };
 }
 
-const {
-  title,
-  description = SITE.description,
-  bare = false,
-  imageCredit,
-} = Astro.props;
+const { title, description = SITE.description, bare = false } = Astro.props;
 
 // metatag.metatag_defaults.global.yml: '[current-page:title] | [site:name]'
 const pageTitle = title ? `${title} | ${SITE.name}` : SITE.name;
@@ -84,7 +78,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       <slot />
     </main>
 
-    <Footer imageCredit={imageCredit} />
+    <Footer />
 
     <style>
       .skip-link {

@@ -7,19 +7,17 @@
  *   vr_footer           -> footer menu        (empty in content/, omitted)
  *   vr_gtranslate       -> GTranslate widget  (G11, wired up in Phase 2)
  *   vr_themetoggle      -> <ThemeToggle>      (G10)
- *   vr_creditiimmagine  -> image credit, front page only (G8)
+ *
+ * `vr_creditiimmagine` (G8) is *not* here. It was a footer-region block in
+ * Drupal, but it was rendered bottom-right of <main> and it only ever credits
+ * the homepage background photo — so it lives with that picture instead (see
+ * `.hero__credit` in index.astro). Nothing about the site chrome has to know
+ * which page happens to have an image.
  *
  * The social links and legal line become Keystatic singletons in Phase 2; they
  * are inline here so the shell is reviewable.
  */
 import ThemeToggle from './ThemeToggle.astro';
-
-interface Props {
-  /** Photo credit, rendered only where one is passed (front page today). */
-  imageCredit?: { text: string; href: string };
-}
-
-const { imageCredit } = Astro.props;
 
 // TODO(Phase 2): Keystatic `social` singleton.
 const SOCIAL = [
@@ -58,14 +56,6 @@ const LEGAL = '[rimosso]';
       <ThemeToggle />
     </div>
   </div>
-
-  {
-    imageCredit && (
-      <p class="footer__credit container">
-        Foto: <a href={imageCredit.href}>{imageCredit.text}</a>
-      </p>
-    )
-  }
 </footer>
 
 <style>
@@ -113,12 +103,5 @@ const LEGAL = '[rimosso]';
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-  }
-
-  .footer__credit {
-    margin-block-start: var(--space-sm);
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    text-align: end;
   }
 </style>

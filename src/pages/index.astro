@@ -18,7 +18,7 @@ import { Picture } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
-import hero from '../assets/homepage.jpg';
+import { HERO } from '../assets/hero';
 
 // TODO(Phase 2): Keystatic `home` singleton.
 const CTAS = [
@@ -26,25 +26,16 @@ const CTAS = [
   { label: 'News', href: '/news', primary: false },
   { label: 'Iscrizioni', href: '/iscrizioni', primary: false },
 ];
-
-const IMAGE_CREDIT = {
-  text: 'Elisa Cerruti - Unsplash',
-  href: 'https://unsplash.com/photos/a-view-of-a-mountain-range-covered-in-fog-98wjqBqQJKc',
-};
 ---
 
-<BaseLayout
-  title="Parapendio Club a Pinerolo, Val Chisone e Val Pellice"
-  bare
-  imageCredit={IMAGE_CREDIT}
->
+<BaseLayout title="Parapendio Club a Pinerolo, Val Chisone e Val Pellice" bare>
   <section class="hero">
     <Picture
-      src={hero}
+      src={HERO.src}
       formats={['avif', 'webp']}
       widths={[800, 1200, 1600]}
       sizes="100vw"
-      alt=""
+      alt={HERO.alt}
       loading="eager"
       fetchpriority="high"
       class="hero__bg"
@@ -65,6 +56,19 @@ const IMAGE_CREDIT = {
         }
       </p>
     </div>
+
+    {/*
+      The credit sits with the picture it credits, bottom-right of <main> —
+      where `vr_creditiimmagine` put it in the Drupal theme. It used to be
+      passed down to the footer, which meant a global chrome component had to
+      know about one page's image; now it cannot appear anywhere the photo
+      isn't, because it is inside the same element.
+    */}
+    <p class="hero__credit">
+      Foto: <a href={HERO.credit.href} target="_blank" rel="noopener noreferrer">
+        {HERO.credit.text}
+      </a>
+    </p>
   </section>
 </BaseLayout>
 
@@ -82,7 +86,6 @@ const IMAGE_CREDIT = {
     place-items: center;
     overflow: hidden;
     text-align: center;
-
 
     /*
       The hero is treated differently per scheme, deliberately.
@@ -139,6 +142,26 @@ const IMAGE_CREDIT = {
       var(--hero-scrim-top),
       var(--hero-scrim-bottom)
     );
+  }
+
+  .hero__credit {
+    position: absolute;
+    inset-block-end: var(--space-2xs);
+    /* Lines up with the container gutter the hero content uses. */
+    inset-inline-end: var(--space-md);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    /* Sits over the photograph, so it needs the scrim's stacking context but
+       not its own background — the gradient's dark end is already under it. */
+    text-align: end;
+  }
+
+  .hero__credit a {
+    color: inherit;
+  }
+
+  .hero__credit a:hover {
+    color: var(--color-text-strong);
   }
 
   .hero__content {
