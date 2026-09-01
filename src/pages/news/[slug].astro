@@ -1,0 +1,90 @@
+---
+/**
+ * A news article (C10). URL preserved from Drupal: /news/<path.alias>.
+ *
+ * `getStaticPaths` is how a static build discovers dynamic routes: it runs at
+ * build time and returns one entry per page to generate. Nothing is rendered on
+ * demand, so a route that is not returned here simply does not exist.
+ *
+ * The slug comes from the filename via the glob loader, which is why the
+ * content files are named after their live URLs — MIGRATION-PLAN.md §2.1 listed
+ * `slug` as a field, but a field can drift from the filename and this cannot.
+ */
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import EntryLayout from '../../layouts/EntryLayout.astro';
+import Badge from '../../components/Badge.astro';
+import { formatDate, isoDate } from '../../utils/date';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('news', ({ data }) => !data.draft);
+  return articles.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { title, date, summary, image, category } = entry.data;
+
+// `summary` is deliberately not rendered here. It feeds the card blurb and the
+// meta description (D7); on the page it sat directly above a first paragraph
+// saying the same thing, because that is how a summary gets written.
+
+// `render()` compiles the MDX body; <Content /> is the rendered result.
+const { Content } = await render(entry);
+---
+
+<EntryLayout
+  title={title}
+  description={summary}
+  breadcrumbLabels={{ '/news': 'News' }}
+>
+  <p class="meta" slot="meta">
+    <Badge label={category} />
+    <time datetime={isoDate(date)}>{formatDate(date)}</time>
+  </p>
+
+  {
+    image && (
+      <Image
+        slot="media"
+        class="hero"
+        src={image.src}
+        alt={image.alt}
+        widths={[400, 700, 1400]}
+        sizes="(width < 44rem) 100vw, 42rem"
+        loading="eager"
+        fetchpriority="high"
+      />
+    )
+  }
+
+  <Content />
+</EntryLayout>
+
+<style>
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /*
+    Article images are a mix of wide banners and portrait posters. Cropping to a
+    fixed shape (object-fit: cover) threw most of a poster away, so instead the
+    natural aspect ratio is kept and only the height is capped: wide images fill
+    the column, tall ones stay whole and centred.
+
+    Matched to the prose width so the header and the text read as one column.
+  */
+  .hero {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(100%, var(--prose-width));
+    max-height: 30rem;
+    margin-inline: auto;
+    border-radius: var(--radius-lg);
+  }
+</style>

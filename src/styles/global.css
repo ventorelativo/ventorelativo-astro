@@ -186,6 +186,13 @@ hr {
   color: var(--color-bg);
 }
 
+/* A row of call-to-action links inside an article body (see mdx/ActionLink). */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
 .button--outline {
   background-color: transparent;
   border-color: var(--color-border-strong);

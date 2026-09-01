@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+import mdx from '@astrojs/mdx';
+
 /**
  * The canonical origin, used for sitemap URLs, canonical tags and OG images.
  *
@@ -44,6 +46,19 @@ export default defineConfig({
   // exactly where the hero CTAs are — distracting when reviewing on a phone.
   devToolbar: { enabled: false },
 
+  // NOTE: redirects (S10, S11) live in netlify.toml, not here.
+  //
+  // Astro's `redirects` option only produces real 301s when a host adapter is
+  // present to translate them. Adapter-less, it emits meta-refresh HTML pages
+  // instead — a client-side hop that passes no ranking signal, which defeats
+  // the point of redirecting /home to / for duplicate content. netlify.toml
+  // gives a true edge 301 with no adapter and no function.
+  // MDX for article and site bodies (MIGRATION-PLAN.md §2.1). Markdown alone
+  // would do for prose, but the migrated bodies carry call-to-action buttons
+  // and link cards that belong in components rather than in raw HTML (§2.4),
+  // and Keystatic's content field writes .mdx.
+  integrations: [mdx()],
+
   vite: {
     server: {
       // Vite rejects requests whose Host header it doesn't recognise (DNS
@@ -54,11 +69,4 @@ export default defineConfig({
     },
   },
 
-  // NOTE: redirects (S10, S11) live in netlify.toml, not here.
-  //
-  // Astro's `redirects` option only produces real 301s when a host adapter is
-  // present to translate them. Adapter-less, it emits meta-refresh HTML pages
-  // instead — a client-side hop that passes no ranking signal, which defeats
-  // the point of redirecting /home to / for duplicate content. netlify.toml
-  // gives a true edge 301 with no adapter and no function.
 });

@@ -1,0 +1,50 @@
+---
+/**
+ * A single content entry: news article today, flight site in slice 2.
+ *
+ * Sits beside PageLayout (MIGRATION-PLAN.md §3) rather than inside it: an entry
+ * has a byline block — date, category, hero image — that a static page does not,
+ * and the body is an <article> rather than a plain slot.
+ */
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  breadcrumbLabels?: Record<string, string>;
+}
+
+const { title, description, breadcrumbLabels } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container">
+    <Breadcrumbs title={title} labels={breadcrumbLabels} />
+
+    <header class="entry__head">
+      <slot name="meta" />
+      <h1>{title}</h1>
+    </header>
+
+    <slot name="media" />
+
+    <article class="prose entry__body">
+      <slot />
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .entry__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    margin-block: var(--space-md) var(--space-lg);
+    max-width: var(--prose-width);
+  }
+
+  .entry__body {
+    margin-block-start: var(--space-lg);
+  }
+</style>

@@ -1,0 +1,63 @@
+---
+/**
+ * A short row of labelled facts — "Quando / Decollo / Atterraggio".
+ *
+ * Replaces a hand-written Bootstrap grid (`.row .col-sm-4 .bg-light.rounded-3`)
+ * that one article body carried, inline styles and all. MIGRATION-PLAN.md §2.4
+ * said news bodies were "ordinary prose"; this one is not, so it gets the same
+ * treatment the plan prescribes for the other raw-HTML blocks.
+ *
+ * A <dl> because that is what this is: terms and their definitions.
+ *
+ *   <Facts items={[{ label: 'Quando', value: 'Sabato 16 maggio' }]} />
+ *
+ * `value` may be a plain string or MDX (a link, bold text) via `html`.
+ */
+interface Props {
+  items: { label: string; value?: string; html?: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<dl class="facts">
+  {
+    items.map(({ label, value, html }) => (
+      <div class="facts__item">
+        <dt>{label}</dt>
+        {html ? <dd set:html={html} /> : <dd>{value}</dd>}
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .facts {
+    display: grid;
+    /* Container queries would need a wrapping container; the prose column is
+       already narrow, so a plain auto-fit grid is enough here. */
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-2xs);
+    margin-block: var(--space-md);
+  }
+
+  .facts__item {
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-subtle);
+  }
+
+  dt {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text-strong);
+    font-weight: 500;
+  }
+</style>

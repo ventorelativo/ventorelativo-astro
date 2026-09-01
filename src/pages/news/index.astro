@@ -1,0 +1,45 @@
+---
+/**
+ * News index (C9, replaces the `news` view).
+ *
+ * `getCollection` reads the collection Astro built from src/content/news at
+ * build time. The filter is what makes `draft: true` mean something: drafts
+ * exist as files, are validated like everything else, and simply never reach
+ * the built site.
+ *
+ * The Drupal view paged at 10. Three articles do not need pagination, and
+ * Astro's paginate() can be added the day a fourth page exists.
+ */
+import { getCollection } from 'astro:content';
+import PageLayout from '../../layouts/PageLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+
+const articles = (await getCollection('news', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<PageLayout
+  title="News"
+  description="Eventi, gare e novità dal Parapendio Club Ventorelativo."
+>
+  {
+    articles.length === 0 ? (
+      <p>Non ci sono ancora notizie pubblicate.</p>
+    ) : (
+      <div class="news-grid">
+        {articles.map((entry) => (
+          <ArticleCard entry={entry} />
+        ))}
+      </div>
+    )
+  }
+</PageLayout>
+
+<style>
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-md);
+  }
+</style>
