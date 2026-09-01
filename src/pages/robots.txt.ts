@@ -15,6 +15,10 @@ Disallow: /keystatic
 Disallow: /api/keystatic
 
 Sitemap: ${new URL('sitemap-index.xml', site)}
+
+# For language models: an index of the site's content, and the full text.
+# ${new URL('llms.txt', site)}
+# ${new URL('llms-full.txt', site)}
 `,
     { headers: { 'Content-Type': 'text/plain; charset=utf-8' } },
   );
