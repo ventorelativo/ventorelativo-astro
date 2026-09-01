@@ -2,10 +2,10 @@
 
 **Status:** approved. Phase 1 complete.
 **Source site:** `/Users/marcus/Repos/ventorelativo-drupal` (Drupal 11.3.12, Tome static export → Netlify)
-**Target:** Astro 7 (`output: 'static'`) + Keystatic (GitHub mode) + **Netlify** (D1 resolved)
+**Target:** Astro 7 (`output: 'static'`) + Keystatic (GitHub mode) + **Cloudflare Pages** (D1 revised)
 
-**Decisions settled (12 of 13):** D1 Netlify · D2 single editor, GitHub accounts fine ·
-D3 Netlify Forms · D4 split geometry fields · D5 per-site geo.json dropped · D6 quicklinks
+**Decisions settled (12 of 13):** D1 Cloudflare Pages · D2 single editor, GitHub accounts fine ·
+D3 Formspree · D4 split geometry fields · D5 per-site geo.json dropped · D6 quicklinks
 only, no scraped tables · D7 site specs stay as prose · D8 stay on MapTiler, behind an
 adapter · D9 no URLs need protecting · D11 refined minimal · D12 freeze content now ·
 D13 tags reshaped (news category only, archives dropped).
@@ -111,13 +111,13 @@ so this doubles as the acceptance checklist.
 | S7 | `SportsClub` JSON-LD (name, sport, areaServed, sameAs) | `<JsonLd>` component in base layout |
 | S8 | `simple_sitemap` → `/sitemap.xml` (30 URLs, custom priorities for `/` and `/contatti`) | `@astrojs/sitemap` with a `serialize` for priorities |
 | S9 | News RSS feed (`news` view `feed_1`, path `rss.xml`) — **defined but not in the static export** | ❌ **Dropped in Phase 2 at the club's request.** It never worked on the old site either, and nothing subscribes to it |
-| S10 | Redirect `/contact/contatti` → `/contatti` (301) | `_redirects` / `netlify.toml` |
+| S10 | Redirect `/contact/contatti` → `/contatti` (301) | `public/_redirects`, copied verbatim into `dist/` |
 | S11 | `/home` and `/` both resolve to the same node (duplicate content) | **Fix**: `/home` → `/` 301 |
 | S12 | Quicklink prefetch | Astro `prefetch: { defaultStrategy: 'viewport' }` |
 | S13 | `minifyhtml` | Astro's built-in HTML minification |
-| S14 | Long-cache headers for `/themes/*`, `/core/*`, `/sites/default/files/{css,js,styles}/*` | `_headers` for `/_astro/*` (content-hashed) |
+| S14 | Long-cache headers for `/themes/*`, `/core/*`, `/sites/default/files/{css,js,styles}/*` | `public/_headers` for `/_astro/*` (content-hashed) |
 | S15 | Hero LCP preload hint (`homepage.avif`) | **Not needed.** The hint existed because the hero was a CSS `image-set()` background on `main::before`, invisible to the preload scanner. It is a real `<Picture>` now, first in the markup with `fetchpriority="high"`, so the scanner finds it in the initial HTML |
-| **S16** | *(none today — no analytics module installed)* | **New:** Cloudflare Web Analytics beacon before `</body>`. Works on Netlify-hosted sites with no DNS/proxy change; cookie-free, so no cookie banner. See §6.1 |
+| **S16** | *(none today — no analytics module installed)* | **New:** Cloudflare Web Analytics; cookie-free, so no cookie banner. On Pages this is a dashboard toggle that injects the beacon, which makes the site's own `<Analytics>` component redundant — decide at cutover (§6.1) |
 
 ### 1.3 Pages & content
 
@@ -135,7 +135,7 @@ so this doubles as the acceptance checklist.
 | C10 | Site image gallery (Slick carousel, `wide` style, 16:9, dots) | CSS scroll-snap gallery + dots (no Slick dependency) |
 | C11 | Taxonomy tag pages `/tags/<slug>` (4 real + 1 stale `asdasd`) | **Dropped** per D13 (§2.5) — thin archives, no inbound links (D9). News keeps a category badge |
 | C12 | Tag pills — linked (`tags` SDC) vs unlinked badges (`badges` SDC) | One `<Badge>` component. Per D13 the linked variant goes away with the archive pages; news categories render as unlinked badges |
-| C13 | Contact page + Netlify form (name/email/subject/message, honeypot, no captcha) | Netlify Forms — see D3 in §6 |
+| C13 | Contact page + Netlify form (name/email/subject/message, honeypot, no captcha) | Formspree — see D3 in §6 |
 | C14 | Contact thank-you page `/contatti/messaggio-inviato` | Static page |
 | C15 | 404 page (`/404`) | `src/pages/404.astro` |
 | C16 | Membership page (`/iscrizioni`) with pricing cards + IBAN | Structured tiers — see §5 |
@@ -194,7 +194,7 @@ so this doubles as the acceptance checklist.
 | E6 | Alt text required on site images | Keystatic `object({src, alt})` with validation |
 | E7 | Pathauto slug patterns (`/siti/[title]`, `/news/[title]`, `/tags/[term:name]`) | Keystatic `slug` field with the **existing slugs preserved verbatim** — several are hand-set, not derived from the title (e.g. `volo-dei-briganti-bourcet-2025`), so do not regenerate them (D9) |
 | E8 | Revisions + revision log | Git history (Keystatic commits per save) |
-| E9 | Preview mode | Netlify/Cloudflare deploy previews on Keystatic's branch commits |
+| E9 | Preview mode | Cloudflare Pages preview deployments on Keystatic's branch commits |
 | E10 | Drupal local dev (`drush rs`, SQLite, `composer install`) | `npm run dev`; Keystatic `local` storage for local editing |
 
 ---
@@ -451,7 +451,7 @@ gallery → feature table (Google Maps / Meteo-Parapente links) → XContest per
 
 **`/iscrizioni`** — intro → pricing tier cards with pay buttons → bank-transfer fallback.
 
-**`/contatti`** — intro → contact buttons → Netlify contact form.
+**`/contatti`** — intro → contact buttons → Formspree contact form.
 
 ### Layout structure
 
@@ -743,9 +743,9 @@ This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the commi
 
 | # | Decision | Why it matters | My recommendation |
 |---|---|---|---|
-| ~~**D1**~~ | ~~Netlify or Cloudflare Pages?~~ | — | ✅ **RESOLVED: Netlify.** See §6.1 for the reasoning and the Cloudflare Web Analytics note. |
+| ~~**D1**~~ | ~~Netlify or Cloudflare Pages?~~ | — | ✅ **RESOLVED: Cloudflare Pages** *(revised — was Netlify).* Unlimited bandwidth against Netlify's 100 GB cap, 500 builds/month, and the analytics the site already uses is Cloudflare's. See §6.1 for the reasoning, the runtime risk this takes on, and the migration work it implies. |
 | ~~**D2**~~ | ~~Do all editors have GitHub accounts?~~ | — | ✅ **RESOLVED.** One real editor today; future editors will be asked to create GitHub accounts. Keystatic GitHub mode is a clean fit — this is no longer a risk. |
-| ~~**D3**~~ | ~~Contact form backend~~ | — | ✅ **RESOLVED: Netlify Forms** (follows D1). `data-netlify="true"` + honeypot, no captcha — matching today's `tome_netlify_contact` config. Recipient stays `segreteria@ventorelativo.it`. Free tier is 100 submissions/month. |
+| ~~**D3**~~ | ~~Contact form backend~~ | — | ✅ **RESOLVED: Formspree** *(revised — was Netlify Forms, which follows D1 off Netlify).* A plain `POST` to a Formspree endpoint, honeypot kept, no captcha — same three fields, same recipient `segreteria@ventorelativo.it`. **Free tier is 50 submissions/month across the account**, half of what Netlify Forms allowed; see the note in §6.1. |
 | ~~**D4**~~ | ~~How should landing polygons and the obstacle line be edited?~~ | — | ✅ **RESOLVED: split fields in Keystatic** (§2.2). Point as lat/lon numbers, polygon/line as pasted GeoJSON. All 34 features stay in Keystatic with their metadata. Accepted trade-off: reshaping the 13 landing polygons means a trip to geojson.io. |
 | ~~**D5**~~ | ~~`/api/sites/<nid>/geo.json` — preserve or change?~~ | — | ✅ **RESOLVED: drop it.** Confirmed dead — it was built to reuse the overview MapTiler setup on site pages, but the site pages ended up on Leaflet and the endpoint never got wired up. Nothing consumes it. See §4.2 for what replaces it. The two `/api/navdata/*` files keep their exact URLs. |
 | ~~**D6**~~ | ~~XContest flight tables — restore or drop?~~ | — | ✅ **RESOLVED: quicklinks only.** The five search links (recent / daily / best month / best year / best overall) are a first-class feature and stay. The scraped tables are dropped — XContest put a Cloudflare bot check in front of the data, and defeating it at build time is not something worth building. See §4.4. |
@@ -757,37 +757,70 @@ This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the commi
 | ~~**D12**~~ | ~~Content freeze / dual-run~~ | — | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover. |
 | ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~ | — | ✅ **RESOLVED: reshape**, *amended in Phase 2.* `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all** — §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links. |
 
-### 6.1 Hosting: why Netlify, and where Cloudflare still fits
+### 6.1 Hosting: Cloudflare Pages
 
-**Decision: stay on Netlify.** There is no feature this site needs that Cloudflare provides
-and Netlify doesn't, and there are two concrete reasons not to move:
+**Decision: Cloudflare Pages.** *Revised. This section previously argued for staying on
+Netlify; the reasoning that changed it, and the risk it accepts, are both recorded below
+rather than quietly overwritten.*
 
-1. **Keystatic wants a Node runtime.** Its docs say the admin "needs to run serverside code
-   and use Node.js APIs". Netlify Functions *is* Node. Cloudflare Workers is `workerd`, not
-   Node — `nodejs_compat` covers most built-ins but is a compatibility shim, and if
-   Keystatic hits a gap you get a 500 with no useful error. That's a debugging session you
-   don't need on the one part of the stack a non-developer has to log into.
-2. **Netlify Forms would have to be replaced.** The contact form currently works precisely
-   because Netlify's build-time form detection exists. On Cloudflare it becomes a Pages
-   Function plus a third-party email sender.
+**Why:**
 
-Against that, Cloudflare's genuine advantages — unlimited bandwidth, Workers/KV/R2/D1,
-Durable Objects — are all things this site will never touch. A 14-site, 3-article club
-site sits far inside Netlify's free tier (100 GB bandwidth, 300 build minutes/month; an
-Astro build here will be well under a minute).
+1. **Bandwidth is unmetered.** Netlify's free tier caps at 100 GB/month; Cloudflare Pages
+   does not meter static bandwidth at any tier. A club site will not approach either
+   number, but a cap is a cliff — one popular post, one hotlinked photograph — and the
+   consequence of hitting it is a bill or a dark site.
+2. **Builds are more generous.** 500 builds/month against Netlify's 300 build-*minutes*.
+   With Keystatic committing on every save this is the limit that would actually bind.
+3. **The analytics are already Cloudflare's.** S16 chose Cloudflare Web Analytics for its
+   cookie-free, no-banner properties. On Pages it becomes a dashboard toggle that injects
+   the beacon, so the site's own `<Analytics>` component may be deleted at cutover.
 
-So: familiarity is a real reason, and there's no counterweight. Stay.
+**What this costs, and what to do about it.** The two objections that previously decided
+against Cloudflare have not vanished; one is solved and one is now a risk to manage:
 
-**The Cloudflare thing you actually want is available anyway.** [Cloudflare Web
-Analytics](https://developers.cloudflare.com/web-analytics/) explicitly supports sites
-"not proxied through Cloudflare" — you add the hostname in the Cloudflare dashboard, copy
-the JS beacon snippet, and drop it before `</body>`. No DNS change, no proxy, no migration.
-Cloudflare markets it as privacy-first and cookie-free, so it should also mean **no cookie
-banner**, which is worth having.
+- **Netlify Forms is gone, so the contact form needs a backend (D3).** Solved by
+  **Formspree**: the form posts to a Formspree endpoint, they email
+  `segreteria@ventorelativo.it`, and no server is involved on our side. **Its free tier is
+  50 submissions/month across the account, against Netlify's 100.** For a club contact form
+  that is ample, but it is half the headroom, and Formspree counts spam that gets through.
+  Keep the honeypot. If the club outgrows it, the same form markup works with any
+  form-to-email service.
+- **Keystatic runs on `workerd`, not Node — this is the real risk.** Keystatic's docs say
+  the admin needs to run server-side code and use Node APIs; Cloudflare Workers is not
+  Node. `nodejs_compat` covers most built-ins, and Keystatic's own author publishes a
+  [Keystatic-on-Astro-on-Cloudflare-Workers test
+  repo](https://github.com/emmatown/keystatic-astro-cloudflare-workers-test), so this is
+  known to work rather than uncharted — but it is a compatibility shim on the one part of
+  the stack a non-developer has to log into, and a gap surfaces as a 500 with no useful
+  error.
 
-Note that the site has **no analytics at all today** — there's no `google_analytics` or
-`matomo` module in `core.extension.yml`. So this is a genuinely new capability, not a
-migration item. Added to the checklist as **S16**.
+  **Mitigation: prove it first.** The very first task of Phase 3 is to deploy the admin to
+  a Pages preview and log in — before any content, DNS or cutover work depends on it. If it
+  does not work, the fallbacks in order of preference are (a) Keystatic Cloud for storage,
+  (b) keep the admin on a small Netlify or Vercel deploy pointed at the same repo while the
+  site itself stays on Pages, or (c) stay in local mode and have the one editor run
+  `npm run dev`, which is exactly where Phase 2 leaves things.
+
+**What changes in the repo.** Netlify-specific implementation shipped during Phases 1–2 and
+now has to move. This is Phase 3 work, listed there:
+
+| Netlify | Cloudflare Pages |
+|---|---|
+| `netlify.toml` `[[redirects]]` | `public/_redirects` (same one-line syntax, copied into `dist/`) |
+| `netlify.toml` `[[headers]]` | `public/_headers` (same syntax) |
+| `netlify.toml` `[build]` command/publish | Pages project settings, or `wrangler.toml` with `pages_build_output_dir` |
+| `@astrojs/netlify` adapter | `@astrojs/cloudflare`, with `compatibility_flags = ["nodejs_compat"]` |
+| Netlify Forms (`data-netlify`, `form-name`, honeypot) | Formspree endpoint on the `<form action>`; honeypot kept as-is |
+| Build hooks | Deploy hooks (same idea: a URL that triggers a build) |
+| Environment variables in the Netlify UI | Pages project settings, per Production/Preview scope |
+| `deploy-preview-*--site.netlify.app` | `<branch>.<project>.pages.dev` |
+
+`@astrojs/netlify` is currently an unused dependency — it was never wired up (AGENTS.md
+rule 3 deferred the adapter to Phase 3), so removing it costs nothing.
+
+**Analytics note.** The site has **no analytics at all today** — there is no
+`google_analytics` or `matomo` module in `core.extension.yml`. S16 is a genuinely new
+capability, not a migration item.
 
 ### 6.2 Design direction spec (D11 — refined minimal)
 
@@ -889,6 +922,10 @@ hero built with real content; `/styleguide` added as a temporary design referenc
    ranking signal, which defeats the entire point of the `/home` → `/` redirect (S11).
    `netlify.toml` gives a true edge 301 with no adapter and no function.
 
+   *Superseded by the D1 revision: the reasoning holds, the file changes. Those redirects
+   move to `public/_redirects` in Phase 3 — same one-line syntax, same edge 301. See the
+   migration table in §6.1.*
+
 **Also corrected:** the web typeface is **Outfit** (self-hosted via
 `@fontsource-variable/outfit` rather than fetched from fonts.googleapis.com, removing a
 third-party origin and a render-blocking stylesheet). Metropolis Bold is OG-cards-only.
@@ -950,24 +987,35 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
 **Covers:** C1–C20, S1–S8, S10–S16, E4–E8, X1–X2, D13. (S9 dropped; S3 done with satori;
 X4 needs takeoff coordinates and moves to Phase 4.)
 
-### Phase 3 — Keystatic GitHub mode
-GitHub App, OAuth env vars, `/keystatic` + `/api/keystatic/*` with `prerender = false`,
-auto-deploy on push. Low risk now that D2 is settled — you're the only editor, and adding
-someone later is "create a GitHub account, get repo write access".
+### Phase 3 — Keystatic GitHub mode, on Cloudflare Pages
+
+**Do this first, before anything else in the phase:** deploy the admin to a Pages preview
+and log in. Keystatic on `workerd` is the one unproven part of the D1 revision (§6.1), and
+everything below assumes it works. If it does not, take a fallback from §6.1 before
+building on top of it.
+
+Then: the hosting migration itself (`netlify.toml` → `public/_redirects` and
+`public/_headers`, `@astrojs/netlify` → `@astrojs/cloudflare` with `nodejs_compat`, contact
+form → Formspree, environment variables into the Pages project — the table in §6.1 is the
+checklist), the GitHub App and OAuth env vars, `/keystatic` + `/api/keystatic/*` with
+`prerender = false`, and deploy-on-push.
+
 **Exit:** a news post created and published end-to-end through `/keystatic` on the deployed
 site, without touching a terminal.
-**Covers:** E1–E3, E9–E10.
+**Covers:** E1–E3, E9–E10, and the D1/D3 migration.
 
 **Editing workflow to set up with it:**
 
-- **Netlify builds `main` only.** Keystatic can work on a branch, so an editor makes a
-  batch of changes and merges once — one production build per session rather than one per
-  save, and half-finished edits never reach the public site.
-- **Branch deploys on**, so the author can see their work: Netlify gives each branch a URL,
-  and Keystatic's `previewUrl` puts a Preview button on every entry, e.g.
-  `https://{branch}--<site>.netlify.app/news/{slug}/` — it substitutes `{branch}` and
-  `{slug}` from wherever the editor currently is. Note that Netlify sanitises branch names
-  in subdomains, so keep branch names free of slashes or the templated URL will not match.
+- **Production builds from `main` only.** Keystatic can work on a branch, so an editor
+  makes a batch of changes and merges once — one production build per session rather than
+  one per save, and half-finished edits never reach the public site. Pages calls this the
+  production branch; preview branches are configured separately.
+- **Preview deployments on**, so the author can see their work: Pages gives each branch an
+  alias at `<branch>.<project>.pages.dev`, and Keystatic's `previewUrl` puts a Preview
+  button on every entry, e.g. `https://{branch}.<project>.pages.dev/news/{slug}/` — it
+  substitutes `{branch}` and `{slug}` from wherever the editor currently is. Branch names
+  are sanitised into the subdomain, so keep them free of slashes or the templated URL will
+  not match.
 - **`/admin` → `/keystatic`** (already in `netlify.toml`) starts working here.
 
 ### Phase 4 — Map & flight-data subsystems *(the risky part, deliberately last)*
@@ -984,7 +1032,8 @@ desktop and mobile.
 
 ### Phase 5 — Cutover
 Verify the preserved URLs and the two redirects (`/contact/contatti` → `/contatti`,
-`/home` → `/`). Point DNS / swap the Netlify site. Confirm the navdata files resolve at
+`/home` → `/`). Point DNS at the Pages project (a custom domain on Cloudflare, so the
+records live in the same dashboard). Confirm the navdata files resolve at
 their exact old URLs. Archive the Drupal repo read-only — do not delete it; it stays the
 reference for anything found missing later.
 
