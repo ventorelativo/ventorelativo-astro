@@ -96,19 +96,17 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       border-color var(--transition);
   }
 
-  /* Hover shows the rule in grey — the current page keeps the solid one. */
+  /*
+    Colour only. The 3px rule is reserved at every width for row height, but it
+    is coloured in only in the inline bar — see the wide block below. In the
+    drawer the current page is marked by an underline instead.
+  */
   .nav__list a:hover {
     color: var(--color-nav-hover);
-    border-bottom-color: var(--color-nav-rule-hover);
-  }
-
-  .nav__list a[aria-current='page']:hover {
-    border-bottom-color: currentColor;
   }
 
   .nav__list a[aria-current='page'] {
     color: var(--color-nav-active);
-    border-bottom-color: currentColor;
   }
 
   /* --------------------------------------------------------- narrow: drawer */
@@ -163,7 +161,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
   }
 
   .nav__drawer .nav__list a[aria-current='page'] {
-    border-bottom-color: transparent;
     text-decoration: underline;
     text-underline-offset: 0.3em;
   }
@@ -197,8 +194,13 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       font-weight: 600;
     }
 
-    /* Inline, the current page is ruled rather than underlined. */
-    .nav__drawer .nav__list a[aria-current='page'] {
+    /* Inline only: grey rule on hover, solid rule on the current page. */
+    .nav__drawer .nav__list a:hover {
+      border-bottom-color: var(--color-nav-rule-hover);
+    }
+
+    .nav__drawer .nav__list a[aria-current='page'],
+    .nav__drawer .nav__list a[aria-current='page']:hover {
       border-bottom-color: currentColor;
       text-decoration: none;
     }

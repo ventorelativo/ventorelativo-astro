@@ -56,6 +56,14 @@ const { transparent = false } = Astro.props;
     backdrop-filter: none;
 
     /*
+      Over the homepage hero there is no chrome behind the nav, and the light
+      scheme's hero is a pale wash — `$gray-400` on top of it is all but
+      invisible. Dark mode keeps the grey, where it reads fine against the
+      photograph.
+    */
+    --color-nav-rule-hover: light-dark(rgba(0, 0, 0, 0.35), #ced4da);
+
+    /*
       No color-scheme override: the hero is pale in light mode and dark in dark
       mode (see index.astro), so the normal per-scheme text tokens already give
       the nav the right contrast over it in both.
