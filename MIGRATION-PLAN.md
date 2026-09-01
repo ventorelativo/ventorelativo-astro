@@ -916,14 +916,39 @@ The Astro dev toolbar is disabled (`devToolbar: false`) — it floated over the 
 which made phone review awkward.
 **Covers:** G1–G13, S6, S10, S11, S12, C2 (partial).
 
-### Phase 2 — Static pages & editorial content
-`news` and `sites` collections (no `tags` collection, pending D13); Keystatic config with
-`local` storage first; migrate 3 articles + 14 sites, body HTML → MDX; the raw-HTML blocks
-lifted into structured fields (§2.4); images into `src/assets/`; card components; the simple
-pages (`/voli`, `/iscrizioni`, `/contatti`, `/404`, thank-you); SEO, OG image generation,
-JSON-LD, sitemap, RSS, redirects, analytics beacon.
-**Exit:** every page except `/siti` renders correctly with real content.
-**Covers:** C1–C20, S1–S16, E4–E8, X1–X2, X4, D13.
+### Phase 2 — Static pages & editorial content ✅ DONE
+
+`news`, `sites` and `pages` collections; 3 articles and 14 sites migrated, bodies converted
+from `full_html`; the raw-HTML blocks lifted into structured fields (§2.4); `/voli`,
+`/iscrizioni`, `/contatti` + form + thank-you, `/404`; SEO, generated social cards,
+schema.org, sitemap, redirects, analytics; Keystatic in local storage.
+
+**Exit met, and exceeded:** every URL the old site had is built — `/siti` included — and
+diffed against the `path_alias` entities. The only absences are deliberate: `/home` (301),
+`/tags/*` (D13) and the one unpublished article, which the old build did not contain either.
+
+**Deviations, each with its own commit:**
+
+1. **`/siti` shipped here, not in Phase 4.** Its overview map is the risky part and stays
+   deferred; the card grid needs none of it, and "Siti" is the most prominent link in the
+   nav. The map drops in above the grid later — the page carries a `TODO(Phase 4)`.
+2. **A URL in this plan was wrong.** `/siti/il-podio` came from the node's own `path` field,
+   which is stale. `path_alias`, `sitemap.xml` and the archived build all say `/siti/podio`.
+   On a migration about preserving URLs, `path_alias` is the authority.
+3. **Site tags are kept** — see the correction under §2.5. Five sites are tagged, not one.
+4. **Five sites are `sticky`**, not "only Montoso": also Monte Cucetto, Roletto, Sarsenà and
+   Sea di Torre.
+5. **RSS (S9) dropped** at the club's request. Nothing subscribes to it and it never worked
+   on the old site. Revisit if an automation (Make.com → Facebook) ever wants a feed.
+6. **The stale-date bug §4.4 predicted was real.** The archived build's "Migliori giornata"
+   points at `filter[date]=2026-07-10`, seven weeks stale. Now corrected client-side.
+7. **Content bodies carry no `import` statements**, and body components are handed to
+   `<Content components={…}>`. Keystatic refuses to open an entry containing an import.
+8. **`b, strong` needs an explicit weight.** With a 300 body, the UA's relative `bolder`
+   resolves to 400 — the old theme set 600 for exactly this reason.
+
+**Covers:** C1–C20, S1–S8, S10–S16, E4–E8, X1–X2, D13. (S9 dropped; S3 done with satori;
+X4 needs takeoff coordinates and moves to Phase 4.)
 
 ### Phase 3 — Keystatic GitHub mode
 GitHub App, OAuth env vars, `/keystatic` + `/api/keystatic/*` with `prerender = false`,
