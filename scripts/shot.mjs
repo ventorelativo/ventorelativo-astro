@@ -154,6 +154,8 @@ function measureInPage(selectors) {
       top: Math.round(r.top),
       bottom: Math.round(r.bottom),
       height: Math.round(r.height),
+      left: Math.round(r.left),
+      right: Math.round(r.right),
     };
   }
   return {
@@ -256,7 +258,11 @@ try {
     }
     for (const [sel, box] of Object.entries(m.boxes)) {
       console.log(
-        `  ${sel.padEnd(20)} ${box ? `top=${box.top} bottom=${box.bottom} h=${box.height}` : 'not present'}`,
+        `  ${sel.padEnd(20)} ${
+          box
+            ? `top=${box.top} bottom=${box.bottom} h=${box.height}  left=${box.left} right=${box.right}`
+            : 'not present'
+        }`,
       );
     }
 

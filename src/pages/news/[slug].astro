@@ -74,9 +74,10 @@ const { Content } = await render(entry);
     Article images are a mix of wide banners and portrait posters. Cropping to a
     fixed shape (object-fit: cover) threw most of a poster away, so instead the
     natural aspect ratio is kept and only the height is capped: wide images fill
-    the column, tall ones stay whole and centred.
+    the column, tall ones stay whole.
 
-    Matched to the prose width so the header and the text read as one column.
+    Matched to the prose width and left-aligned with it: a centred image beside
+    left-aligned text reads as a mistake, whatever its proportions.
   */
   .hero {
     display: block;
@@ -84,7 +85,6 @@ const { Content } = await render(entry);
     height: auto;
     max-width: min(100%, var(--prose-width));
     max-height: 30rem;
-    margin-inline: auto;
     border-radius: var(--radius-lg);
   }
 </style>
