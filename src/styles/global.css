@@ -163,18 +163,27 @@ hr {
 
 /* --------------------------------------------------------------- buttons */
 
+/*
+ * Buttons, measured from the old site's `.btn` / `.btn-primary` /
+ * `.btn-outline-primary`: 1rem/400 at line-height 1.5, 6px by 12px of padding,
+ * a 1px border and a 6px radius. The pill shape and 500 weight this started
+ * with were a Phase 1 invention (D11); the club wants the old rendering.
+ */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2xs);
-  padding: 0.6em 1.3em;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  background-color: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-size: var(--text-sm);
-  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--brand-blue);
+  border-radius: var(--radius-md);
+  background-color: var(--brand-blue);
+  /* Not `--color-accent`: Bootstrap left `.btn-primary` on the same solid blue
+     in dark mode, and white on that blue is legible in both. */
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -183,9 +192,11 @@ hr {
     color var(--transition);
 }
 
+/* Bootstrap's own derivation: a 15% shade of the fill, 20% on the border. */
 .button:hover {
-  background-color: var(--color-text-strong);
-  color: var(--color-bg);
+  background-color: #1a468d;
+  border-color: #19427f;
+  color: #ffffff;
 }
 
 /* A row of call-to-action links inside an article body (see mdx/ActionLink). */
@@ -195,14 +206,20 @@ hr {
   gap: var(--space-2xs);
 }
 
+/*
+ * `.btn-outline-primary`. One divergence from the old rendering: it hardcoded
+ * the light-mode blue in both schemes, which left a #1f52a6 outline on a near
+ * black background at roughly 2:1 contrast. This follows `--color-accent`, so
+ * dark mode gets the lighter blue Bootstrap uses for links there.
+ */
 .button--outline {
   background-color: transparent;
-  border-color: var(--color-border-strong);
-  color: var(--color-text-strong);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .button--outline:hover {
-  background-color: var(--color-accent-subtle);
+  background-color: var(--color-accent);
   border-color: var(--color-accent);
-  color: var(--color-accent);
+  color: var(--color-accent-contrast);
 }

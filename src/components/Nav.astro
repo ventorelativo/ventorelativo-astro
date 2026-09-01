@@ -75,25 +75,32 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     padding: 0;
   }
 
+  /*
+    Measured from the old site's `.navbar-nav .nav-link`: uppercase, no letter
+    spacing, 8px of vertical padding, an 8px horizontal margin and a 3px bottom
+    rule that only shows on the current page. Colour runs on its own ramp —
+    `rgba(0,0,0,.65)` rising to solid black — rather than the body text tokens.
+  */
   .nav__list a {
     display: block;
-    color: var(--color-text-strong);
-    font-weight: 500;
+    padding-block: 0.5rem;
+    margin-inline: 0.5rem;
+    color: var(--color-nav);
+    line-height: 1.5;
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
     transition:
       color var(--transition),
       border-color var(--transition);
   }
 
   .nav__list a:hover {
-    color: var(--color-accent);
+    color: var(--color-nav-active);
   }
 
   .nav__list a[aria-current='page'] {
-    color: var(--color-accent);
+    color: var(--color-nav-active);
     border-bottom-color: currentColor;
   }
 
@@ -138,16 +145,18 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
   .nav__drawer .nav__list {
     flex-direction: column;
-    gap: var(--space-xs);
   }
 
+  /* The drawer ran at 1.5rem/300 — larger and lighter than the inline bar. The
+     3px rule stays in place but transparent, so the row keeps its height and
+     the current page is marked by an underline instead. */
   .nav__drawer .nav__list a {
-    padding-block: var(--space-2xs);
-    font-size: var(--text-lg);
-    border-bottom: 0;
+    font-size: 1.5rem;
+    font-weight: 300;
   }
 
   .nav__drawer .nav__list a[aria-current='page'] {
+    border-bottom-color: transparent;
     text-decoration: underline;
     text-underline-offset: 0.3em;
   }
@@ -172,15 +181,18 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
     .nav__drawer .nav__list {
       flex-direction: row;
-      gap: var(--space-md);
+      /* The 8px gap is the links' own inline margin; no extra flex gap. */
+      gap: 0;
     }
 
     .nav__drawer .nav__list a {
-      padding-block: 0.35rem;
-      font-size: var(--text-sm);
+      font-size: 1.1rem;
+      font-weight: 600;
     }
 
+    /* Inline, the current page is ruled rather than underlined. */
     .nav__drawer .nav__list a[aria-current='page'] {
+      border-bottom-color: currentColor;
       text-decoration: none;
     }
   }

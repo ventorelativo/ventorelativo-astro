@@ -20,6 +20,7 @@
  *     --out <dir>         where PNGs go (default: .astro/shots)
  *     --measure <sel,...> extra selectors to report boxes for
  *     --click <sel>       click this element first (menus, drawers, disclosures)
+ *     --computed <sel,...> dump the computed styles that matter for a port
  *     --no-shot           measure only, skip the PNGs
  */
 import { spawn } from 'node:child_process';
@@ -58,6 +59,7 @@ function parseArgs(argv) {
     measure: [],
     shot: true,
     click: null,
+    computed: [],
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -67,6 +69,8 @@ function parseArgs(argv) {
     else if (a === '--out') opts.out = argv[++i];
     else if (a === '--measure') opts.measure = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--click') opts.click = argv[++i];
+    else if (a === '--computed')
+      opts.computed = argv[++i].split(',').map((x) => x.trim());
     else if (a === '--no-shot') opts.shot = false;
     else rest.push(a);
   }
@@ -135,7 +139,7 @@ class CDP {
  * unintended scrolling and elements escaping the viewport — plus the boxes of
  * whatever selectors were asked for.
  */
-function measureInPage(selectors) {
+function measureInPage(selectors, computedSelectors) {
   const de = document.documentElement;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -167,6 +171,44 @@ function measureInPage(selectors) {
       right: Math.round(r.right),
     };
   }
+  const computed = {};
+  for (const sel of computedSelectors) {
+    const el = document.querySelector(sel);
+    if (!el) {
+      computed[sel] = null;
+      continue;
+    }
+    const cs = getComputedStyle(el);
+    const props = [
+      'font-family',
+      'font-size',
+      'font-weight',
+      'line-height',
+      'letter-spacing',
+      'text-transform',
+      'text-decoration-line',
+      'color',
+      'background-color',
+      'border-width',
+      'border-style',
+      'border-color',
+      'border-radius',
+      'padding',
+      'margin',
+      'gap',
+      'width',
+      'height',
+    ];
+    const out = {};
+    for (const prop of props) {
+      const v = cs.getPropertyValue(prop);
+      if (v && v !== 'normal' && v !== 'none' && v !== '0px' && v !== 'auto') out[prop] = v;
+    }
+    // font-family is long and mostly fallbacks; keep the first family only.
+    if (out['font-family']) out['font-family'] = out['font-family'].split(',')[0];
+    computed[sel] = out;
+  }
+
   return {
     viewport: `${vw}x${vh}`,
     scroll: `${de.scrollWidth}x${de.scrollHeight}`,
@@ -174,6 +216,7 @@ function measureInPage(selectors) {
     scrollsHorizontally: de.scrollWidth > vw + 1,
     overflow: overflow.slice(0, 10),
     boxes,
+    computed,
   };
 }
 
@@ -269,7 +312,7 @@ try {
     const { result } = await cdp.send(
       'Runtime.evaluate',
       {
-        expression: `(${measureInPage.toString()})(${JSON.stringify(opts.measure)})`,
+        expression: `(${measureInPage.toString()})(${JSON.stringify(opts.measure)}, ${JSON.stringify(opts.computed)})`,
         returnByValue: true,
       },
       sessionId,
@@ -296,6 +339,15 @@ try {
             : 'not present'
         }`,
       );
+    }
+
+    for (const [sel, props] of Object.entries(m.computed)) {
+      if (!props) {
+        console.log(`  computed ${sel}: not present`);
+        continue;
+      }
+      console.log(`  computed ${sel}`);
+      for (const [k, v] of Object.entries(props)) console.log(`      ${k}: ${v}`);
     }
 
     if (opts.shot) {

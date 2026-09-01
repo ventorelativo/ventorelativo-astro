@@ -38,8 +38,25 @@
   --color-text-muted: light-dark(#6b7686, #98a3b0);
 
   /* --------------------------------------------------------------- lines */
-  --color-border: light-dark(#e3e7ec, #2c3238);
+  /*
+    Bootstrap's `--bs-border-color-translucent`, which is what drew the old
+    site's card and drawer edges. Translucent rather than a fixed grey, so it
+    sits correctly on any surface.
+  */
+  --color-border: light-dark(rgba(0, 0, 0, 0.176), rgba(255, 255, 255, 0.15));
   --color-border-strong: light-dark(#cdd4dc, #3a4249);
+
+  /* --------------------------------------------------------------- chrome */
+  /* Measured from the old site: navbar `rgba(248,249,250,.8)` over a 1px
+     `#dee2e6` rule in light, `rgba(43,48,53,.8)` over `#495057` in dark. The
+     alpha is applied where it is used, so the token stays a plain colour. */
+  --color-header-bg: light-dark(#f8f9fa, #2b3035);
+  --color-header-border: light-dark(#dee2e6, #495057);
+
+  /* Nav links ran on their own near-black/near-white ramp rather than the body
+     text colours — `rgba(0,0,0,.65)` rising to solid black when current. */
+  --color-nav: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.65));
+  --color-nav-active: light-dark(#000000, #ffffff);
 
   /* ---------------------------------------------------------- interactive */
   --color-accent: light-dark(var(--brand-blue), var(--brand-blue-bright));
@@ -93,17 +110,22 @@
   --space-2xl: 5rem;
 
   /* --------------------------------------------------------------- shape */
-  /* Restraint: hairline borders instead of the old shadow-sm + shadow-hover. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /*
+    Bootstrap's radius scale, which is what the old site rendered: 4px small,
+    6px default (buttons), 8px large (cards). The softer 6/10/16 this started
+    with made everything read rounder than the site being replaced.
+  */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
   --radius-pill: 999px;
 
   --shadow-sm: 0 1px 2px light-dark(#0f172a0f, #00000040);
   --shadow-md: 0 4px 16px light-dark(#0f172a14, #00000059);
 
   /* --------------------------------------------------------------- layout */
-  --header-height: 4.5rem;
+  /* 5.25rem — the old `--header-height`, measured at 84px. */
+  --header-height: 5.25rem;
   --content-width: 68rem;
   --prose-width: 42rem;
 

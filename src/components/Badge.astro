@@ -17,15 +17,23 @@ const { label } = Astro.props;
 <span class="badge">{label}</span>
 
 <style>
+  /*
+    The old `.badge`: 0.825rem/700 at line-height 1, a 6px radius, and a 10%
+    wash of the link blue behind it — sentence case, not uppercase.
+
+    The wash and the text both follow `--color-accent` rather than being pinned
+    to the light-mode blue as the original was; at 10% opacity on a dark
+    background that pairing was close to unreadable.
+  */
   .badge {
     display: inline-block;
-    padding: 0.15em 0.7em;
-    border-radius: var(--radius-pill);
-    background-color: var(--color-accent-subtle);
+    padding: 0.35em 0.65em;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
     color: var(--color-accent);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
+    font-size: 0.825rem;
+    font-weight: 700;
+    line-height: 1;
   }
 </style>

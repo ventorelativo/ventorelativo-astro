@@ -739,7 +739,7 @@ This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the commi
 | ~~**D8**~~ | ~~Keep MapTiler or move to MapLibre + free tiles?~~ | — | ✅ **RESOLVED: stay on MapTiler**, free tier, comfortable quota. But build the map component against the **MapLibre API surface** with MapTiler-specific bits isolated in a thin adapter, so switching later stays cheap. See §4.2.1. Restrict the key by domain, move it to `PUBLIC_MAPTILER_KEY`. |
 | ~~**D9**~~ | ~~Which URLs must be preserved exactly?~~ | — | ✅ **RESOLVED.** No inbound links worth protecting. `/home` → 301 to `/`; `/styleguide`, `/tags/asdasd` and the nid-based geo.json all simply dropped, no redirects needed. All content URLs (`/siti/*`, `/news/*`, `/contatti*`, `/voli`, `/iscrizioni`, `/404`, `/api/navdata/*`) still preserved exactly. Raised **D13** on the tag URLs. |
 | **D10** | **Stripe vs Satispay Business** | §5. Fee vs full automation. | **Committee decision, parked.** Not being worked on. The site ships complete without it — `/iscrizioni` keeps the existing Satispay links until the committee rules. |
-| ~~**D11**~~ | ~~Design direction~~ | — | ✅ **RESOLVED: refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
+| ~~**D11**~~ | ~~Design direction~~ | — | ✅ **RESOLVED: refined minimal**, *amended in Phase 2 — see the note under §6.2.* Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
 | ~~**D12**~~ | ~~Content freeze / dual-run~~ | — | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover. |
 | ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~ | — | ✅ **RESOLVED: reshape.** `tags` collection and `/tags/*` archives dropped. News gets a `category` select (`Eventi \| Competizioni \| Hike&Fly`) rendered as a badge. Site tagging dropped; "Adatto ai principianti" noted as the first candidate if site attributes are added later. See §2.5. |
 
@@ -810,6 +810,23 @@ the mobile nav toggle relies on Bootstrap's offcanvas JS with no `<dialog>` fall
 `.stretched-link` card pattern makes the whole card one big link, which is awkward with a
 screen reader when the card also contains tag links; and several inline SVGs have no
 accessible name. Worth doing properly rather than porting as-is.
+
+**Amendment (Phase 2, 2026-09-01).** "Refined minimal" was taken too far in the
+chrome: pill buttons, a 6/10/16 radius scale, 500-weight nav links on the body
+text ramp. On review the club asked for the old rendering back, so the menu
+(desktop and drawer), the buttons, the badges and the radius scale are now ported
+from the **computed styles of the archived `html/` build** rather than
+reinterpreted — Bootstrap's 4/6/8 radii, `.btn` at 1rem/400 with 6px×12px padding
+and a 6px radius, nav links at 1.1rem/600 uppercase on their own near-black ramp
+with a 3px rule, `--header-height` back to 5.25rem. `npm run shot --computed`
+reads those values out of either site, so this is checkable rather than eyeballed.
+
+What "refined minimal" still governs: the token system itself, the `light-dark()`
+colour strategy, container queries, generous whitespace, and the absence of
+Bootstrap. Two deliberate divergences remain, both contrast-driven: body text is
+darker than the old `rgb(105,117,134)`, and the badge and outline-button blues
+follow `--color-accent` so they lighten in dark mode instead of staying pinned to
+`#1f52a6` at roughly 2:1 against a near-black background.
 
 ### Not decisions, but do them anyway
 
