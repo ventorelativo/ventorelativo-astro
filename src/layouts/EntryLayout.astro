@@ -18,10 +18,26 @@ interface Props {
   imageAlt?: string;
   type?: 'website' | 'article';
   publishedTime?: string;
+  /** Present on news posts: the NewsArticle node's fields. */
+  article?: {
+    title: string;
+    description: string;
+    image: string;
+    published: Date;
+    section?: string;
+  };
 }
 
-const { title, description, breadcrumbLabels, ogRoute, imageAlt, type, publishedTime } =
-  Astro.props;
+const {
+  title,
+  description,
+  breadcrumbLabels,
+  ogRoute,
+  imageAlt,
+  type,
+  publishedTime,
+  article,
+} = Astro.props;
 ---
 
 <BaseLayout
@@ -31,6 +47,8 @@ const { title, description, breadcrumbLabels, ogRoute, imageAlt, type, published
   imageAlt={imageAlt}
   type={type}
   publishedTime={publishedTime}
+  breadcrumbLabels={breadcrumbLabels}
+  article={article}
 >
   <div class="container">
     <Breadcrumbs title={title} labels={breadcrumbLabels} />

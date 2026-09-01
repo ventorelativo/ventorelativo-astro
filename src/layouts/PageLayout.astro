@@ -23,7 +23,12 @@ interface Props {
 const { title, description, intro, breadcrumbLabels, ogRoute } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} ogRoute={ogRoute}>
+<BaseLayout
+  title={title}
+  description={description}
+  ogRoute={ogRoute}
+  breadcrumbLabels={breadcrumbLabels}
+>
   <div class="container">
     <Breadcrumbs title={title} labels={breadcrumbLabels} />
 

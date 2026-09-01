@@ -1,35 +1,43 @@
 ---
 /**
- * SportsClub structured data (S7).
+ * The page's structured data, as one `@graph` (S7).
  *
- * Ported from `helper_page_attachments()`, which built this payload and
- * attached it to every page — search engines read it from whichever page they
- * crawl. Worth noting: it never actually shipped. There is no `ld+json` in the
- * archived build at all, so the module must post-date the last deploy. This is
- * the first time the club will have structured data in production.
+ * Always: the club and the website. Additionally, whatever the page can say
+ * about itself — its breadcrumb trail, and for a news post the article. See
+ * src/lib/schema.ts for what each node claims and what is deliberately left out.
  *
- * `set:html` rather than an expression: Astro escapes quotes in text content,
- * which would break the JSON.
+ * `set:html` rather than an expression, because Astro escapes quotes in text
+ * content and that would break the JSON.
  */
-import { SITE } from '../consts';
+import { crumbsFor } from '../lib/breadcrumbs';
+import {
+  articleNode,
+  breadcrumbNode,
+  clubNode,
+  graph,
+  websiteNode,
+  type ArticleInput,
+} from '../lib/schema';
+
+interface Props {
+  /** Page title, used as the last breadcrumb. */
+  title?: string;
+  breadcrumbLabels?: Record<string, string>;
+  /** Present on news posts. */
+  article?: Omit<ArticleInput, 'url'>;
+}
+
+const { title, breadcrumbLabels, article } = Astro.props;
 
 const site = Astro.site ?? new URL('https://www.ventorelativo.it');
+const url = new URL(Astro.url.pathname, site);
 
-const data = {
-  '@context': 'https://schema.org',
-  '@type': 'SportsClub',
-  name: SITE.name,
-  alternateName: `${SITE.name} Parapendio Club`,
-  description:
-    'Parapendio club tra Pinerolo, Val Chisone e Val Pellice: informazioni per i soci, eventi del club e siti di volo della zona.',
-  sport: 'Paragliding',
-  url: site.href,
-  logo: new URL('/social-card.png', site).href,
-  image: new URL('/social-card.png', site).href,
-  email: SITE.email,
-  areaServed: ['Pinerolo', 'Val Chisone', 'Val Pellice'],
-  sameAs: ['https://www.facebook.com/ventorelativo'],
-};
+const data = graph([
+  clubNode(site),
+  websiteNode(site),
+  breadcrumbNode(site, crumbsFor(Astro.url.pathname, title, breadcrumbLabels)),
+  article ? articleNode(site, { ...article, url }) : undefined,
+]);
 ---
 
 <script type="application/ld+json" set:html={JSON.stringify(data)} is:inline />

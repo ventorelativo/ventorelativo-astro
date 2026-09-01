@@ -14,6 +14,8 @@
  * `title_from_page_when_available: true` did.
  */
 
+import { crumbsFor } from '../lib/breadcrumbs';
+
 interface Props {
   /** Label for the final crumb. Defaults to a title-cased URL segment. */
   title?: string;
@@ -23,20 +25,8 @@ interface Props {
 
 const { title, labels = {} } = Astro.props;
 
-const segments = Astro.url.pathname.split('/').filter(Boolean);
-
-const humanise = (segment: string) =>
-  segment.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
-
-const crumbs = segments.map((segment, i) => {
-  const href = `/${segments.slice(0, i + 1).join('/')}`;
-  const isLast = i === segments.length - 1;
-  return {
-    href,
-    label: (isLast ? title : undefined) ?? labels[href] ?? humanise(segment),
-    isLast,
-  };
-});
+// Shared with the BreadcrumbList structured data — see src/lib/breadcrumbs.ts.
+const crumbs = crumbsFor(Astro.url.pathname, title, labels);
 
 // hide_single_home_item: on the front page there is nothing but Home.
 const show = crumbs.length > 0;

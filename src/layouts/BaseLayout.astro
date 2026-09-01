@@ -26,6 +26,16 @@ interface Props {
   imageAlt?: string;
   type?: 'website' | 'article';
   publishedTime?: string;
+  /** Labels for intermediate breadcrumb segments, for the BreadcrumbList. */
+  breadcrumbLabels?: Record<string, string>;
+  /** Present on news posts: the NewsArticle node's fields. */
+  article?: {
+    title: string;
+    description: string;
+    image: string;
+    published: Date;
+    section?: string;
+  };
 }
 
 const {
@@ -36,6 +46,8 @@ const {
   imageAlt,
   type,
   publishedTime,
+  breadcrumbLabels,
+  article,
 } = Astro.props;
 ---
 
@@ -62,7 +74,7 @@ const {
     <link rel="manifest" href="/favicons/site.webmanifest" />
     <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#5bbad5" />
 
-    <JsonLd />
+    <JsonLd title={title} breadcrumbLabels={breadcrumbLabels} article={article} />
 
     {/*
       Theme resolution before first paint. Must stay inline and synchronous —
