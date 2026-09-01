@@ -36,6 +36,15 @@ interface Props {
     published: Date;
     section?: string;
   };
+  /** Present when that post announces an event: the Event node's fields. */
+  event?: {
+    name: string;
+    description: string;
+    image: string;
+    start: Date;
+    end?: Date;
+    location: string;
+  };
 }
 
 const {
@@ -48,6 +57,7 @@ const {
   publishedTime,
   breadcrumbLabels,
   article,
+  event,
 } = Astro.props;
 ---
 
@@ -84,7 +94,12 @@ const {
     <link rel="manifest" href="/favicons/site.webmanifest" />
     <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#5bbad5" />
 
-    <JsonLd title={title} breadcrumbLabels={breadcrumbLabels} article={article} />
+    <JsonLd
+      title={title}
+      breadcrumbLabels={breadcrumbLabels}
+      article={article}
+      event={event}
+    />
 
     {
       /*

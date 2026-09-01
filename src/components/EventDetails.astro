@@ -1,0 +1,104 @@
+---
+/**
+ * The when and where of a news post that announces an event.
+ *
+ * Replaces the `<Facts>` blocks the two event posts wrote by hand — same three
+ * rows, but from structured fields, so the date shown here, the date in the
+ * `.ics` and the date in the structured data are one value rather than three
+ * copies that can drift.
+ *
+ * A `<dl>` because that is what this is: terms and their definitions.
+ */
+import { formatDate, isoDate } from '../utils/date';
+
+interface Props {
+  event: {
+    start: Date;
+    end?: Date;
+    location: string;
+    landing?: string;
+  };
+  /** Route of this post's calendar file. */
+  slug: string;
+}
+
+const { event, slug } = Astro.props;
+
+const when = event.end
+  ? `${formatDate(event.start)} – ${formatDate(event.end)}`
+  : formatDate(event.start);
+---
+
+<section class="event">
+  <dl class="event__facts">
+    <div class="event__item">
+      <dt>Quando</dt>
+      <dd>
+        <time datetime={isoDate(event.start)}>{when}</time>
+      </dd>
+    </div>
+
+    <div class="event__item">
+      <dt>Decollo</dt>
+      <dd>{event.location}</dd>
+    </div>
+
+    {
+      event.landing && (
+        <div class="event__item">
+          <dt>Atterraggio</dt>
+          <dd>{event.landing}</dd>
+        </div>
+      )
+    }
+  </dl>
+
+  {
+    /*
+    A plain link to a static file, not a script. It downloads on desktop and
+    opens the calendar app on a phone, which is where it will mostly be used.
+  */
+  }
+  <p class="event__add">
+    <a class="button button--outline" href={`/news/calendario/${slug}.ics`} download>
+      Aggiungi al calendario
+    </a>
+  </p>
+</section>
+
+<style>
+  .event {
+    margin-block: var(--space-md);
+  }
+
+  .event__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-2xs);
+    margin: 0;
+  }
+
+  .event__item {
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-subtle);
+  }
+
+  dt {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text-strong);
+    font-weight: 500;
+  }
+
+  .event__add {
+    margin-block-start: var(--space-sm);
+  }
+</style>

@@ -14,6 +14,7 @@ import { getCollection, render } from 'astro:content';
 import { Image } from 'astro:assets';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Badge from '../../components/Badge.astro';
+import EventDetails from '../../components/EventDetails.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 import { formatDate, isoDate } from '../../utils/date';
 
@@ -23,7 +24,8 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { title, date, summary, image, category } = entry.data;
+const { title, date, summary, image, category, event } = entry.data;
+const cardUrl = new URL(`/og/news/${entry.id}.jpg`, Astro.site).href;
 
 // `summary` is deliberately not rendered here. It feeds the card blurb and the
 // meta description (D7); on the page it sat directly above a first paragraph
@@ -43,9 +45,17 @@ const { Content } = await render(entry);
   article={{
     title,
     description: summary,
-    image: new URL(`/og/news/${entry.id}.jpg`, Astro.site).href,
+    image: cardUrl,
     published: date,
     section: category,
+  }}
+  event={event && {
+    name: title,
+    description: summary,
+    image: cardUrl,
+    start: event.start,
+    end: event.end,
+    location: event.location,
   }}
 >
   <p class="meta" slot="meta">
@@ -76,6 +86,8 @@ const { Content } = await render(entry);
     See src/components/mdx/components.ts.
   */
   }
+  {event && <EventDetails event={event} slug={entry.id} />}
+
   <Content components={MDX_COMPONENTS} />
 </EntryLayout>
 

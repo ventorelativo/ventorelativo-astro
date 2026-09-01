@@ -29,10 +29,11 @@
  * map features, and that is when a `SportsActivityLocation` node is worth
  * adding.
  *
- * No `Event` for the news posts that describe events. Two of the three do, but
- * their dates and places live in prose, and guessing at them from a body would
- * produce structured data that quietly drifts from the article. It becomes
- * correct the day Keystatic gives news posts real event fields (Phase 3).
+ * `Event` used to be absent here, because the dates and places lived only in
+ * prose and guessing at them from a body would have produced structured data
+ * that quietly drifted from the article. News posts now carry real `event`
+ * fields, so the node below is built from the same values the page and the
+ * `.ics` use.
  */
 import { SITE, CLUB_CENTRE } from '../consts';
 
@@ -146,6 +147,41 @@ export function articleNode(site: URL, article: ArticleInput): Node {
     // The club writes and publishes its own news; there are no bylines.
     author: { '@id': ids.club(site) },
     publisher: { '@id': ids.club(site) },
+  };
+}
+
+export interface EventInput {
+  /** The article announcing it — the event's identity and its page. */
+  url: URL;
+  name: string;
+  description: string;
+  image: string;
+  start: Date;
+  end?: Date;
+  location: string;
+}
+
+/**
+ * An event announced by a news post.
+ *
+ * `startDate` is a plain `YYYY-MM-DD`, which is how schema.org expects an
+ * all-day event: inventing a time would say the flying starts at midnight.
+ */
+export function eventNode(site: URL, event: EventInput): Node {
+  const day = (date: Date) => date.toISOString().slice(0, 10);
+  return {
+    '@type': 'Event',
+    '@id': `${event.url.href}#event`,
+    name: event.name,
+    description: event.description,
+    image: event.image,
+    startDate: day(event.start),
+    endDate: day(event.end ?? event.start),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: { '@type': 'Place', name: event.location },
+    organizer: { '@id': ids.club(site) },
+    url: event.url.href,
   };
 }
 

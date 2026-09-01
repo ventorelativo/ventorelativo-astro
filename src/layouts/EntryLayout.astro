@@ -26,6 +26,15 @@ interface Props {
     published: Date;
     section?: string;
   };
+  /** Present when that post announces an event: the Event node's fields. */
+  event?: {
+    name: string;
+    description: string;
+    image: string;
+    start: Date;
+    end?: Date;
+    location: string;
+  };
 }
 
 const {
@@ -37,6 +46,7 @@ const {
   type,
   publishedTime,
   article,
+  event,
 } = Astro.props;
 ---
 
@@ -49,6 +59,7 @@ const {
   publishedTime={publishedTime}
   breadcrumbLabels={breadcrumbLabels}
   article={article}
+  event={event}
 >
   <div class="container">
     <Breadcrumbs title={title} labels={breadcrumbLabels} />

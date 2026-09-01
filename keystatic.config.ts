@@ -69,7 +69,8 @@ const contentComponents = {
 
   Facts: block({
     label: 'Scheda dati',
-    description: 'Una riga di dati brevi — es. Quando / Decollo / Atterraggio.',
+    description:
+      'Una riga di dati brevi. Per la data e il luogo di un evento usa invece "È un evento" nella colonna a destra, così finiscono anche nel calendario e su Google.',
     schema: {
       items: fields.array(
         fields.object({
@@ -162,6 +163,39 @@ export default config({
           ],
           defaultValue: 'Eventi',
         }),
+        /*
+          Filled in only when the post announces an event. Keystatic's
+          conditional field shows the date and place inputs when the box is
+          ticked and hides them otherwise, so an ordinary news post is not asked
+          for a date it does not have.
+        */
+        event: fields.conditional(
+          fields.checkbox({
+            label: 'È un evento',
+            description:
+              'Aggiunge data e luogo, il pulsante "Aggiungi al calendario" e la scheda evento per Google.',
+            defaultValue: false,
+          }),
+          {
+            false: fields.empty(),
+            true: fields.object({
+              start: fields.date({
+                label: 'Giorno dell’evento',
+                description: 'Non la data di pubblicazione: il giorno in cui si vola.',
+                validation: { isRequired: true },
+              }),
+              end: fields.date({
+                label: 'Ultimo giorno (solo se dura più giorni)',
+              }),
+              location: fields.text({
+                label: 'Decollo / ritrovo',
+                description: 'Dove ci si trova. Es. "Montoso (Bagnolo Piemonte)".',
+                validation: { isRequired: true },
+              }),
+              landing: fields.text({ label: 'Atterraggio' }),
+            }),
+          },
+        ),
         draft: fields.checkbox({
           label: 'Bozza',
           description: 'Se selezionato, l’articolo non viene pubblicato.',

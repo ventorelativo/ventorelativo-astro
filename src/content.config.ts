@@ -17,6 +17,25 @@ import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 /**
+ * Keystatic writes a conditional field as `{ discriminant, value }`; a file
+ * written by hand says what it means — `event: { start, location }`. Both are
+ * accepted, and both arrive at the schema below as the plain object.
+ *
+ * The alternative was to put Keystatic's wrapper in the content files, and
+ * these files are read by people and by agents, not only by the CMS.
+ */
+function unwrapConditional(value: unknown): unknown {
+  if (value && typeof value === 'object' && 'discriminant' in value) {
+    const { discriminant, value: inner } = value as {
+      discriminant: unknown;
+      value?: unknown;
+    };
+    return discriminant ? inner : undefined;
+  }
+  return value;
+}
+
+/**
  * News (Drupal `node:article`).
  *
  * `image` uses the `image()` helper rather than a plain string: it resolves the
@@ -53,6 +72,40 @@ const news = defineCollection({
        * were actually for.
        */
       category: z.enum(['Eventi', 'Competizioni', 'Hike&Fly']),
+      /**
+       * Present when the post announces an event — a hike & fly, a competition
+       * round — and absent when it is just news.
+       *
+       * On the post rather than in a collection of its own: the announcement
+       * *is* the event here. A second collection would mean writing the thing
+       * twice and keeping the two in step, which is how a date ends up right in
+       * one place and wrong in the other.
+       *
+       * These fields are what make three things possible at once: an `.ics`
+       * download, the `Event` node in the structured data (which src/lib/schema.ts
+       * deliberately left out while the dates lived only in prose), and a
+       * "prossimi eventi" list whenever one is wanted.
+       */
+      event: z.preprocess(
+        unwrapConditional,
+        z
+          .object({
+            /** Day of the event. Separate from `date`, which is publication. */
+            start: z.coerce.date(),
+            /** Only for events spanning days; omit for a single day. */
+            end: z.coerce.date().optional(),
+            /** Where you turn up: the takeoff. Free text — "Montoso (Bagnolo P.)". */
+            location: z.string(),
+            /**
+             * The landing. Optional, and specific to this club rather than a
+             * generic calendar field — for a hike & fly the two ends of the day
+             * are the two things a pilot needs to know, and both posts that
+             * announce events spelled them out by hand.
+             */
+            landing: z.string().optional(),
+          })
+          .optional(),
+      ),
       /** From `!status`. Draft entries are excluded from the built site. */
       draft: z.boolean().default(false),
     }),
