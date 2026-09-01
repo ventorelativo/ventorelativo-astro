@@ -2,15 +2,17 @@
 /**
  * A flight-site teaser (the Drupal `sito` "card-big" view mode).
  *
- * Same stretched-link construction as ArticleCard: only the title is an anchor,
- * covered by a pseudo-element, so the card is clickable without the summary
- * being read out as part of the link.
+ * Text only, as the old cards were: no thumbnail. Two of the fourteen sites
+ * have a photograph, so a picture on the card would mark those two out as
+ * "better" for no reason other than which ones someone happened to shoot.
  *
- * Most sites have no photograph — 12 of the 14 — so the image is optional and
- * the card is designed to look deliberate without one rather than leaving a
- * grey hole.
+ * Metrics measured from the old build: 6px radius, 16px padding, a 1.5rem/500
+ * title in the body colour rather than the heading blue, 8px between the two
+ * lines.
+ *
+ * Only the title is an anchor, stretched over the card by a pseudo-element, so
+ * the whole card is clickable without the summary being read out as link text.
  */
-import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -18,31 +20,15 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { title, summary, images } = entry.data;
-const cover = images[0];
+const { title, summary } = entry.data;
 const href = `/siti/${entry.id}/`;
 ---
 
-<article class:list={['card', !cover && 'card--plain']}>
-  {
-    cover && (
-      <Image
-        class="card__image"
-        src={cover.src}
-        alt={cover.alt}
-        widths={[400, 800]}
-        sizes="(width < 48rem) 100vw, 22rem"
-        loading="lazy"
-      />
-    )
-  }
-
-  <div class="card__body">
-    <h2 class="card__title">
-      <a href={href}>{title}</a>
-    </h2>
-    <p class="card__summary">{summary}</p>
-  </div>
+<article class="card">
+  <h2 class="card__title">
+    <a href={href}>{title}</a>
+  </h2>
+  <p class="card__summary">{summary}</p>
 </article>
 
 <style>
@@ -50,9 +36,10 @@ const href = `/siti/${entry.id}/`;
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    gap: var(--space-2xs);
+    padding: var(--space-sm);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     background-color: var(--color-bg-raised);
     transition: border-color var(--transition);
   }
@@ -61,25 +48,17 @@ const href = `/siti/${entry.id}/`;
     border-color: var(--color-border-strong);
   }
 
-  .card__image {
-    width: 100%;
-    height: 10rem;
-    object-fit: cover;
-  }
-
-  .card__body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xs);
-    padding: var(--space-sm);
-  }
-
+  /* Overrides the global heading rule: card titles were the body colour on the
+     old site, not the heading blue, and a grid of blue titles reads as a list
+     of links rather than a set of cards. */
   .card__title {
-    font-size: var(--text-lg);
+    color: var(--color-text);
+    font-size: 1.5rem;
+    font-weight: 500;
   }
 
   .card__title a {
-    color: var(--color-text-strong);
+    color: inherit;
     text-decoration: none;
   }
 
@@ -95,11 +74,10 @@ const href = `/siti/${entry.id}/`;
 
   /*
     The summary is the "1969m, S-SE, Roure (TO)" triplet — specification, not
-    prose, so it is set as data: tabular, muted, one line where it fits.
+    prose, so it is set as data: tabular figures, muted.
   */
   .card__summary {
     color: var(--color-text-muted);
-    font-size: var(--text-sm);
     font-variant-numeric: tabular-nums;
   }
 </style>

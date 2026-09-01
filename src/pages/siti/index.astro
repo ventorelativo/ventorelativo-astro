@@ -37,12 +37,9 @@ const sites = (await getCollection('sites')).sort((a, b) => {
 <style>
   .site-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
-    /*
-      Cards size to their own content. Only 2 of the 14 sites have a photograph,
-      and stretching the other 12 to match a row that contains one leaves a tall
-      empty box where an image would be.
-    */
+    /* 20rem is the largest minimum that still fits three columns in the 68rem
+       container — the three-across, ~350px card the old site had. */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
     align-items: start;
     gap: var(--space-md);
   }
