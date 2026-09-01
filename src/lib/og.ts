@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 6;
+const TEMPLATE_VERSION = 8;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
