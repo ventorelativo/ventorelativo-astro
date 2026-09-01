@@ -28,6 +28,17 @@
   status = 301
   force = true
 
+# A memorable way in to the CMS. Keystatic hardcodes its own path — the UI
+# derives its base path from the route it is mounted at, and its client calls
+# /api/keystatic directly — so the app stays where the library puts it and this
+# is a doorway to it, not a move. Starts working in Phase 3, when the admin is
+# part of the deployed site; until then both sides of this 404.
+[[redirects]]
+  from = "/admin"
+  to = "/keystatic"
+  status = 301
+  force = true
+
 # The old site served its sitemap at /sitemap.xml; @astrojs/sitemap writes an
 # index plus numbered parts. Anything that already knows the old URL — Search
 # Console, a crawler's memory — is sent to the index (S8).

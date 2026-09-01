@@ -90,10 +90,16 @@ const href = `/siti/${entry.id}/`;
     font-variant-numeric: tabular-nums;
   }
 
+  /*
+    Pushed to the foot of the card. With equal-height cards the pills would
+    otherwise float wherever the summary happened to end — one line on Podio,
+    two on Montoso — and read as misaligned.
+  */
   .card__tags {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3xs);
-    margin-block-start: var(--space-3xs);
+    margin-block-start: auto;
+    padding-block-start: var(--space-2xs);
   }
 </style>

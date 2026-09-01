@@ -41,7 +41,13 @@ const sites = (await getCollection('sites')).sort((a, b) => {
     /* 20rem is the largest minimum that still fits three columns in the 68rem
        container — the three-across, ~350px card the old site had. */
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
-    align-items: start;
+    /*
+      Stretch, which is the grid default: every card in a row is as tall as the
+      tallest. `align-items: start` was here to stop a card without a
+      photograph being stretched to match one with; the cards carry no images
+      any more, and now that some have tag pills and some do not, sizing each to
+      its own content left the row ragged.
+    */
     gap: var(--space-md);
   }
 </style>

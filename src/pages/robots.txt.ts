@@ -10,6 +10,9 @@ export const GET: APIRoute = ({ site }) =>
   new Response(
     `User-agent: *
 Allow: /
+# The CMS. Nothing to index, and it should not be a search result (Phase 3).
+Disallow: /keystatic
+Disallow: /api/keystatic
 
 Sitemap: ${new URL('sitemap-index.xml', site)}
 `,
