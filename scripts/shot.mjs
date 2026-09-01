@@ -77,7 +77,8 @@ function parseArgs(argv) {
     if (a === '--size') opts.sizes.push(argv[++i]);
     else if (a === '--dark') opts.dark = true;
     else if (a === '--out') opts.out = argv[++i];
-    else if (a === '--measure') opts.measure = argv[++i].split(',').map((s) => s.trim());
+    else if (a === '--measure')
+      opts.measure = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--click') opts.click = argv[++i];
     else if (a === '--click-wait') opts.clickWait = Number(argv[++i]);
     else if (a === '--eval') opts.eval = argv[++i];
@@ -115,7 +116,8 @@ class CDP {
       if (msg.id && cdp.#pending.has(msg.id)) {
         const { resolve, reject } = cdp.#pending.get(msg.id);
         cdp.#pending.delete(msg.id);
-        msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+        if (msg.error) reject(new Error(msg.error.message));
+        else resolve(msg.result);
       } else if (msg.method) {
         // In flat mode the session is on the envelope, not in params. Merge it
         // in so handlers can tell which page an event came from.
@@ -223,7 +225,8 @@ function measureInPage(selectors, computedSelectors) {
     const out = {};
     for (const prop of props) {
       const v = cs.getPropertyValue(prop);
-      if (v && v !== 'normal' && v !== 'none' && v !== '0px' && v !== 'auto') out[prop] = v;
+      if (v && v !== 'normal' && v !== 'none' && v !== '0px' && v !== 'auto')
+        out[prop] = v;
     }
     // font-family is long and mostly fallbacks; keep the first family only.
     if (out['font-family']) out['font-family'] = out['font-family'].split(',')[0];
@@ -324,7 +327,8 @@ try {
     );
     const media = [];
     if (opts.dark) media.push({ name: 'prefers-color-scheme', value: 'dark' });
-    if (opts.reducedMotion) media.push({ name: 'prefers-reduced-motion', value: 'reduce' });
+    if (opts.reducedMotion)
+      media.push({ name: 'prefers-reduced-motion', value: 'reduce' });
     if (media.length) {
       await cdp.send('Emulation.setEmulatedMedia', { features: media }, sessionId);
     }
@@ -431,9 +435,12 @@ try {
       const kb = (n) => `${(n / 1024).toFixed(1)} kB`;
       const total = [...weight.values()].reduce((a, b) => a + b.bytes, 0);
       const rows = [...weight.entries()].sort((a, b) => b[1].bytes - a[1].bytes);
-      console.log(`  transferred   ${kb(total)} over ${
-        rows.reduce((a, [, v]) => a + v.count, 0)
-      } requests`);
+      console.log(
+        `  transferred   ${kb(total)} over ${rows.reduce(
+          (a, [, v]) => a + v.count,
+          0,
+        )} requests`,
+      );
       for (const [type, v] of rows) {
         console.log(`      ${type.padEnd(12)} ${kb(v.bytes).padStart(9)}  ${v.count}`);
       }
@@ -445,7 +452,9 @@ try {
         { expression: opts.eval, returnByValue: true, awaitPromise: true },
         sessionId,
       );
-      console.log(`  eval          ${JSON.stringify(evaluated.value ?? evaluated.description)}`);
+      console.log(
+        `  eval          ${JSON.stringify(evaluated.value ?? evaluated.description)}`,
+      );
     }
 
     for (const [sel, props] of Object.entries(m.computed)) {
@@ -483,7 +492,8 @@ try {
       }
       const { data } = shot;
       const slug =
-        new URL(opts.url).pathname.replace(/^\/|\/$/g, '').replace(/\W+/g, '-') || 'home';
+        new URL(opts.url).pathname.replace(/^\/|\/$/g, '').replace(/\W+/g, '-') ||
+        'home';
       const name = `${slug}-${size}-${scheme}.png`;
       const file = join(opts.out, name);
       await writeFile(file, Buffer.from(data, 'base64'));

@@ -1,0 +1,11 @@
+dist/
+.astro/
+package-lock.json
+# Generated: the lockup's geometry is computed, not hand-formatted.
+src/assets/og-logo.svg
+src/assets/logo-card.svg
+
+# Content belongs to Keystatic, which writes these files itself. If Prettier
+# also had an opinion, every save from the CMS would leave the tree failing
+# `format:check` until someone reformatted an editor's post.
+src/content/
