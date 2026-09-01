@@ -17,6 +17,10 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 | [`docs/how-to.md`](docs/how-to.md) | Making a change: text, nav, colours, pages, images. Start here. |
 | [`docs/architecture.md`](docs/architecture.md) | How Astro builds this site, and why it is arranged this way. |
 | [`docs/verifying-changes.md`](docs/verifying-changes.md) | Proving a change works, plus the traps that waste an afternoon. |
+| [`AGENTS.md`](AGENTS.md) | Instructions for AI coding agents. `CLAUDE.md` and `.github/copilot-instructions.md` point at it. |
+
+Club members can work on this site with an AI agent without knowing Astro — see
+[`docs/README.md`](docs/README.md).
 
 ## Getting started
 
