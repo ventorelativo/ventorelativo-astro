@@ -38,7 +38,13 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  font-weight: 350;
+  /*
+    300, as the old site ran it (`--bs-body-font-weight: 300`). The 350 this
+    started with made buttons and nav links — both 400 — read as barely heavier
+    than the prose around them; at 300 the weight contrast the old design relied
+    on comes back.
+  */
+  font-weight: 300;
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -192,10 +198,11 @@ hr {
     color var(--transition);
 }
 
-/* Bootstrap's own derivation: a 15% shade of the fill, 20% on the border. */
+/* Measured on the old site under a real pointer: rgb(26,70,141) on
+   rgb(25,66,133), text still white. */
 .button:hover {
   background-color: #1a468d;
-  border-color: #19427f;
+  border-color: #194285;
   color: #ffffff;
 }
 

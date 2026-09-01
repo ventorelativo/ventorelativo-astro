@@ -56,7 +56,11 @@
   /* Nav links ran on their own near-black/near-white ramp rather than the body
      text colours — `rgba(0,0,0,.65)` rising to solid black when current. */
   --color-nav: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.65));
+  --color-nav-hover: light-dark(rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.8));
   --color-nav-active: light-dark(#000000, #ffffff);
+  /* Bootstrap's $gray-400, which the old theme used for the hover rule in both
+     schemes — measured identical in light and dark. */
+  --color-nav-rule-hover: #ced4da;
 
   /* ---------------------------------------------------------- interactive */
   --color-accent: light-dark(var(--brand-blue), var(--brand-blue-bright));

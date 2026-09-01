@@ -21,6 +21,7 @@
  *     --measure <sel,...> extra selectors to report boxes for
  *     --click <sel>       click this element first (menus, drawers, disclosures)
  *     --computed <sel,...> dump the computed styles that matter for a port
+ *     --hover <sel>       park a real mouse pointer over this element first
  *     --no-shot           measure only, skip the PNGs
  */
 import { spawn } from 'node:child_process';
@@ -60,6 +61,7 @@ function parseArgs(argv) {
     shot: true,
     click: null,
     computed: [],
+    hover: null,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -69,6 +71,7 @@ function parseArgs(argv) {
     else if (a === '--out') opts.out = argv[++i];
     else if (a === '--measure') opts.measure = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--click') opts.click = argv[++i];
+    else if (a === '--hover') opts.hover = argv[++i];
     else if (a === '--computed')
       opts.computed = argv[++i].split(',').map((x) => x.trim());
     else if (a === '--no-shot') opts.shot = false;
@@ -307,6 +310,39 @@ try {
         failed = true;
       }
       await new Promise((r) => setTimeout(r, 150));
+    }
+
+    /*
+      Hover states cannot be read from a stylesheet with any confidence — a
+      cascade can carry several competing :hover rules — and getComputedStyle
+      will not report one that is not actually active. So dispatch a real mouse
+      move over the element and measure what the browser settles on.
+    */
+    if (opts.hover) {
+      const { result: box } = await cdp.send(
+        'Runtime.evaluate',
+        {
+          expression: `(() => {
+            const el = document.querySelector(${JSON.stringify(opts.hover)});
+            if (!el) return null;
+            const r = el.getBoundingClientRect();
+            return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+          })()`,
+          returnByValue: true,
+        },
+        sessionId,
+      );
+      if (!box.value) {
+        console.error(`  ⚠ --hover ${opts.hover}: no such element`);
+        failed = true;
+      } else {
+        await cdp.send(
+          'Input.dispatchMouseEvent',
+          { type: 'mouseMoved', x: box.value.x, y: box.value.y, buttons: 0 },
+          sessionId,
+        );
+        await new Promise((r) => setTimeout(r, 300)); // let transitions settle
+      }
     }
 
     const { result } = await cdp.send(

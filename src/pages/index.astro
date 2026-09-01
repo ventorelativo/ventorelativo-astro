@@ -188,17 +188,11 @@ const CTAS = [
     margin-block-start: var(--space-md);
   }
 
-  /* The default outline border is a UI-surface grey and disappears against a
-     photograph. Over the hero it derives from the text colour instead, plus a
-     faint scrim so the label never lands on a bright patch of sky. */
-  .hero__ctas :global(.button--outline) {
-    border-color: color-mix(in srgb, currentColor 45%, transparent);
-    background-color: color-mix(in srgb, var(--color-bg) 25%, transparent);
-    backdrop-filter: blur(2px);
-  }
-
-  .hero__ctas :global(.button--outline:hover) {
-    border-color: currentColor;
-    background-color: color-mix(in srgb, var(--color-bg) 55%, transparent);
-  }
+  /*
+    No hero-specific button treatment any more. It existed because the outline
+    button's border used to be a UI grey that vanished against the photograph;
+    now that the border is the brand blue, it reads on the hero unaided — and
+    the override's translucent white fill was fighting the ported hover state,
+    leaving white text on a near-white background.
+  */
 </style>

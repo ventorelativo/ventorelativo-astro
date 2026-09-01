@@ -22,13 +22,12 @@ const { transparent = false } = Astro.props;
 <header class:list={['header', transparent && 'header--transparent']}>
   <div class="header__inner container">
     {/*
-      The brand shows on every page, homepage included. The hero below repeats
-      the mark, but the header is where a visitor looks for who this is, and on
-      the homepage the hero's own wordmark is visually hidden so the two do not
-      compete.
+      The name and slogan show on every page. The mark does not: on the homepage
+      the hero carries it, centred and large, directly below — so repeating it
+      in the header is the same logo twice on one screen.
     */}
     <a href="/" class="header__brand" rel="home">
-      <Logo />
+      {!transparent && <Logo />}
       <span class="header__names">
         <span class="header__name">{SITE.name}</span>
         <span class="header__slogan">{SITE.slogan}</span>

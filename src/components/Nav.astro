@@ -87,6 +87,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     margin-inline: 0.5rem;
     color: var(--color-nav);
     line-height: 1.5;
+    text-align: center;
     text-decoration: none;
     text-transform: uppercase;
     border-bottom: 3px solid transparent;
@@ -95,8 +96,14 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       border-color var(--transition);
   }
 
+  /* Hover shows the rule in grey — the current page keeps the solid one. */
   .nav__list a:hover {
-    color: var(--color-nav-active);
+    color: var(--color-nav-hover);
+    border-bottom-color: var(--color-nav-rule-hover);
+  }
+
+  .nav__list a[aria-current='page']:hover {
+    border-bottom-color: currentColor;
   }
 
   .nav__list a[aria-current='page'] {
