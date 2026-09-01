@@ -75,7 +75,6 @@ const { transparent = false } = Astro.props;
     display: flex;
     align-items: center;
     gap: var(--space-2xs);
-    color: var(--color-text-strong);
     text-decoration: none;
   }
 
@@ -85,11 +84,20 @@ const { transparent = false } = Astro.props;
     line-height: var(--leading-tight);
   }
 
+  /*
+    Matches the old site's `.navbar-brand a.site-title`: uppercase and bold from
+    the Bootstrap base theme, the vr subtheme's `letter-spacing: -0.02em` over
+    the base's +2px, and the link colour rather than a text colour — the
+    wordmark was blue there, and it is what ties the header to the brand.
+  */
   .header__name {
-    font-size: var(--text-lg);
-    font-weight: 600;
-    letter-spacing: var(--tracking-wide);
+    /* The old theme ran this at 1.5rem; --text-xl lands within a hair of that
+       at desktop widths and shrinks sensibly on small screens. */
+    font-size: var(--text-xl);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
     text-transform: uppercase;
+    color: var(--color-accent);
   }
 
   .header__slogan {

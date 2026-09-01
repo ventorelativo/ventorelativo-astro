@@ -99,8 +99,10 @@ a {
   transition: color var(--transition);
 }
 
+/* The old site derived this from the link colour rather than jumping to the
+   heading colour, which is what made hover read as "same link, emphasised". */
 a:hover {
-  color: var(--color-text-strong);
+  color: var(--color-accent-hover);
 }
 
 hr {
