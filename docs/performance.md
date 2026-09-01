@@ -93,6 +93,22 @@ that wants more than one small async request.
 - **`astro:assets`** generating avif/webp at the sizes actually used — the site
   photographs go from 1.7 MB originals to ~40 kB thumbnails.
 
+## Build-time work is free to the visitor
+
+Social cards (`/og/*.jpg`) are rendered at build with satori and sharp, both
+devDependencies. That is ~25 images and a couple of seconds, and none of it
+reaches a browser — the visitor gets a JPEG that only Facebook, WhatsApp and
+friends ever fetch.
+
+They are cached by content hash in `.astro/og-cache/`, keyed on the title, the
+kind, the source photograph's bytes and the template version, so a rebuild
+re-renders only what changed: a local build goes from ~2.5s to ~1ms per card.
+A cold CI build has no cache and renders all of them; if that ever matters,
+persist that directory between Netlify builds.
+
+**Bump `TEMPLATE_VERSION` in `src/lib/og.ts` when the card design changes**, or
+every existing card keeps its old pixels for ever.
+
 ## Traps
 
 - **Dev numbers are not real numbers.** Always measure the build.

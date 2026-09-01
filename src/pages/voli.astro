@@ -11,7 +11,7 @@ if (!page) throw new Error('Missing src/content/pages/voli.mdx');
 const { Content } = await render(page);
 ---
 
-<PageLayout title={page.data.title} description={page.data.description}>
+<PageLayout title={page.data.title} description={page.data.description} ogRoute="voli">
   <div class="prose">
     <Content />
   </div>

@@ -13,21 +13,21 @@ interface Props {
   title: string;
   description?: string;
   breadcrumbLabels?: Record<string, string>;
-  /** Social card image for this entry (S4). */
-  image?: ImageMetadata;
+  /** Route of this entry's generated social card (S3). */
+  ogRoute?: string;
   imageAlt?: string;
   type?: 'website' | 'article';
   publishedTime?: string;
 }
 
-const { title, description, breadcrumbLabels, image, imageAlt, type, publishedTime } =
+const { title, description, breadcrumbLabels, ogRoute, imageAlt, type, publishedTime } =
   Astro.props;
 ---
 
 <BaseLayout
   title={title}
   description={description}
-  image={image}
+  ogRoute={ogRoute}
   imageAlt={imageAlt}
   type={type}
   publishedTime={publishedTime}

@@ -7,25 +7,17 @@
  * card type is what decides whether a shared link shows a large image or a
  * thumbnail, and the old config left it to chance.
  *
- * `image` takes an entry's own picture where there is one — the news article's
- * `field_image`, a site's first photograph — cropped to the 1280x640 the old
- * `social_card_node` image style produced. Everything else falls back to the
- * club's social card, which is exactly what the front page used.
- *
- * NOT ported: S3, the auto-generated OG image with the page title drawn over
- * the card. It needs a build-time renderer (`astro-og-canvas`, or satori and
- * resvg) — no cost to visitors, but a real dependency and a slower build. The
- * plan flags it as easy to drop by accident, so this is it being dropped on
- * purpose, with the fallback in place. Say the word and it goes in.
+ * Cards are generated per page (S3) by src/pages/og/[...route].jpg.ts. `ogRoute`
+ * names which one; anything without a card — /404, the thank-you page — falls
+ * back to the club's static card.
  */
-import { getImage } from 'astro:assets';
 import { SITE } from '../consts';
 
 interface Props {
   title?: string;
   description?: string;
-  /** An entry image to use as the social card. */
-  image?: ImageMetadata;
+  /** Route of this page's generated card, e.g. `siti/montoso`. */
+  ogRoute?: string;
   imageAlt?: string;
   /** `article` for news posts; anything else is a page. */
   type?: 'website' | 'article';
@@ -36,7 +28,7 @@ interface Props {
 const {
   title,
   description = SITE.description,
-  image,
+  ogRoute,
   imageAlt,
   type = 'website',
   publishedTime,
@@ -46,18 +38,11 @@ const {
 const pageTitle = title ? `${title} | ${SITE.name}` : SITE.name;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
-/*
-  1280x640 to match the old `social_card` image style. The old crop was
-  centre-bottom; centre is used here because two of the three article images
-  are portrait posters whose subject is at the top, and a bottom crop threw the
-  title away.
-*/
-const social = image
-  ? await getImage({ src: image, width: 1280, height: 640, fit: 'cover', format: 'jpg' })
-  : undefined;
-
-const ogImage = new URL(social?.src ?? '/social-card.png', Astro.site);
-const ogImageAlt = imageAlt ?? 'Logo VentoRelativo';
+const ogImage = new URL(
+  ogRoute ? `/og/${ogRoute}.jpg` : '/social-card.png',
+  Astro.site,
+);
+const ogImageAlt = imageAlt ?? `${title ?? SITE.name} — ${SITE.name}`;
 ---
 
 <title>{pageTitle}</title>

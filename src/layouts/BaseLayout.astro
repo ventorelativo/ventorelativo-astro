@@ -21,8 +21,8 @@ interface Props {
   description?: string;
   /** Homepage variant: header sits over the hero, main fills the viewport. */
   bare?: boolean;
-  /** Social card image for this page; falls back to the club's card. */
-  image?: ImageMetadata;
+  /** Route of this page's generated social card, e.g. `siti/montoso`. */
+  ogRoute?: string;
   imageAlt?: string;
   type?: 'website' | 'article';
   publishedTime?: string;
@@ -32,7 +32,7 @@ const {
   title,
   description = SITE.description,
   bare = false,
-  image,
+  ogRoute,
   imageAlt,
   type,
   publishedTime,
@@ -48,7 +48,7 @@ const {
     <SEO
       title={title}
       description={description}
-      image={image}
+      ogRoute={ogRoute}
       imageAlt={imageAlt}
       type={type}
       publishedTime={publishedTime}

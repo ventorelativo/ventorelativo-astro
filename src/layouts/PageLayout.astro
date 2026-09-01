@@ -16,12 +16,14 @@ interface Props {
   intro?: string;
   /** Labels for intermediate breadcrumb segments, e.g. { '/siti': 'Siti di volo' }. */
   breadcrumbLabels?: Record<string, string>;
+  /** Route of this page's generated social card (S3). */
+  ogRoute?: string;
 }
 
-const { title, description, intro, breadcrumbLabels } = Astro.props;
+const { title, description, intro, breadcrumbLabels, ogRoute } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} ogRoute={ogRoute}>
   <div class="container">
     <Breadcrumbs title={title} labels={breadcrumbLabels} />
 

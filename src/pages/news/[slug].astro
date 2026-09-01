@@ -36,8 +36,7 @@ const { Content } = await render(entry);
   title={title}
   description={summary}
   breadcrumbLabels={{ '/news': 'News' }}
-  image={image?.src}
-  imageAlt={image?.alt}
+  ogRoute={`news/${entry.id}`}
   type="article"
   publishedTime={date.toISOString()}
 >

@@ -29,8 +29,7 @@ const { Content } = await render(entry);
   title={title}
   description={summary}
   breadcrumbLabels={{ '/siti': 'Siti di volo' }}
-  image={images[0]?.src}
-  imageAlt={images[0]?.alt}
+  ogRoute={`siti/${entry.id}`}
 >
   {
     tags.length > 0 && (
