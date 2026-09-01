@@ -1,0 +1,5 @@
+# Mechanical reformats. `git config blame.ignoreRevsFile .git-blame-ignore-revs`
+# GitHub honours this file automatically.
+
+# style: apply Prettier across the codebase
+0c4129ab37c14c5504a01b30f57d70b5d0b68d57
