@@ -1005,6 +1005,25 @@ site, without touching a terminal.
 
 ### Phase 4 — Map & flight-data subsystems _(the risky part, deliberately last)_
 
+**Two corrections found while migrating the geometry (2026-09-02):**
+
+1. **§2.2's "point is always present" is wrong.** The obstacle is a bare `LINESTRING`, so
+   it has no point — which is precisely why it does not appear in the archived waypoint
+   file. `point` is optional; the rules that matter are per type.
+2. **What goes into each navdata file is decided by the `flight_data` view, not by the
+   controller's constants.** Reading the constants alone would produce 34 waypoints and 14
+   airspace blocks, and fail the byte-diff gate. The archived output and
+   `views.view.flight_data.yml` together give the real rule:
+
+   | File                          | View filter       | Also requires | Result                                                         |
+   | ----------------------------- | ----------------- | ------------- | -------------------------------------------------------------- |
+   | `ventorelativo-waypoints.cup` | type ≠ `poi`      | a point       | **29** — 16 takeoffs + 13 landings (the obstacle has no point) |
+   | `ventorelativo-airspace.txt`  | type ≠ `obstacle` | a polygon     | **13** — the landings only                                     |
+
+   Formats to reproduce exactly: CUP is `DDMM.mmm` / `DDDMM.mmm` with styles landing 21,
+   takeoff 20; OpenAir is `AC W`, `AL SFC`, `AH 100ft AGL` and
+   `DP dd:mm:ss.ss N ddd:mm:ss.ss E` per vertex, ring closed.
+
 One-off migration script: 34 features from WKT (`content/storage.*.json`) to point + shape.
 Zod geometry validation. `geo:export` / `geo:import` round-trip scripts. `featureTypes.ts`
 as the single source for type → colour / icon / CUP style / OpenAir class. The `<Map>`
