@@ -195,31 +195,30 @@ const typeNames = Object.fromEntries(
 <style>
   .map {
     position: relative;
+    /*
+      On the block, not on the poster. The poster is hidden the moment the map
+      opens, and with it went the only thing separating the frame from whatever
+      followed — the site grid on /siti ran straight into the map's bottom edge.
+    */
+    margin-block-end: var(--space-md);
   }
 
   /*
     One height for the poster and the map, so swapping one for the other shifts
     nothing — the whole reason CLS stays at zero.
 
-    600 px fixed, as the old site had it: the frame keeps its height and lets
-    its aspect follow the container, which reads far better than a frame that
-    grows and shrinks with the window.
+    600 px at every width, as the old site had it: the frame keeps its height
+    and lets its aspect follow the container, which reads far better than a
+    frame that grows and shrinks with the window.
 
-    Narrow screens go back to a ratio. A phone is only ~340 px wide, so a fixed
-    600 would be a tall portrait slot filling most of the screen before any of
-    the article — and the drawing, which is 16:9, would sit in the middle of it
-    with empty bands above and below.
+    On a phone that is a tall portrait frame, and the poster's 16:9 drawing sits
+    in the middle of it with bands above and below — which is why the poster
+    paints its own background across the whole frame, so the bands are not
+    visible as bands.
   */
   .map,
   :global(.poster) {
     --map-height: 600px;
-  }
-
-  @media (max-width: 48rem) {
-    .map,
-    :global(.poster) {
-      --map-height: auto;
-    }
   }
 
   /*
