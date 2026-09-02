@@ -11,7 +11,7 @@
  * same data and must be kept in step by hand; Zod is the backstop that catches
  * anything Keystatic (or a hand edit) gets wrong.
  */
-import { defineCollection } from 'astro:content';
+import { defineCollection, reference } from 'astro:content';
 // Astro 6 deprecated `z` from 'astro:content' in favour of this path.
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
@@ -137,6 +137,15 @@ const sites = defineCollection({
        */
       featured: z.boolean().default(false),
       /**
+       * The map features that belong to this site — takeoffs, landings, the
+       * obstacle, meeting points — in the order Drupal held them.
+       *
+       * `reference()` makes the build fail on a slug that does not exist, which
+       * is the whole point of storing a relationship rather than free text: a
+       * renamed feature cannot silently drop off a site's map.
+       */
+      mapFeatures: z.array(reference('mapFeatures')).default([]),
+      /**
        * Site attributes, shown as plain pills — not links.
        *
        * D13 dropped site tagging on the grounds that "only 1 of 14 sites is
@@ -212,4 +221,128 @@ const pages = defineCollection({
   }),
 });
 
-export const collections = { news, sites, pages };
+/**
+ * Map features (Drupal `storage:map_feature`) — MIGRATION-PLAN.md §2.2.
+ *
+ * Drupal held one opaque geofield per feature: a WKT string that might be a
+ * `POINT`, a `LINESTRING`, or a `GEOMETRYCOLLECTION` holding a point *and* a
+ * polygon. Three pieces of PHP existed only to unpack it. Here the two
+ * geometries are separate fields, because they feed completely different
+ * things: the point becomes a map marker and a CUP waypoint, the shape becomes
+ * a map fill and an OpenAir airspace block.
+ *
+ * **This data ends up in flight instruments.** The validation below is the
+ * reason a malformed paste fails the build instead of quietly producing a
+ * broken airspace file. Do not loosen it to make an entry go in.
+ *
+ * §2.2 said the point is "always present". It is not: the one obstacle is a
+ * LINESTRING with no point component, which is exactly why it is absent from
+ * the archived waypoint file. `point` is therefore optional, and the rules that
+ * matter are enforced per type below.
+ */
+const coordinate = z.tuple([
+  z.number().min(-180).max(180), // lon — WKT and GeoJSON are lon-first
+  z.number().min(-90).max(90), // lat
+]);
+
+/** Parses the JSON coordinate list a text field holds, with a useful message. */
+const coordinateList = z.string().transform((value, ctx) => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Coordinates must be JSON, e.g. [[7.33, 44.91], [7.34, 44.92], …]',
+    });
+    return z.NEVER;
+  }
+  const result = z.array(coordinate).min(2).safeParse(parsed);
+  if (!result.success) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `Bad coordinates: ${result.error.message}`,
+    });
+    return z.NEVER;
+  }
+  return result.data;
+});
+
+const mapFeatures = defineCollection({
+  loader: glob({ base: './src/content/map-features', pattern: '**/*.yaml' }),
+  schema: z
+    .object({
+      name: z.string(),
+      /**
+       * Decides the marker, the CUP style and the OpenAir class. Derived from
+       * Drupal's `field_type`; the four values are the ones in use.
+       */
+      type: z.enum(['takeoff', 'landing', 'obstacle', 'poi']),
+      /** Marker and waypoint position. Absent only on the obstacle line. */
+      point: z
+        .object({
+          lat: z.number().min(-90).max(90),
+          lon: z.number().min(-180).max(180),
+        })
+        .optional(),
+      /**
+       * A landing's zone, or the obstacle's line.
+       *
+       * Not run through `unwrapConditional`: here the discriminant is data —
+       * polygon or line — rather than the yes/no wrapper Keystatic puts around
+       * an optional group, and Keystatic's serialisation of a select-discriminated
+       * conditional is already this shape.
+       */
+      shape: z
+        .discriminatedUnion('discriminant', [
+          z.object({ discriminant: z.literal('polygon'), value: coordinateList }),
+          z.object({ discriminant: z.literal('line'), value: coordinateList }),
+        ])
+        .optional(),
+    })
+    .superRefine((feature, ctx) => {
+      /*
+        A polygon ring must close — first point identical to last. OpenAir
+        readers differ on what they do with an open ring, and "differ" is not a
+        word that belongs near airspace data.
+      */
+      if (feature.shape?.discriminant === 'polygon') {
+        const ring = feature.shape.value;
+        const [first, last] = [ring[0], ring[ring.length - 1]];
+        if (first[0] !== last[0] || first[1] !== last[1]) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['shape'],
+            message: `Polygon ring is not closed: starts ${first}, ends ${last}. Repeat the first point at the end.`,
+          });
+        }
+        if (ring.length < 4) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['shape'],
+            message: 'A closed polygon needs at least four points.',
+          });
+        }
+      }
+
+      // A landing without a zone would silently vanish from the airspace file.
+      if (feature.type === 'landing' && feature.shape?.discriminant !== 'polygon') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['shape'],
+          message: 'A landing needs a polygon: it is what becomes its airspace zone.',
+        });
+      }
+
+      // Anything but the obstacle needs a point, or it drops off the map.
+      if (feature.type !== 'obstacle' && !feature.point) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['point'],
+          message: `A ${feature.type} needs a point — it is its marker and its waypoint.`,
+        });
+      }
+    }),
+});
+
+export const collections = { news, sites, pages, mapFeatures };

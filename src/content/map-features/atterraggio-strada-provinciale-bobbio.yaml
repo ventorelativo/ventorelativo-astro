@@ -1,0 +1,8 @@
+name: "Atterraggio Strada Provinciale Bobbio"
+type: landing
+point:
+  lat: 44.806338
+  lon: 7.130602
+shape:
+  discriminant: polygon
+  value: '[[7.129799, 44.806608], [7.129798, 44.80613], [7.130278, 44.806077], [7.130965, 44.806032], [7.131581, 44.806134], [7.131576, 44.806553], [7.129799, 44.806608]]'

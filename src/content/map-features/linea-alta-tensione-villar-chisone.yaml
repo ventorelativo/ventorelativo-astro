@@ -1,0 +1,5 @@
+name: "Linea alta tensione Villar Chisone ⚡☠️"
+type: obstacle
+shape:
+  discriminant: line
+  value: '[[7.222395, 44.94442], [7.234583, 44.929504], [7.237158, 44.928197]]'

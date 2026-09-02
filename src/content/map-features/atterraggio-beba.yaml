@@ -1,0 +1,8 @@
+name: "Atterraggio Beba"
+type: landing
+point:
+  lat: 44.921015
+  lon: 7.239255
+shape:
+  discriminant: polygon
+  value: '[[7.238644, 44.921349], [7.239363, 44.921547], [7.239953, 44.920703], [7.239207, 44.920437], [7.238644, 44.921349]]'

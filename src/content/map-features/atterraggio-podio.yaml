@@ -1,0 +1,8 @@
+name: "Atterraggio Podio"
+type: landing
+point:
+  lat: 44.937456
+  lon: 7.236723
+shape:
+  discriminant: polygon
+  value: '[[7.236809, 44.937695], [7.237136, 44.937346], [7.236761, 44.937103], [7.236117, 44.937836], [7.236809, 44.937695]]'

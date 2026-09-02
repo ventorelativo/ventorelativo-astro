@@ -1,0 +1,8 @@
+name: "Atterraggio Ponte di Bibiana"
+type: landing
+point:
+  lat: 44.810847
+  lon: 7.289786
+shape:
+  discriminant: polygon
+  value: '[[7.289286, 44.811277], [7.290058, 44.811259], [7.290321, 44.81052], [7.2897, 44.810295], [7.289286, 44.811277]]'
