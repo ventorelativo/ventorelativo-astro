@@ -22,7 +22,15 @@ export default [
     scripts/check-content.mjs instead, which needs no dependency and can explain
     itself when it fails.
   */
-  { ignores: ['dist/', '.astro/', 'node_modules/', 'src/content/'] },
+  {
+    /*
+      `public/vendor/` is MapLibre's own build output, copied in by
+      scripts/sync-vendor.mjs so the worker can be served from a stable URL.
+      It is third-party minified code — linting it reports a thousand things
+      nobody here can act on, and drowns the gate.
+    */
+    ignores: ['dist/', '.astro/', 'node_modules/', 'src/content/', 'public/vendor/'],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
