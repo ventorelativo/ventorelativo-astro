@@ -19,8 +19,8 @@ someone who does not read code.
 
 ## Current state — read before planning anything
 
-Phases 1 and 2 are complete. **Phase 3 has not started.** As of the last update
-to this file:
+Phases 1, 2 and 3 are complete. **Phase 4 has not started.** As of the last
+update to this file:
 
 **Built:** every URL the old site had. `/`, `/news/` and its two published
 articles, `/siti/` and all fourteen flight sites, `/voli`, `/iscrizioni`,
@@ -29,15 +29,17 @@ temporary `/styleguide`. Three collections — `news`, `sites`, `pages` — in
 `src/content.config.ts`, with MDX bodies in `src/content/`.
 
 Also built: the SEO layer (sitemap, robots, per-page generated social cards,
-schema.org, cookie-free analytics) and **Keystatic in local mode** — `npm run
-dev`, then http://localhost:4321/keystatic.
+schema.org, cookie-free analytics) and **Keystatic in GitHub mode**, deployed
+with the site. Editors work on a `modifiche-` branch and merge once; each entry
+carries a preview link to that branch's Netlify deploy. See
+[`docs/deploying.md`](docs/deploying.md).
 
 **Not built yet:**
 
-- **Keystatic is development-only.** It needs server-rendered routes, so it is
-  excluded from production builds until Phase 3 brings the adapter and GitHub
-  storage. Do not add it to the production integration list.
-- **No Netlify adapter**, no server-rendered route (Phase 3).
+- **The domain has not moved.** `ventorelativo.it` still serves the old Drupal
+  export from a separate Netlify project; this build lives at
+  `ventorelativo-astro.netlify.app` and disallows crawling until it does. The
+  cutover is Phase 5, gated on Phase 4's byte-clean flight data.
 - RSS: dropped by decision, not oversight (see MIGRATION-PLAN.md S9).
 - `/styleguide` is a temporary design reference and should be deleted before
   the site goes live (Phase 5).
@@ -80,9 +82,12 @@ something real.
 2. **Redirects go in `netlify.toml`, never in `astro.config.mjs`.** Without a host
    adapter, Astro's `redirects` option emits meta-refresh HTML instead of real
    301s, which passes no ranking signal.
-3. **Do not add the Netlify adapter** before Phase 3. It flips the build to
-   `mode:"server"` and ships a ~3.6 MB SSR function even when every route is
-   prerendered.
+3. **Keep `output: 'static'`, and do not add a second server-rendered route
+   without a reason.** The Netlify adapter is present (Phase 3) because
+   Keystatic's two admin routes genuinely need it, and those two are the whole
+   contents of the serverless function. Every page of the site is still
+   prerendered; a stray `export const prerender = false` moves a page off the
+   CDN and onto a cold start.
 4. **Colours are defined once, in `src/styles/tokens.css`, as `light-dark()`
    pairs.** Never hardcode a hex in a component, and never add a
    `prefers-color-scheme` or `[data-theme]` block to get a dark variant — the
