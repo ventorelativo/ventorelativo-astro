@@ -10,7 +10,7 @@ import { getCollection, getEntries, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import Badge from '../../components/Badge.astro';
-import MapPoster from '../../components/MapPoster.astro';
+import SiteMap from '../../components/SiteMap.astro';
 import FeatureTable from '../../components/FeatureTable.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 
@@ -54,13 +54,8 @@ const { Content } = await render(entry);
     )
   }
 
-  {
-    /*
-    The poster stands in for the map (Phase 4b). TODO(Phase 4b): it becomes the
-    facade that loads MapLibre on interaction; TODO(Phase 4d): XContest links.
-  */
-  }
-  <MapPoster features={features} title={title} slot="media" />
+  {/* TODO(Phase 4d): XContest links for this site's takeoffs. */}
+  <SiteMap features={features} title={title} slot="media" />
 
   <Content components={MDX_COMPONENTS} />
 

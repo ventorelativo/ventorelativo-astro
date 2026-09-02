@@ -1,0 +1,487 @@
+---
+/**
+ * A site's map — as a facade (MIGRATION-PLAN.md Phase 4b).
+ *
+ * The page ships the poster and a button. MapLibre is 240 kB brotli'd and does
+ * not exist until someone asks for it, so a visitor who never opens a map pays
+ * nothing, and Lighthouse — which measures page load — never sees it. That is
+ * how a 240 kB dependency and a 100/100 target live on the same page.
+ *
+ * The interaction is shaped around INP, the one Core Web Vital genuinely at
+ * risk here. LCP and TBT are settled long before anyone clicks; INP is not, and
+ * a handler that blocks while a quarter-megabyte parses is a bad interaction by
+ * definition. So the click does two cheap things — flip a class and start an
+ * async import — and the next paint happens without waiting for the library.
+ * Hover and focus start the fetch even earlier, so by the time the click lands
+ * the download is usually already running.
+ */
+import MapPoster from './MapPoster.astro';
+import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
+import { MAPTILER_KEY } from '../lib/mapConfig';
+import type { LatLon } from '../lib/geo';
+
+interface Feature {
+  name: string;
+  type: FeatureType;
+  point?: LatLon;
+  shape?: { discriminant: 'polygon' | 'line'; value: [number, number][] };
+}
+
+interface Props {
+  features: Feature[];
+  title: string;
+}
+
+const { features, title } = Astro.props;
+
+/*
+  The geometry, as GeoJSON, in a script tag rather than a data attribute: it is
+  JSON already, and a data attribute would mean escaping it into an HTML
+  attribute and parsing it back out.
+
+  Colours are resolved in the browser from the same `--color-map-*` tokens the
+  poster uses, so the two cannot drift and the map follows the theme.
+*/
+const geojson = {
+  type: 'FeatureCollection',
+  features: [
+    ...features
+      .filter((feature) => feature.point)
+      .map((feature) => ({
+        type: 'Feature',
+        properties: { name: feature.name, kind: feature.type },
+        geometry: {
+          type: 'Point',
+          coordinates: [feature.point!.lon, feature.point!.lat],
+        },
+      })),
+    ...features
+      .filter((feature) => feature.shape)
+      .map((feature) => ({
+        type: 'Feature',
+        properties: { name: feature.name, kind: feature.type },
+        geometry:
+          feature.shape!.discriminant === 'polygon'
+            ? { type: 'Polygon', coordinates: [feature.shape!.value] }
+            : { type: 'LineString', coordinates: feature.shape!.value },
+      })),
+  ],
+};
+
+// Without a key there is nothing to load, so the button would lie. The poster
+// stands on its own — it is a drawing, not a placeholder for one.
+const interactive = features.length > 0 && MAPTILER_KEY !== '';
+
+const typeColours = Object.fromEntries(
+  Object.keys(FEATURE_TYPES).map((type) => [type, `--color-map-${type}`]),
+);
+---
+
+<div class="map" data-map={interactive ? '' : null}>
+  <MapPoster features={features} title={title} />
+
+  {
+    interactive && (
+      <>
+        <button class="map__open" type="button" data-map-open>
+          <span data-map-label>Apri la mappa</span>
+        </button>
+        <div class="map__canvas" data-map-canvas hidden />
+        <script
+          type="application/json"
+          data-map-data
+          set:html={JSON.stringify(geojson)}
+        />
+        <script
+          type="application/json"
+          data-map-colours
+          set:html={JSON.stringify(typeColours)}
+        />
+      </>
+    )
+  }
+</div>
+
+<style>
+  .map {
+    position: relative;
+  }
+
+  /*
+    The button sits over the poster rather than beside it, so the whole drawing
+    reads as the control. It is a real <button>, so it is focusable, announced,
+    and works from the keyboard without anything being added for it.
+  */
+  .map__open {
+    position: absolute;
+    inset-block-end: var(--space-md);
+    inset-inline-end: var(--space-xs);
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+    color: var(--color-text-strong);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .map__open:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .map__open:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .map__open[disabled] {
+    cursor: progress;
+    opacity: 0.7;
+  }
+
+  /*
+    The canvas replaces the poster in the same box, so nothing on the page moves
+    when the map arrives — the layout shift a facade would otherwise cause is
+    the reason to size it here rather than let MapLibre size itself.
+  */
+  .map__canvas {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .map--open :global(.poster) {
+    display: none;
+  }
+
+  .map--open .map__open {
+    display: none;
+  }
+</style>
+
+<script>
+  /*
+    Loaded on every page that renders a map, and it is deliberately tiny: its
+    whole job is to notice an intent and then get out of the way. MapLibre
+    itself is behind the dynamic import at the bottom, so nothing here pulls it
+    into the page bundle.
+  */
+  import { TILE_ORIGIN } from '../lib/mapConfig';
+
+  function setup(root: HTMLElement) {
+    const button = root.querySelector<HTMLButtonElement>('[data-map-open]');
+    const canvas = root.querySelector<HTMLElement>('[data-map-canvas]');
+    const label = root.querySelector<HTMLElement>('[data-map-label]');
+    if (!button || !canvas || !label) return;
+
+    /*
+      Warm the connection on the first sign of interest. DNS, TCP and TLS to the
+      tile host are hundreds of milliseconds that would otherwise happen after
+      the click, in series with everything else.
+    */
+    let warmed = false;
+    const warm = () => {
+      if (warmed) return;
+      warmed = true;
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = TILE_ORIGIN;
+      link.crossOrigin = '';
+      document.head.append(link);
+    };
+    button.addEventListener('pointerenter', warm, { once: true });
+    button.addEventListener('focus', warm, { once: true });
+
+    let started = false;
+    button.addEventListener('click', () => {
+      if (started) return;
+      started = true;
+
+      /*
+        Everything before the await is what INP measures. Paint a busy state and
+        stop — the import is a promise, and the browser gets its frame.
+      */
+      button.disabled = true;
+      label.textContent = 'Caricamento…';
+      warm();
+
+      void open(root, canvas, button, label);
+    });
+  }
+
+  /**
+   * MapLibre is a WebGL renderer, so without WebGL 2 there is no map to be had.
+   *
+   * Worth checking rather than letting the constructor throw: the failure
+   * arrives after the poster has been swapped out, and a blank rectangle is a
+   * worse answer than the drawing that was already there.
+   */
+  function canRenderMap(): boolean {
+    try {
+      return !!document.createElement('canvas').getContext('webgl2');
+    } catch {
+      return false;
+    }
+  }
+
+  async function open(
+    root: HTMLElement,
+    canvas: HTMLElement,
+    button: HTMLButtonElement,
+    label: HTMLElement,
+  ) {
+    const back = (message: string) => fail(root, canvas, button, label, message);
+
+    if (!canRenderMap()) {
+      back('Mappa non supportata da questo browser');
+      return;
+    }
+
+    try {
+      // The stylesheet is a plain file in public/ — see scripts/sync-vendor-css.mjs
+      // for why it is not imported here.
+      await loadStylesheet('/vendor/maplibre-gl.css');
+
+      const [{ Map, NavigationControl, TerrainControl }, config] = await Promise.all([
+        import('maplibre-gl'),
+        import('../lib/mapConfig'),
+      ]);
+
+      const data = readJson(root, '[data-map-data]');
+      const colours = readJson(root, '[data-map-colours]') as Record<string, string>;
+      const colourFor = (kind: string) => resolveColour(colours[kind] ?? '');
+
+      canvas.hidden = false;
+      root.classList.add('map--open');
+
+      const map = new Map({
+        container: canvas,
+        style: config.styleUrl(),
+        // Scrolling the page must not zoom the map out from under the reader.
+        cooperativeGestures: true,
+        attributionControl: { compact: true },
+      });
+
+      map.addControl(new NavigationControl({ visualizePitch: true }), 'top-right');
+
+      /*
+        Only a failure before the style loads is fatal. Afterwards `error` also
+        fires for a single tile that did not arrive, and tearing the map down
+        over one missing tile would be worse than the gap it leaves.
+      */
+      let loaded = false;
+      map.on('error', () => {
+        if (!loaded) {
+          map.remove();
+          back('Mappa non disponibile — riprova');
+        }
+      });
+
+      /*
+        `style.load`, not `load`.
+
+        `load` waits for the style *and* every tile of the opening view, and if
+        one of those never resolves it never fires — which is what happened
+        here: the style arrived, the basemap drew, and the features and framing
+        were never added, leaving a map of the whole world. Adding sources and
+        layers needs the style parsed and nothing more, which is exactly what
+        `style.load` reports. It also fires sooner, which matters most to the
+        person on mountain data this site is built for.
+      */
+      map.on('style.load', () => {
+        loaded = true;
+        map.addSource('features', { type: 'geojson', data });
+
+        const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
+        // ['match', kind, 'takeoff', <colour>, …, <fallback>] — one paint
+        // expression fed from the CSS tokens, so map and poster stay in step.
+        const colourExpression: unknown[] = ['match', ['get', 'kind']];
+        for (const kind of kinds) colourExpression.push(kind, colourFor(kind));
+        colourExpression.push(colourFor('takeoff'));
+
+        map.addLayer({
+          id: 'zones',
+          type: 'fill',
+          source: 'features',
+          filter: ['==', ['geometry-type'], 'Polygon'],
+          paint: { 'fill-color': colourExpression as never, 'fill-opacity': 0.25 },
+        });
+        map.addLayer({
+          id: 'zone-outlines',
+          type: 'line',
+          source: 'features',
+          filter: ['==', ['geometry-type'], 'Polygon'],
+          paint: { 'line-color': colourExpression as never, 'line-width': 2 },
+        });
+        map.addLayer({
+          id: 'lines',
+          type: 'line',
+          source: 'features',
+          filter: ['==', ['geometry-type'], 'LineString'],
+          paint: {
+            'line-color': colourExpression as never,
+            'line-width': 3,
+            'line-dasharray': [3, 2],
+          },
+        });
+        map.addLayer({
+          id: 'points',
+          type: 'circle',
+          source: 'features',
+          filter: ['==', ['geometry-type'], 'Point'],
+          paint: {
+            'circle-radius': 7,
+            'circle-color': colourExpression as never,
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2,
+          },
+        });
+        map.addLayer({
+          id: 'labels',
+          type: 'symbol',
+          source: 'features',
+          filter: ['==', ['geometry-type'], 'Point'],
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-size': 13,
+            'text-offset': [0, 1.2],
+            'text-anchor': 'top',
+          },
+          paint: { 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+        });
+
+        map.fitBounds(boundsOf(data), { padding: 60, duration: 0 });
+
+        /*
+          Terrain last, and fenced off.
+
+          It is the one part of this that can fail on its own — elevation is a
+          second service, and a renderer without the support for it throws where
+          a flat map would have been fine. It used to run before the layers, so
+          when it threw it took the features and the framing with it and left a
+          map of the whole world. Now the worst it can cost is the third
+          dimension.
+        */
+        try {
+          map.addSource('terrain', {
+            type: 'raster-dem',
+            url: config.terrainUrl(),
+            tileSize: 256,
+          });
+          map.setTerrain({
+            source: 'terrain',
+            exaggeration: config.TERRAIN_EXAGGERATION,
+          });
+          map.addControl(new TerrainControl({ source: 'terrain' }), 'top-right');
+          // The tilt the old site eased into once its style had loaded. Worth
+          // it only with relief underneath; flat, it just skews the labels.
+          map.easeTo({ pitch: config.PITCH, duration: 2000 });
+        } catch {
+          /* Flat map, every feature still present. */
+        }
+      });
+    } catch {
+      back('Mappa non disponibile — riprova');
+    }
+  }
+
+  /**
+   * Put the poster back.
+   *
+   * The drawing and the table below it say everything the map says, so a
+   * failure should return the page to what it had rather than leave an empty
+   * frame where a map was promised.
+   */
+  function fail(
+    root: HTMLElement,
+    canvas: HTMLElement,
+    button: HTMLButtonElement,
+    label: HTMLElement,
+    message: string,
+  ) {
+    root.classList.remove('map--open');
+    canvas.hidden = true;
+    canvas.replaceChildren();
+    button.disabled = false;
+    label.textContent = message;
+  }
+
+  /**
+   * A custom property's *used* colour, as `rgb(...)`.
+   *
+   * `getPropertyValue('--color-map-takeoff')` hands back the declaration
+   * verbatim — here that is the string `light-dark(#1f52a6, #7997ca)`, which
+   * means nothing to a renderer that is not a browser. MapLibre took it,
+   * failed to parse it, and drew no markers at all.
+   *
+   * Painting it onto a throwaway element and reading `color` back makes the
+   * browser do the resolving: `light-dark()` collapses to whichever half the
+   * current colour scheme calls for, and the result is a plain rgb() triple.
+   * It also means the map picks up the theme the visitor is actually in.
+   */
+  function resolveColour(name: string): string {
+    const probe = document.createElement('span');
+    probe.style.color = `var(${name})`;
+    probe.style.display = 'none';
+    document.body.append(probe);
+    const colour = getComputedStyle(probe).color;
+    probe.remove();
+    // Falls back to the brand blue, which is the takeoff colour anyway.
+    return colour || '#1f52a6';
+  }
+
+  function readJson(root: HTMLElement, selector: string) {
+    return JSON.parse(root.querySelector(selector)?.textContent ?? '{}');
+  }
+
+  /** Resolves when the stylesheet is in, so the map never paints unstyled. */
+  function loadStylesheet(href: string): Promise<void> {
+    if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.addEventListener('load', () => resolve(), { once: true });
+      link.addEventListener('error', () => reject(new Error(href)), { once: true });
+      document.head.append(link);
+    });
+  }
+
+  interface GeoJsonLike {
+    features: { geometry: { type: string; coordinates: unknown } }[];
+  }
+
+  /** [[w, s], [e, n]] over every coordinate, at any nesting depth. */
+  function boundsOf(data: GeoJsonLike): [[number, number], [number, number]] {
+    let west = 180;
+    let south = 90;
+    let east = -180;
+    let north = -90;
+
+    const visit = (value: unknown) => {
+      if (!Array.isArray(value)) return;
+      if (typeof value[0] === 'number' && typeof value[1] === 'number') {
+        const [lon, lat] = value as [number, number];
+        west = Math.min(west, lon);
+        east = Math.max(east, lon);
+        south = Math.min(south, lat);
+        north = Math.max(north, lat);
+        return;
+      }
+      for (const item of value) visit(item);
+    };
+    for (const feature of data.features) visit(feature.geometry.coordinates);
+
+    return [
+      [west, south],
+      [east, north],
+    ];
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-map]')) setup(root);
+</script>
