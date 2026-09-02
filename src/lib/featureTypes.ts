@@ -17,6 +17,16 @@ interface FeatureTypeInfo {
   /** Shown to visitors, so Italian. Singular — it labels one row. */
   label: string;
   /**
+   * The plural, written out rather than derived.
+   *
+   * Italian does not pluralise by appending a letter: decollo → decolli,
+   * atterraggio → atterraggi, and "punto di interesse" inflects its first word
+   * and not its last. A rule that guessed produced "2 decolloi" and
+   * "3 atterraggioi" in the screen-reader description before this field
+   * existed.
+   */
+  labelPlural: string;
+  /**
    * SeeYou CUP waypoint style. 20 and 21 are what an instrument reads to draw a
    * takeoff or a landable field; the other two are informational.
    */
@@ -32,11 +42,27 @@ interface FeatureTypeInfo {
 const OPENAIR_DEFAULT_CLASS = 'Q';
 
 export const FEATURE_TYPES: Record<FeatureType, FeatureTypeInfo> = {
-  takeoff: { label: 'Decollo', cupStyle: 20, openAirClass: OPENAIR_DEFAULT_CLASS },
-  landing: { label: 'Atterraggio', cupStyle: 21, openAirClass: 'W' },
-  obstacle: { label: 'Ostacolo', cupStyle: 8, openAirClass: OPENAIR_DEFAULT_CLASS },
+  takeoff: {
+    label: 'Decollo',
+    labelPlural: 'decolli',
+    cupStyle: 20,
+    openAirClass: OPENAIR_DEFAULT_CLASS,
+  },
+  landing: {
+    label: 'Atterraggio',
+    labelPlural: 'atterraggi',
+    cupStyle: 21,
+    openAirClass: 'W',
+  },
+  obstacle: {
+    label: 'Ostacolo',
+    labelPlural: 'ostacoli',
+    cupStyle: 8,
+    openAirClass: OPENAIR_DEFAULT_CLASS,
+  },
   poi: {
     label: 'Punto di interesse',
+    labelPlural: 'punti di interesse',
     cupStyle: 19,
     openAirClass: OPENAIR_DEFAULT_CLASS,
   },

@@ -55,9 +55,10 @@ const counts = new Map<FeatureType, number>();
 for (const feature of features)
   counts.set(feature.type, (counts.get(feature.type) ?? 0) + 1);
 const summary = [...counts]
-  .map(
-    ([type, n]) => `${n} ${FEATURE_TYPES[type].label.toLowerCase()}${n > 1 ? 'i' : ''}`,
-  )
+  .map(([type, n]) => {
+    const { label, labelPlural } = FEATURE_TYPES[type];
+    return `${n} ${n === 1 ? label.toLowerCase() : labelPlural}`;
+  })
   .join(', ');
 
 const shapes = features.filter((feature) => feature.shape);
