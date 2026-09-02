@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # Third-party CSS copied from node_modules by scripts/sync-vendor-css.mjs
 public/vendor/
+
+# Working GeoJSON produced by scripts/geo.mjs — the YAML is the source.
+geo/

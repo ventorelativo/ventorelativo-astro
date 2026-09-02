@@ -16,7 +16,9 @@
     "weight": "node scripts/shot.mjs --no-shot --weight",
     "navdata:check": "node scripts/check-navdata.mjs",
     "predev": "node scripts/sync-vendor.mjs",
-    "prebuild": "node scripts/sync-vendor.mjs"
+    "prebuild": "node scripts/sync-vendor.mjs",
+    "geo:export": "node scripts/geo.mjs export",
+    "geo:import": "node scripts/geo.mjs import"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.0",
