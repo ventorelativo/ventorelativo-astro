@@ -424,7 +424,14 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
       await loadStylesheet('/vendor/maplibre-gl.css');
 
       const [
-        { Map, NavigationControl, TerrainControl, FullscreenControl, setWorkerUrl },
+        {
+          Map,
+          NavigationControl,
+          TerrainControl,
+          FullscreenControl,
+          prewarm,
+          setWorkerUrl,
+        },
         config,
       ] = await Promise.all([import('maplibre-gl'), import('../lib/mapConfig')]);
 
@@ -440,6 +447,14 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
       */
       setWorkerUrl('/vendor/maplibre-gl-worker.mjs');
 
+      /*
+        Start the worker before the map asks for it. The gain here is modest —
+        the map is constructed a few lines below, so there is little for it to
+        overlap with — but it costs nothing and takes the worker's own startup
+        off the critical path of the first tile.
+      */
+      prewarm();
+
       const data = readJson(root, '[data-map-data]');
       const colours = readJson(root, '[data-map-colours]') as Record<string, string>;
       const icons = readJson(root, '[data-map-icons]') as Record<string, string>;
@@ -451,6 +466,8 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
       const map = new Map({
         container: canvas,
         style: config.styleUrl(),
+        // Keeps a stray drag inside the club's valleys — see MAX_BOUNDS.
+        maxBounds: config.MAX_BOUNDS,
         // Scrolling the page must not zoom the map out from under the reader.
         cooperativeGestures: true,
         attributionControl: { compact: true },

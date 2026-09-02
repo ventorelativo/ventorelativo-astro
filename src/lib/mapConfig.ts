@@ -47,3 +47,19 @@ export function terrainUrl(): string {
 
 /** Where tiles come from, for the preconnect fired on hover. */
 export const TILE_ORIGIN = 'https://api.maptiler.com';
+
+/**
+ * How far a visitor may pan, as [[west, south], [east, north]].
+ *
+ * The club's 34 features span 6.99–7.36 E and 44.74–45.06 N; this is that box
+ * with about 20 km of room on every side, which reaches Torino and the French
+ * border and covers anywhere a flight from these sites could plausibly go.
+ *
+ * It is a courtesy to the visitor and to the tile quota in equal measure: a
+ * stray drag on a phone can otherwise send the map to the Atlantic, fetching
+ * tiles the whole way and leaving someone with no obvious way back.
+ */
+export const MAX_BOUNDS: [[number, number], [number, number]] = [
+  [6.74, 44.49],
+  [7.61, 45.31],
+];
