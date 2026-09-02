@@ -617,7 +617,33 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
           plainly "do not move the ground under me".
         */
         const pitch = tilted && !prefersReducedMotion() ? config.PITCH : 0;
-        map.fitBounds(boundsOf(data), { padding: 60, pitch, duration: 0 });
+        /*
+          Tilt only where there is something to tilt.
+
+          `fitBounds` solves the camera for a rectangle; a pitched view is a
+          trapezoid, and that approximation is fine over kilometres and wrong
+          over hundreds of metres. Podio's two points are 900 m apart, and at
+          that extent the tilted camera came out pointing at empty ground with
+          both markers off frame — whatever zoom cap it was given.
+
+          A site spanning less than this is a takeoff and its landing in one
+          valley, where there is no relief to show at that scale anyway, so it
+          gets the flat view that has always framed correctly.
+
+          Measuring the real screen positions afterwards and zooming out until
+          they fit was tried first and is worse: `project` consults terrain
+          that has not loaded, so it reports positions the map will never paint
+          and the correction runs away.
+        */
+        const bounds = boundsOf(data);
+        const span = Math.max(bounds[1][0] - bounds[0][0], bounds[1][1] - bounds[0][1]);
+        const TILT_MINIMUM_SPAN = 0.02; // Roughly two kilometres.
+
+        map.fitBounds(bounds, {
+          padding: 60,
+          pitch: span >= TILT_MINIMUM_SPAN ? pitch : 0,
+          duration: 0,
+        });
 
         /*
           Where "reset" goes back to. Read off the map rather than recomputed,
