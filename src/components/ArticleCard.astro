@@ -14,10 +14,18 @@ import { formatDate, isoDate } from '../utils/date';
 
 interface Props {
   entry: CollectionEntry<'news'>;
+  /**
+   * Set on the first card of a listing. Its image is the LCP element, and
+   * `loading="lazy"` on the LCP element is a measured delay, not a saving:
+   * a lazy image is invisible to the preload scanner and is not requested
+   * until layout has run. On slow 3G that cost 1.5s here.
+   */
+  priority?: boolean;
 }
 
-const { entry } = Astro.props;
-const { title, date, summary, image, category } = entry.data;
+const { entry, priority = false } = Astro.props;
+
+onst { title, date, summary, image, category } = entry.data;
 const href = `/news/${entry.id}/`;
 ---
 
@@ -31,7 +39,8 @@ const href = `/news/${entry.id}/`;
         widths={[400, 800]}
         sizes="(width < 48rem) 100vw, 24rem"
         quality={70}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
       />
     )
   }
