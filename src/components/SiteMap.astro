@@ -198,6 +198,7 @@ const typeColours = Object.fromEntries(
     button.addEventListener('focus', warm, { once: true });
 
     let started = false;
+    scheduleAutoLoad(root, button);
     button.addEventListener('click', () => {
       if (started) return;
       started = true;
@@ -212,6 +213,56 @@ const typeColours = Object.fromEntries(
 
       void open(root, canvas, button, label);
     });
+  }
+
+  /**
+   * Open the map without being asked — but late, and only when it is worth it.
+   *
+   * Four gates, and every one of them exists to keep a 240 kB download off
+   * somebody's critical path:
+   *
+   *  - **After `load`.** Nothing competes with the page's own resources.
+   *  - **Only when visible.** A map further down the page is not downloaded
+   *    until it is scrolled to, so a visitor who reads the text and leaves
+   *    never fetches it.
+   *  - **When the browser is idle**, so it never delays an interaction.
+   *  - **Not on a metered or slow connection.** Save-Data and
+   *    `prefers-reduced-data` are explicit requests not to do this, and 2G is
+   *    a mountain valley — the audience this site is actually built for. Those
+   *    visitors keep the poster and the button, which is the honest trade: they
+   *    can still have the map, but they choose to spend the bytes.
+   */
+  function scheduleAutoLoad(root: HTMLElement, button: HTMLButtonElement) {
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    if (connection?.saveData) return;
+    if (/(^|-)2g$/.test(connection?.effectiveType ?? '')) return;
+    if (matchMedia('(prefers-reduced-data: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    const whenIdle = (run: () => void) => {
+      const idle = () =>
+        'requestIdleCallback' in window
+          ? requestIdleCallback(run, { timeout: 4000 })
+          : setTimeout(run, 1500);
+      if (document.readyState === 'complete') idle();
+      else window.addEventListener('load', idle, { once: true });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        // Through the button, so the automatic path and the manual one are the
+        // same code — including the busy state and every failure route.
+        whenIdle(() => button.click());
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(root);
   }
 
   /**
