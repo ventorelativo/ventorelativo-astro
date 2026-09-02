@@ -1043,9 +1043,69 @@ Three details worth keeping, all read off `NavdataController.php` rather than in
   load-bearing today — `it` was taken as the one that stays right if a name changes.
 
 **Remaining:** the maps (M-series), `geo:export`/`geo:import`, `/api/sites/all/geo.json`,
-per-site maps and feature tables, XContest links. MapLibre GL is a ~200 kB gzipped
-dependency against a homepage that ships 1.5 kB of JS — rule 6 conversation before any of
-it is installed.
+per-site maps and feature tables, XContest links.
+
+#### Phase 4b — the map, and how it stays off the critical path
+
+_Proposed 2026-09-02. Needs sign-off on the dependency (rule 6)._
+
+**There is nothing lighter that does this.** Measured, brotli, not quoted from a blog:
+
+| Library        | Transfer          | Vector tiles | 3D terrain |
+| -------------- | ----------------- | ------------ | ---------- |
+| MapLibre GL v5 | 225 kB + 8 kB CSS | yes          | **yes**    |
+| OpenLayers 10  | 213 kB            | yes          | no         |
+| Leaflet 1.9    | 37 kB             | raster only  | no         |
+| Protomaps.js   | ~15 kB            | yes (canvas) | no         |
+
+OpenLayers costs the same and cannot do it; Leaflet and Protomaps are six to fifteen times
+lighter and cannot either. CesiumJS is the only other 3D option and is far bigger. So the
+cost is the requirement, not the library — which makes the question "when is it paid",
+not "which library".
+
+**Nobody pays it on load.** The facade pattern, which is Google's own recommendation for
+heavy embeds: the page ships a static poster, and the real map replaces it on interaction.
+Lighthouse measures page load, so a module fetched on click never enters the audit — the
+100/100 target survives intact, and a visitor who never opens the map never downloads a
+byte of it.
+
+1. **Poster: an inline SVG, zero JS, zero third-party.** Drawn at build from the geometry
+   already in `map-features` — the takeoff point and the landing polygon, in theme tokens.
+   About 1 kB, correct offline, and it cannot 404. MapTiler's Static Maps API was the
+   obvious alternative and is **paid-plan only** (checked); a real basemap poster is still
+   possible later by rendering one in headless Chrome at build with the existing
+   `scripts/shot.mjs` harness and caching it by content hash the way `src/lib/og.ts`
+   already caches social cards.
+2. **Load on intent.** `pointerenter`/`focus` on the poster injects `preconnect` to the
+   tile host and `modulepreload` for the MapLibre chunk, so the fetch is underway before
+   the click lands.
+3. **Protect INP, which is the only vital genuinely at risk.** LCP and TBT are already
+   settled by the time anyone clicks; INP is not. The click handler must paint a loading
+   state and nothing else, then `await import()` — no synchronous work before the frame.
+4. **The CSS needs the third route.** Importing it dynamically hits the documented trap
+   (Astro inlines the small stylesheet, Vite preloads the file it never wrote, the
+   rejected import takes the feature down). Importing it in frontmatter puts 8 kB on all
+   fourteen site pages for a map most visitors never open. So: copy `maplibre-gl.css` into
+   `public/` — verbatim, unprocessed, no Vite involvement — and inject a `<link>` at click
+   time.
+5. **Tiles outweigh the library.** A pitched terrain view pulls vector tiles _and_
+   terrain-RGB DEM tiles: several MB on mountain data, and the thing that will actually
+   hurt. Bound it — `maxBounds` to the club's valleys, a sane `maxZoom`, modest terrain
+   exaggeration, `cooperativeGestures` so a scroll does not hijack the page.
+6. **The MapTiler key is public by necessity.** Restrict it by domain in MapTiler's
+   settings, and remember `PUBLIC_MAPTILER_KEY` must join `SECRETS_SCAN_OMIT_KEYS` in
+   netlify.toml or the build fails the way it already did once.
+7. **No map on `/siti`.** Fourteen cards is the heaviest grid on the site; a fifteenth
+   facade earns nothing. The overview map, if wanted, is its own page.
+8. **No WebGL2 → keep the poster** and show the feature table. The data is readable
+   without a renderer, which is the point of having it in a collection.
+
+**Order:** (a) feature tables + poster SVG — useful on their own, zero JS; (b) the facade
+and MapLibre on click; (c) 3D terrain and the overview map; (d) `geo:export`/`geo:import`
+and the XContest links.
+
+**Exit:** a site page gains **no** JavaScript on load, measured with `npm run weight`;
+the map's cost is measured separately, as the price of opening it.
 
 **Two corrections found while migrating the geometry (2026-09-02):**
 
