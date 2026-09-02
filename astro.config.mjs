@@ -6,6 +6,7 @@ import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 
 import sitemap from '@astrojs/sitemap';
+import netlify from '@astrojs/netlify';
 
 /**
  * The canonical origin, used for sitemap URLs, canonical tags and OG images.
@@ -26,23 +27,23 @@ const site =
     ? (process.env.URL ?? FALLBACK_SITE)
     : (process.env.DEPLOY_PRIME_URL ?? process.env.URL ?? FALLBACK_SITE);
 
-/**
- * True during `astro build`, false under `astro dev`. Astro sets NODE_ENV for
- * the build; nothing else in this config depends on it.
- */
-const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production';
-
 export default defineConfig({
   site,
 
-  // Fully prerendered, and deliberately adapter-less for now.
-  //
-  // Adding `adapter: netlify()` flips the build to mode:"server" and emits a
-  // ~3.6 MB SSR function even when every route is prerendered — dead weight
-  // uploaded on every deploy. Nothing needs on-demand rendering until Keystatic
-  // lands, so the adapter goes in at Phase 3 together with the two admin routes
-  // that carry `export const prerender = false`.
+  /*
+    Still `static`: with an adapter present this means "prerender everything
+    unless a route opts out", not "prerender nothing". Every content page is
+    written as HTML at build time exactly as before, and the only routes that
+    reach the serverless function are Keystatic's two, which set
+    `prerender: false` themselves.
+
+    The adapter is what turns netlify.toml's job of serving files into a build
+    that can also run those two routes. It was kept out until now (AGENTS.md
+    rule 3) because with nothing to render on demand it uploaded a multi-megabyte
+    function that answered no requests.
+  */
   output: 'static',
+  adapter: netlify(),
 
   // `directory` emits /siti/montoso/index.html, matching the Tome export's URL
   // shape exactly. Do not change this — it is what preserves the live URLs.
@@ -76,19 +77,6 @@ export default defineConfig({
   // would do for prose, but the migrated bodies carry call-to-action buttons
   // and link cards that belong in components rather than in raw HTML (§2.4),
   // and Keystatic's content field writes .mdx.
-  /*
-    Keystatic is a development-time tool for now.
-
-    It injects two server-rendered routes (`/keystatic/[...params]` and
-    `/api/keystatic/[...params]`), and this site has no adapter, so including it
-    in a production build would either fail or force `mode: "server"` and the
-    3.6 MB function AGENTS.md rule 3 exists to avoid. In local storage mode the
-    admin writes to the working copy anyway — it is only useful on a machine
-    that has the repo checked out.
-
-    Phase 3 flips storage to GitHub mode, adds the Netlify adapter and ships
-    those two routes with `prerender = false`. Then this condition goes away.
-  */
   integrations: [
     mdx(),
     /*
@@ -107,7 +95,17 @@ export default defineConfig({
         return item;
       },
     }),
-    ...(IS_PRODUCTION_BUILD ? [] : [react(), keystatic()]),
+    /*
+      The CMS, now part of the deployed site.
+
+      The integration injects `/keystatic/[...params]` and
+      `/api/keystatic/[...params]`, both already marked `prerender: false`, so
+      they are the only two things in the serverless function. React is here
+      solely because Keystatic's admin UI is a React app — no page of the site
+      ships any of it.
+    */
+    react(),
+    keystatic(),
   ],
 
   vite: {
