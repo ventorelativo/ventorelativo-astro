@@ -469,6 +469,14 @@ const typeNames = Object.fromEntries(
     height: 46%;
     margin: 27%;
   }
+
+  /* Sized and centred like MapLibre's own icons, which fill 20 of 29 pixels. */
+  .map :global(.map-layers__icon) {
+    display: block;
+    width: 62%;
+    height: 62%;
+    margin: 19%;
+  }
 </style>
 
 <script>
@@ -1243,9 +1251,12 @@ const typeNames = Object.fromEntries(
       toggle.setAttribute('aria-label', 'Livelli della mappa');
       toggle.setAttribute('aria-expanded', 'false');
       toggle.innerHTML =
-        '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" ' +
-        'stroke="currentColor" stroke-width="2" stroke-linejoin="round">' +
-        '<path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M2 16l10 5 10-5"/></svg>';
+        '<svg class="map-layers__icon" viewBox="0 0 24 24" aria-hidden="true" ' +
+        'focusable="false" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round">' +
+        '<polygon points="12 3 3 8.25 12 13.5 21 8.25 12 3"></polygon>' +
+        '<polyline points="3 12.75 12 18 21 12.75"></polyline>' +
+        '<polyline points="3 17.25 12 22 21 17.25"></polyline></svg>';
 
       const panel = document.createElement('div');
       panel.className = 'map-layers__panel';
@@ -1296,9 +1307,31 @@ const typeNames = Object.fromEntries(
       overlay.append(filters);
 
       panel.append(base, overlay);
-      toggle.addEventListener('click', () => {
-        panel.hidden = !panel.hidden;
-        toggle.setAttribute('aria-expanded', String(!panel.hidden));
+      // Tracked here rather than read back off `hidden`, whose DOM type is
+      // `string | boolean` and needs coercing at every use.
+      let open = false;
+      const setOpen = (next: boolean) => {
+        open = next;
+        panel.hidden = !next;
+        toggle.setAttribute('aria-expanded', String(next));
+      };
+
+      toggle.addEventListener('click', () => setOpen(!open));
+
+      /*
+        Anywhere else closes it — the map included, which is the usual way out
+        of a panel that sits over one. The listener is on the document rather
+        than the map so a click on the page around it counts too, and Escape is
+        there because a keyboard user has no "outside" to click.
+      */
+      document.addEventListener('pointerdown', (event) => {
+        if (!open) return;
+        if (!container.contains(event.target as Node)) setOpen(false);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (!open || event.key !== 'Escape') return;
+        setOpen(false);
+        toggle.focus();
       });
 
       container.append(toggle, panel);
