@@ -112,6 +112,15 @@ const typeColours = Object.fromEntries(
 // Only the two kinds that have an icon. A point of interest stays a dot in the
 // logo's yellow, and the obstacle is a line.
 const icons = { takeoff: takeoffIcon, landing: landingIcon };
+
+/*
+  What the popup calls each kind. From FEATURE_TYPES, so the map, the table and
+  the poster cannot drift apart on the wording — and the glyphs are the ones the
+  old site's popups used, so a pilot who knew that map recognises this one.
+*/
+const typeNames = Object.fromEntries(
+  Object.entries(FEATURE_TYPES).map(([type, info]) => [type, [info.emoji, info.label]]),
+);
 ---
 
 <div
@@ -152,6 +161,12 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
           type="application/json"
           data-map-icons
           set:html={JSON.stringify(icons)}
+        />
+        <script
+          is:inline
+          type="application/json"
+          data-map-names
+          set:html={JSON.stringify(typeNames)}
         />
       </>
     )
@@ -281,6 +296,42 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
     fills its 512 box edge to edge. Matching them by percentage made it the
     largest thing in the stack.
   */
+  /*
+    The popup. MapLibre supplies the frame and the tail; these are its contents,
+    which have to be :global because the map builds them.
+  */
+  .map :global(.map-popup) {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+  }
+
+  .map :global(.map-popup p) {
+    margin: 0;
+  }
+
+  .map :global(.map-popup__name) {
+    color: var(--color-text-strong);
+  }
+
+  .map :global(.map-popup__kind),
+  .map :global(.map-popup__coords) {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .map :global(.map-popup__coords) {
+    font-variant-numeric: tabular-nums;
+    /* A pilot copies these, so let them be selected without the popup moving. */
+    user-select: text;
+  }
+
+  .map :global(.map-popup__links) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-3xs);
+  }
+
   .map :global(.map-reset-icon) {
     width: 46%;
     height: 46%;
@@ -424,9 +475,14 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
       await loadStylesheet('/vendor/maplibre-gl.css');
 
       const [
-        { Map, NavigationControl, FullscreenControl, prewarm, setWorkerUrl },
+        { Map, NavigationControl, FullscreenControl, Popup, prewarm, setWorkerUrl },
         config,
-      ] = await Promise.all([import('maplibre-gl'), import('../lib/mapConfig')]);
+        links,
+      ] = await Promise.all([
+        import('maplibre-gl'),
+        import('../lib/mapConfig'),
+        import('../lib/coordinateLinks'),
+      ]);
 
       /*
         Tell MapLibre where its worker is, before any map exists.
@@ -679,6 +735,54 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
         map.fitBounds(bounds, { padding: 60, pitch: tilt, duration: 0 });
 
         /*
+          A popup per marker, as the old map had: what it is, where it is, and
+          the two links a pilot actually wants from a point on a map — driving
+          directions, and the flight forecast for that spot.
+
+          Built as DOM rather than an HTML string. The old site stored rendered
+          markup in the GeoJSON itself; ours holds data, and assembling it here
+          means a feature name can contain anything without becoming markup.
+        */
+        const names = readJson(root, '[data-map-names]') as Record<
+          string,
+          [string, string]
+        >;
+        const popup = new Popup({ closeButton: true, maxWidth: '260px' });
+
+        for (const layer of ['points', 'icons-takeoff', 'icons-landing']) {
+          if (!map.getLayer(layer)) continue;
+
+          map.on('click', layer, (event) => {
+            const feature = event.features?.[0];
+            if (!feature || feature.geometry.type !== 'Point') return;
+            const [lon, lat] = feature.geometry.coordinates as [number, number];
+            const kind = String(feature.properties?.kind ?? '');
+            const [emoji, label] = names[kind] ?? ['', ''];
+
+            popup
+              .setLngLat([lon, lat])
+              .setDOMContent(
+                popupContent({
+                  emoji,
+                  label,
+                  name: String(feature.properties?.name ?? ''),
+                  point: { lat, lon },
+                  links,
+                }),
+              )
+              .addTo(map);
+          });
+
+          // A marker that opens something should say so before it is pressed.
+          map.on('mouseenter', layer, () => {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+          map.on('mouseleave', layer, () => {
+            map.getCanvas().style.cursor = '';
+          });
+        }
+
+        /*
           The terrain button, once the tilt it restores is known. It replaces
           MapLibre's own so that turning the relief off also takes the camera
           back to straight down — and so the ground rises and falls instead of
@@ -734,6 +838,63 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
 
   function prefersReducedMotion(): boolean {
     return matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  interface PopupParts {
+    emoji: string;
+    label: string;
+    name: string;
+    point: { lat: number; lon: number };
+    links: {
+      formatCoordinates(point: { lat: number; lon: number }): string;
+      navigationUrl(point: { lat: number; lon: number }): string;
+      forecastUrl(point: { lat: number; lon: number }): string;
+    };
+  }
+
+  /** The popup's contents, as elements. */
+  function popupContent({ emoji, label, name, point, links }: PopupParts): HTMLElement {
+    const root = document.createElement('div');
+    root.className = 'map-popup';
+
+    const heading = document.createElement('p');
+    heading.className = 'map-popup__name';
+    // The glyph repeats what the word beside it says, so it is decorative.
+    const icon = document.createElement('span');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = emoji;
+    heading.append(
+      icon,
+      ' ',
+      Object.assign(document.createElement('strong'), { textContent: name }),
+    );
+
+    const kind = document.createElement('p');
+    kind.className = 'map-popup__kind';
+    kind.textContent = label;
+
+    const coords = document.createElement('p');
+    coords.className = 'map-popup__coords';
+    coords.textContent = links.formatCoordinates(point);
+
+    const actions = document.createElement('p');
+    actions.className = 'map-popup__links';
+    for (const [href, text] of [
+      [links.navigationUrl(point), '🗺️ Naviga'],
+      [links.forecastUrl(point), '🌤️ Previsioni'],
+    ]) {
+      const link = document.createElement('a');
+      link.href = href;
+      link.target = '_blank';
+      // Both go to other people's sites; noopener is the default for target
+      // _blank in modern browsers but saying it costs nothing.
+      link.rel = 'noopener noreferrer';
+      link.textContent = text;
+      actions.append(link);
+    }
+
+    root.append(heading, kind, coords, actions);
+    return root;
   }
 
   /** The bit of MapLibre a terrain animation needs. */
