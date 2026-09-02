@@ -40,3 +40,21 @@ export function datesFrom(now: Date) {
   const month = `${year}-${pad(now.getMonth() + 1)}`;
   return { day: `${month}-${pad(now.getDate())}`, month, year };
 }
+
+/**
+ * Flights launched from one takeoff, best-scoring first.
+ *
+ * A different search from the club-wide ones above: no category or mode
+ * filters, a 1 km radius instead of the club's 20 km, and the takeoff's own
+ * coordinates as the centre. That is exactly the URL the Drupal site put on
+ * each site page, and narrowing it further would hide the flights a pilot
+ * comes here to see.
+ */
+export function takeoffSearchUrl({ lat, lon }: { lat: number; lon: number }): string {
+  const params = new URLSearchParams({
+    'list[sort]': 'pts',
+    'filter[point]': `${lon} ${lat}`,
+    'filter[radius]': '1000',
+  });
+  return `${BASE}?${params}`;
+}

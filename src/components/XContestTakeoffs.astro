@@ -1,0 +1,76 @@
+---
+/**
+ * "Flights from this site" — one XContest search per takeoff (M-series).
+ *
+ * Carried over from the Drupal site, which put the same links in the same
+ * place: a search centred on the takeoff itself, within a kilometre, sorted by
+ * points. Landings are not offered one — nobody searches for flights that
+ * started in a field.
+ *
+ * The note about logging in was on the old page too. XContest shows the search
+ * to anyone but only reveals the tracks to members, and finding that out after
+ * the click is worse than being told.
+ */
+import { takeoffSearchUrl } from '../lib/xcontest';
+import type { LatLon } from '../lib/geo';
+import type { FeatureType } from '../lib/featureTypes';
+
+interface Feature {
+  name: string;
+  type: FeatureType;
+  point?: LatLon;
+}
+
+interface Props {
+  features: Feature[];
+}
+
+const takeoffs = Astro.props.features.filter(
+  (feature): feature is Feature & { point: LatLon } =>
+    feature.type === 'takeoff' && Boolean(feature.point),
+);
+---
+
+{
+  takeoffs.length > 0 && (
+    <section class="flights">
+      <h2>Voli da questo sito</h2>
+      <p class="note">Richiede un account XContest per vedere le tracce.</p>
+      <ul>
+        {takeoffs.map((takeoff) => (
+          <li>
+            <a
+              class="button button--outline"
+              href={takeoffSearchUrl(takeoff.point)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ricerca voli da {takeoff.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .flights {
+    margin-block: var(--space-lg);
+  }
+
+  .note {
+    margin-block: 0 var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

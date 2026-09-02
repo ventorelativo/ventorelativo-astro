@@ -13,6 +13,7 @@ import Badge from '../../components/Badge.astro';
 import SiteMap from '../../components/SiteMap.astro';
 import FeatureIcons from '../../components/FeatureIcons.astro';
 import FeatureTable from '../../components/FeatureTable.astro';
+import XContestTakeoffs from '../../components/XContestTakeoffs.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 
 export async function getStaticPaths() {
@@ -64,9 +65,9 @@ const { Content } = await render(entry);
 
   {
     /*
-      The club's fuller write-up of the site, when there is one. Below the body
-      and above the flight points: it belongs with the reading, not with the
-      data, and it is the one outward link here that no coordinate can produce.
+      The site's windgram, when there is one. Below the body and above the
+      flight points: it belongs with the reading, not with the data, and it is
+      the one outward link here no coordinate can produce.
     */
     guideUrl && (
       <p class="guide" slot="sections">
@@ -76,13 +77,15 @@ const { Content } = await render(entry);
           target="_blank"
           rel="noopener noreferrer"
         >
-          Approfondimento sul sito
+          Windgram e previsioni
         </a>
       </p>
     )
   }
 
   <FeatureTable features={features} slot="sections" />
+
+  <XContestTakeoffs features={features} slot="sections" />
 
   {
     /*
