@@ -108,9 +108,24 @@ goes. This repo has two, one wrapping the other:
 
 ```
 BaseLayout.astro     <head>, skip link, Header, <main><slot/></main>, Footer
-  └─ PageLayout.astro   breadcrumbs + <h1> + <slot/>, for interior pages
+  ├─ PageLayout.astro   breadcrumbs + <h1> + <slot/>, for interior pages
+  └─ EntryLayout.astro  the same, plus three slots, for news and sites
        └─ your page
 ```
+
+`EntryLayout` has slots because an entry is not one column of text:
+
+| Slot        | Where it lands                       | For                                 |
+| ----------- | ------------------------------------ | ----------------------------------- |
+| `meta`      | above the `<h1>`                     | tags, a date                        |
+| `media`     | full container width, above the body | the map, an article's lead image    |
+| _(default)_ | inside `<article class="prose">`     | the prose itself                    |
+| `sections`  | full container width, below the body | anything with no measure to respect |
+
+**That last one matters.** `.prose` caps its width at about 42 rem, which is a
+comfortable line length to read and the wrong width for a table of flight points
+or a grid of photographs. Put those in `sections`; only put prose in the default
+slot.
 
 The homepage skips `PageLayout` and passes `bare` to `BaseLayout`, which makes
 the header transparent and lets the hero own the viewport.
