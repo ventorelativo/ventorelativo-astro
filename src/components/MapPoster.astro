@@ -173,7 +173,18 @@ function placeLabels(): PlacedLabel[] {
   return placed;
 }
 
-const labels = placeLabels();
+/*
+  Names, up to a point.
+
+  On a site's own diagram — two to seven points — the names are most of what it
+  says. On the overview, thirty-three of them collide into a wall of text that
+  detaches from its markers as the de-confliction pushes each one clear. Past
+  this many the shapes and their positions carry the drawing, and the
+  interactive map underneath handles the labels properly, with real collision
+  detection and the room to pan.
+*/
+const LABEL_LIMIT = 12;
+const labels = markers.length <= LABEL_LIMIT ? placeLabels() : [];
 ---
 
 {

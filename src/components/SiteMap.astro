@@ -58,6 +58,11 @@ interface Feature {
   type: FeatureType;
   point?: LatLon;
   shape?: { discriminant: 'polygon' | 'line'; value: [number, number][] };
+  /**
+   * The site this belongs to, on the overview map only. A site's own map has
+   * no use for it — the link would point at the page it is already on.
+   */
+  site?: { title: string; href: string };
 }
 
 interface Props {
@@ -82,7 +87,14 @@ const geojson = {
       .filter((feature) => feature.point)
       .map((feature) => ({
         type: 'Feature',
-        properties: { name: feature.name, kind: feature.type },
+        properties: {
+          name: feature.name,
+          kind: feature.type,
+          // Empty strings rather than undefined: JSON drops undefined, and an
+          // absent key reads as broken data where '' reads as "not set".
+          siteTitle: feature.site?.title ?? '',
+          siteHref: feature.site?.href ?? '',
+        },
         geometry: {
           type: 'Point',
           coordinates: [feature.point!.lon, feature.point!.lat],
@@ -92,7 +104,14 @@ const geojson = {
       .filter((feature) => feature.shape)
       .map((feature) => ({
         type: 'Feature',
-        properties: { name: feature.name, kind: feature.type },
+        properties: {
+          name: feature.name,
+          kind: feature.type,
+          // Empty strings rather than undefined: JSON drops undefined, and an
+          // absent key reads as broken data where '' reads as "not set".
+          siteTitle: feature.site?.title ?? '',
+          siteHref: feature.site?.href ?? '',
+        },
         geometry:
           feature.shape!.discriminant === 'polygon'
             ? { type: 'Polygon', coordinates: [feature.shape!.value] }
@@ -910,6 +929,10 @@ const typeNames = Object.fromEntries(
               .setDOMContent(
                 popupContent({
                   kind,
+                  site: {
+                    title: String(feature.properties?.siteTitle ?? ''),
+                    href: String(feature.properties?.siteHref ?? ''),
+                  },
                   emoji,
                   label,
                   // The kinds with artwork are exactly the ones with an icon file.
@@ -1004,6 +1027,8 @@ const typeNames = Object.fromEntries(
 
   interface PopupParts {
     kind: string;
+    /** Both empty on a site's own map. */
+    site: { title: string; href: string };
     emoji: string;
     label: string;
     name: string;
@@ -1019,6 +1044,7 @@ const typeNames = Object.fromEntries(
   /** The popup's contents, as elements. */
   function popupContent({
     kind,
+    site,
     emoji,
     label,
     name,
@@ -1039,6 +1065,14 @@ const typeNames = Object.fromEntries(
     const kindLine = document.createElement('p');
     kindLine.className = 'map-popup__kind';
     kindLine.textContent = label;
+    // On the overview map, say which site this belongs to and offer its page.
+    if (site.href) {
+      kindLine.append(document.createTextNode(' · '));
+      const link = document.createElement('a');
+      link.href = site.href;
+      link.textContent = site.title;
+      kindLine.append(link);
+    }
 
     const coords = document.createElement('p');
     coords.className = 'map-popup__coords';

@@ -11,15 +11,42 @@
  * Sort: featured first, then alphabetical, as the Drupal view did (`sticky`
  * DESC, `title` ASC).
  */
-import { getCollection } from 'astro:content';
+import { getCollection, getEntries } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import SiteCard from '../../components/SiteCard.astro';
 import NavdataLinks from '../../components/NavdataLinks.astro';
+import FeatureIcons from '../../components/FeatureIcons.astro';
+import SiteMap from '../../components/SiteMap.astro';
 
 const sites = (await getCollection('sites')).sort((a, b) => {
   if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
   return a.data.title.localeCompare(b.data.title, 'it');
 });
+
+/*
+  Every feature of every site, each carrying the site it belongs to so the map's
+  popups can offer a way through to it.
+
+  Deduplicated by id: several sites share a landing — Atterraggio Beba serves
+  three — and drawing it three times would stack three identical markers and
+  three identical popups on one spot. The first site to claim it wins, which is
+  the alphabetical one, and the others still list it in their own tables.
+*/
+const seen = new Set<string>();
+const overview = (
+  await Promise.all(
+    sites.map(async (site) => {
+      const features = await getEntries(site.data.mapFeatures);
+      return features.map((feature) => ({
+        ...feature.data,
+        id: feature.id,
+        site: { title: site.data.title, href: `/siti/${site.id}/` },
+      }));
+    }),
+  )
+)
+  .flat()
+  .filter((feature) => !seen.has(feature.id) && seen.add(feature.id));
 ---
 
 <PageLayout
@@ -27,7 +54,8 @@ const sites = (await getCollection('sites')).sort((a, b) => {
   title="Siti di volo"
   description="I siti di volo del Parapendio Club Ventorelativo, tra Pinerolo, Val Chisone e Val Pellice."
 >
-  {/* TODO(Phase 4c): overview map of all 34 features goes here. */}
+  <FeatureIcons />
+  <SiteMap features={overview} title="tutti i siti di volo" />
 
   <div class="site-grid">
     {sites.map((entry) => <SiteCard entry={entry} />)}
