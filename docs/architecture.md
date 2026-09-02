@@ -80,9 +80,13 @@ const items = ['a', 'b'];
 ```
 
 Three separate worlds in one file: build-time logic, markup, and (only when
-needed) browser code. Most components in this repo have no `<script>` at all —
-[`ThemeToggle.astro`](../src/components/ThemeToggle.astro) and
-[`Nav.astro`](../src/components/Nav.astro) are the exceptions.
+needed) browser code. Most components in this repo have no `<script>` at all.
+The exceptions are [`ThemeToggle.astro`](../src/components/ThemeToggle.astro),
+[`Nav.astro`](../src/components/Nav.astro),
+[`LanguageSwitcher.astro`](../src/components/LanguageSwitcher.astro),
+[`Gallery.astro`](../src/components/Gallery.astro) and
+[`SiteMap.astro`](../src/components/SiteMap.astro) — and the last three load
+their heavy part only on interaction.
 
 ### Scoped styles, and the trap in them
 

@@ -95,7 +95,7 @@ so this doubles as the acceptance checklist.
 | G8  | Image-credits line — **front page only**                                        | Prop on the homepage layout                                               |
 | G9  | Page title block — hidden on front page                                         | Per-page `showTitle` prop                                                 |
 | G10 | Dark/light/auto theme toggle (`data-bs-theme`, localStorage)                    | Inline no-flash script + CSS custom properties + `data-theme`             |
-| G11 | GTranslate widget (it → fr/en/de/es, flag icons, inline)                        | Same third-party widget, dropped into the footer. Portable as-is          |
+| G11 | GTranslate widget (it → fr/en/de/es, flag icons, inline)                        | ✅ Rebuilt as a facade — `<LanguageSwitcher>`, see Phase 2 note 9         |
 | G12 | Skip link to `#main-content`                                                    | Astro layout                                                              |
 | G13 | Unused `sidebar_first` / `sidebar_second` regions                               | **Drop** — nothing is placed in them                                      |
 
@@ -978,6 +978,14 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
    `<Content components={…}>`. Keystatic refuses to open an entry containing an import.
 8. **`b, strong` needs an explicit weight.** With a 300 body, the UA's relative `bolder`
    resolves to 400 — the old theme set 600 for exactly this reason.
+9. **GTranslate (G11) is a facade, not the widget.** "Portable as-is" was true and still
+   wrong: the module's `flags.js` is a third-party script on every page, for a feature few
+   visitors of an Italian club site touch. `<LanguageSwitcher>` draws the same five flags
+   as static HTML and loads Google's translate element on hover or click — the same
+   mechanism the old widget used underneath (`url_structure: none`, the hidden
+   `goog-te-combo`, the `googtrans` cookie), so a chosen language still survives
+   navigation. Costs 1.3 kB on the wire. Shipped 2026-09-03, closing the last Phase 2
+   leftover.
 
 **Covers:** C1–C20, S1–S8, S10–S16, E4–E8, X1–X2, D13. (S9 dropped; S3 done with satori;
 X4 needs takeoff coordinates and moves to Phase 4.)

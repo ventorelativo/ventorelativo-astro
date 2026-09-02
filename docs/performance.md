@@ -14,13 +14,17 @@ Measured on the production build (`npm run build && npm run preview`), at
 
 | Page             | Total  | JavaScript | CSS    |
 | ---------------- | ------ | ---------- | ------ |
-| `/`              | 86 kB  | 1.5 kB     | 3.6 kB |
-| `/siti/`         | 61 kB  | 1.5 kB     | 3.6 kB |
-| `/news/`         | 195 kB | 1.5 kB     | 3.6 kB |
-| `/siti/roletto/` | 458 kB | 2.8 kB     | 3.6 kB |
+| `/`              | 88 kB  | 1.5 kB     | 3.9 kB |
+| `/siti/`         | 82 kB  | 13.3 kB    | 5.7 kB |
+| `/news/`         | 343 kB | 1.5 kB     | 3.9 kB |
+| `/siti/roletto/` | 335 kB | 14.1 kB    | 8.1 kB |
 
-Almost all of the weight is photographs. The JavaScript on a typical page is a
-theme toggle and a menu.
+Almost all of the weight is photographs. The JavaScript column counts external
+files: the pages with a map carry its facade, everything else carries only
+Astro's prefetch. On top of that every page inlines 4.0 kB of script (1.6 kB on
+the wire) — the no-flash theme script, the theme toggle, the nav drawer and the
+language switcher, small enough that Astro puts them in the document rather
+than spending a request on them.
 
 Measure it yourself — never estimate:
 
@@ -36,8 +40,8 @@ numbers meaningless.
 ## Rules
 
 1. **Zero JavaScript is the default.** A page gets none unless something on it
-   genuinely cannot work without it. Today that is three things: the theme
-   toggle, the nav drawer, and the gallery lightbox.
+   genuinely cannot work without it. Today that is the theme toggle, the nav
+   drawer, the gallery lightbox, the language switcher and the map.
 2. **A dependency must earn its bytes.** Before adding one, know its gzipped
    size, whether the feature degrades gracefully without it, and what the
    hand-rolled version would cost. Say the number out loud in the pull request
@@ -92,6 +96,29 @@ that wants more than one small async request.
   once.
 - **`astro:assets`** generating avif/webp at the sizes actually used — the site
   photographs go from 1.7 MB originals to ~40 kB thumbnails.
+
+## Facades, for the things that cannot be small
+
+Two features on this site are genuinely heavy and genuinely wanted: the map and
+the translation widget. Both ship as a **facade** — the part a visitor sees is
+static HTML that costs a few hundred bytes, and the real thing is fetched only
+once they show they want it.
+
+- **The map** (`SiteMap.astro`) paints an SVG of the markers, and loads MapLibre
+  (240 kB) on click.
+- **The language switcher** (`LanguageSwitcher.astro`) draws five flags, and
+  loads Google's `translate_a/element.js` on hover or click — never on page
+  load. A visitor who has translated before carries a `googtrans` cookie, and
+  only they pay for it, on every page, because they asked to.
+
+The pattern has one rule that matters: **paint the busy state synchronously,
+then await.** A click handler that awaits before touching the DOM reads as a
+dropped click, and shows up as INP.
+
+The alternative for the translator was the widget the Drupal site ran — a
+third-party script from a domain we do not control, on every page, for a
+feature most visitors of an Italian club site never touch. That single script
+is larger than everything else this site loads.
 
 ## Build-time work is free to the visitor
 

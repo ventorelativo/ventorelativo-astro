@@ -132,7 +132,8 @@ constraint on what you build, not a check at the end. Most visitors are on a
 phone on mountain data.
 
 - **Zero JavaScript is the default.** A page gets none unless something on it
-  cannot work without it. Today: the theme toggle, the nav drawer, the gallery.
+  cannot work without it. Today: the theme toggle, the nav drawer, the gallery,
+  the language switcher, the map.
 - **Load it only where it is used** — an import in a component's client
   `<script>` reaches only pages rendering that component; one in a layout
   reaches every page.
@@ -156,10 +157,11 @@ npm run build && npm run preview
 npm run weight -- http://localhost:4399/siti/
 ```
 
-Current budget: `/` 70 kB with 1.5 kB of JS; `/siti/` 80 kB; a photo-heavy site
-page 458 kB, almost all of it photographs. `/siti/` and the site pages carry the
-map's 5.6 kB of JavaScript — the facade, not MapLibre, which is 240 kB and
-arrives only when a map is opened. Details and the reasoning behind each
+Current budget, at 390x844: `/` 72 kB; `/siti/` 82 kB; a photo-heavy site page
+335 kB, almost all of it photographs. Every page inlines 4.0 kB of script
+(1.6 kB on the wire); `/siti/` and the site pages add the map's facade — not
+MapLibre, which is 240 kB and arrives only when a map is opened. Translation is
+a facade too: nothing from Google loads until a visitor asks for it. Details and the reasoning behind each
 rule: [`docs/performance.md`](docs/performance.md).
 
 ## Conventions
