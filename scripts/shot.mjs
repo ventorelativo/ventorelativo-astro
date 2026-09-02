@@ -380,13 +380,18 @@ try {
       { width, height, deviceScaleFactor: 2, mobile: width < 700 },
       sessionId,
     );
-    const media = [];
-    if (opts.dark) media.push({ name: 'prefers-color-scheme', value: 'dark' });
+    /*
+      Light is emulated as explicitly as dark. Left unset, Chrome follows the
+      host OS — so on a Mac in dark appearance every "light" screenshot this
+      script has ever produced was in fact a dark one, silently, while the
+      filename said otherwise.
+    */
+    const media = [
+      { name: 'prefers-color-scheme', value: opts.dark ? 'dark' : 'light' },
+    ];
     if (opts.reducedMotion)
       media.push({ name: 'prefers-reduced-motion', value: 'reduce' });
-    if (media.length) {
-      await cdp.send('Emulation.setEmulatedMedia', { features: media }, sessionId);
-    }
+    await cdp.send('Emulation.setEmulatedMedia', { features: media }, sessionId);
 
     const idle = cdp.once(
       'Page.lifecycleEvent',

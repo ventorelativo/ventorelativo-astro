@@ -57,6 +57,14 @@ The script has no dependencies: Node's built-in WebSocket talks to Chrome
 directly. It needs Google Chrome or Chromium installed; set `CHROME_PATH` if it
 lives somewhere unusual.
 
+### Light is emulated as explicitly as dark
+
+It did not used to be. The script set `prefers-color-scheme` only for `--dark`
+and left it unset otherwise, so Chrome followed the host OS — and on a Mac in
+dark appearance every file named `…-light.png` held a dark screenshot, with
+nothing to say so. Both directions are now set explicitly. Distrust any light
+shot taken before 2026-09-03.
+
 ## Checklist for a visual change
 
 - [ ] `npm run verify` clean
