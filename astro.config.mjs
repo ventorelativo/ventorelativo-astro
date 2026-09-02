@@ -43,7 +43,24 @@ export default defineConfig({
     function that answered no requests.
   */
   output: 'static',
-  adapter: netlify(),
+
+  /*
+    `imageCDN: false` is not a detail — the default is `true`, and it silently
+    replaces `astro:assets` with Netlify's Image CDN. Every `<Image>` and
+    `<Picture>` then emits `/.netlify/images?url=…&w=800` instead of a
+    fingerprinted `_astro/*.avif` written at build time.
+
+    That undoes what this site is built on: images optimised once during the
+    build, served as immutable files a CDN can hold forever (netlify.toml caches
+    /_astro/* for a year), with no per-request work and nothing to meter. The CDN
+    version resizes on first request instead, which is a cold transform in front
+    of the LCP image, and it is a billed resource.
+
+    Verified by grepping the built HTML: with this false, dist/index.html
+    references _astro/*.avif; with it true, sixteen /.netlify/images URLs and no
+    optimised file at all.
+  */
+  adapter: netlify({ imageCDN: false }),
 
   // `directory` emits /siti/montoso/index.html, matching the Tome export's URL
   // shape exactly. Do not change this — it is what preserves the live URLs.
