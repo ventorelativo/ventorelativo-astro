@@ -9,7 +9,7 @@
  */
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
-import { formatCoordinates, navigationUrl } from '../lib/coordinateLinks';
+import { forecastUrl, formatCoordinates, navigationUrl } from '../lib/coordinateLinks';
 import type { LatLon } from '../lib/geo';
 
 interface Feature {
@@ -48,6 +48,7 @@ const sorted = [...features].sort(
               <th scope="col">Tipo</th>
               <th scope="col">Nome</th>
               <th scope="col">Coordinate</th>
+              <th scope="col">Meteo</th>
             </tr>
           </thead>
           <tbody>
@@ -83,6 +84,24 @@ const sorted = [...features].sort(
                     </a>
                   ) : (
                     <span class="none">—</span>
+                  )}
+                </td>
+                <td>
+                  {/*
+                    Takeoffs only, as in the map's popups: Meteo-Parapente
+                    answers "can I fly from here", which is a question about the
+                    hill you launch from. The cell is left empty rather than
+                    dashed — a column of dashes says nothing and reads as
+                    missing data.
+                  */}
+                  {feature.type === 'takeoff' && feature.point && (
+                    <a
+                      href={forecastUrl(feature.point)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Previsioni
+                    </a>
                   )}
                 </td>
               </tr>
