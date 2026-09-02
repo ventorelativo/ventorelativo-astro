@@ -446,11 +446,28 @@ const typeNames = Object.fromEntries(
     cursor: pointer;
   }
 
+  /*
+    The two controls this component builds, coloured to match the ones MapLibre
+    builds beside them.
+
+    `color`, not `fill`: both icons paint with `currentColor` — the reset glyph
+    carries `fill="currentColor"` as an attribute, which a `fill` declaration on
+    the parent svg cannot override, and the layers icon strokes with it. Left to
+    inherit, they took the page's text colour and turned pale grey on a white
+    button the moment the site went dark, while MapLibre's own icons, which
+    hardcode theirs, stayed dark.
+
+    Hardcoded for the same reason MapLibre hardcodes it: this chrome is white in
+    both schemes, so the icon on it has to be dark in both.
+  */
+  .map :global(.maplibregl-ctrl-group button) {
+    color: rgb(68, 73, 82);
+  }
+
   .map :global(.map-reset-icon) {
     width: 46%;
     height: 46%;
     margin: 27%;
-    fill: rgb(68, 73, 82);
   }
 </style>
 
