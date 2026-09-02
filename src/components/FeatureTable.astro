@@ -8,38 +8,8 @@
  * uses. That is also the fallback when the map cannot run at all.
  */
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
+import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
 import type { LatLon } from '../lib/geo';
-
-/*
-  The same artwork the map draws, as `?raw` so the markup can go into the page
-  rather than being fetched.
-
-  Inlining a whole icon per row would repeat it up to seven times; a hidden
-  `<symbol>` sprite emits each drawing once and each row references it with
-  `<use>`, which costs about forty bytes. No request, no JavaScript, and the
-  table still says what it says with neither.
-*/
-import takeoffSvg from '../assets/map/takeoff.svg?raw';
-import landingSvg from '../assets/map/landing.svg?raw';
-
-/**
- * The innards of an SVG file, ready to be wrapped in a `<symbol>`.
- *
- * Sliced rather than matched with a regular expression: a pattern containing
- * literal tags inside `.astro` frontmatter derails the compiler's parse, and it
- * fails in a way that names nothing useful — `Astro.props` silently degrades to
- * `any` and the errors surface as unrelated indexing complaints further down.
- */
-function symbolBody(markup: string): string {
-  const openTagEnd = markup.indexOf('>', markup.indexOf('<svg'));
-  const closeTag = markup.lastIndexOf('</svg>');
-  return markup.slice(openTagEnd + 1, closeTag);
-}
-
-const SPRITE: Partial<Record<FeatureType, string>> = {
-  takeoff: symbolBody(takeoffSvg),
-  landing: symbolBody(landingSvg),
-};
 
 interface Feature {
   name: string;
@@ -67,17 +37,6 @@ const sorted = [...features].sort(
 {
   sorted.length > 0 && (
     <section class="features">
-      {/*
-        One copy of each drawing, referenced by every row that needs it. Hidden
-        with `display: none` on the element rather than `hidden`, because a
-        `<symbol>` is never rendered where it is defined anyway.
-      */}
-      <svg class="sprite" aria-hidden="true" focusable="false">
-        {Object.entries(SPRITE).map(([type, body]) => (
-          <symbol id={`feature-${type}`} viewBox="0 0 100 100" set:html={body} />
-        ))}
-      </svg>
-
       <h2>Punti di volo</h2>
 
       {/* Scrolls itself rather than the page — AGENTS.md, wide content. */}
@@ -94,9 +53,9 @@ const sorted = [...features].sort(
             {sorted.map((feature) => (
               <tr>
                 <td>
-                  {SPRITE[feature.type] ? (
+                  {FEATURE_SYMBOLS[feature.type] ? (
                     <svg class="icon" viewBox="0 0 100 100" aria-hidden="true">
-                      <use href={`#feature-${feature.type}`} />
+                      <use href={`#${symbolId(feature.type)}`} />
                     </svg>
                   ) : (
                     <span class={`dot dot--${feature.type}`} aria-hidden="true" />
@@ -158,10 +117,6 @@ const sorted = [...features].sort(
     white-space: normal;
   }
 
-  .sprite {
-    display: none;
-  }
-
   /*
     Sized to the cap height of the label beside it, so the two align.
 
@@ -171,10 +126,17 @@ const sorted = [...features].sort(
   */
   .icon {
     display: inline-block;
-    width: 1.15em;
-    height: 1.15em;
-    margin-inline-end: 0.3em;
-    vertical-align: -0.28em;
+    /*
+      About 22 px at this text size, which is the size the artwork was drawn
+      for and the size the map draws it at. Smaller was tried and failed on the
+      landing target: its ring is 11 units of 100 with a white keyline eating
+      both edges, so at 16 px under a pixel of green survived and it read as a
+      plain dot.
+    */
+    width: 1.55em;
+    height: 1.55em;
+    margin-inline-end: 0.28em;
+    vertical-align: -0.45em;
   }
 
   .dot {
