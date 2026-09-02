@@ -15,10 +15,11 @@ import sitemap from '@astrojs/sitemap';
  * refinement that deploy previews describe themselves rather than claiming to
  * be production.
  *
- * TODO(D9-followup): confirm the production hostname (apex vs www) and set
- * FALLBACK_SITE accordingly. Nothing in the Drupal repo records it.
+ * The apex, not www: the live Netlify project serves ventorelativo.it as its
+ * primary URL and redirects www to it. Nothing in the Drupal repo records the
+ * choice, which is why it had to be read off the host.
  */
-const FALLBACK_SITE = 'https://www.ventorelativo.it';
+const FALLBACK_SITE = 'https://ventorelativo.it';
 
 const site =
   process.env.CONTEXT === 'production'
