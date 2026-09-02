@@ -6,10 +6,11 @@
  * feature table → XContest links. Everything map-derived is Phase 4; what is
  * here is the body and the gallery, which is all the content the export holds.
  */
-import { getCollection, render } from 'astro:content';
+import { getCollection, getEntries, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import Badge from '../../components/Badge.astro';
+import MapPoster from '../../components/MapPoster.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 
 export async function getStaticPaths() {
@@ -19,6 +20,16 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { title, summary, images, tags } = entry.data;
+
+/*
+  `mapFeatures` holds references, not data — Zod's `reference()` stores the id
+  and checks at build that the target exists, so a typo fails the build rather
+  than rendering an empty table. `getEntries` resolves them, in the order the
+  site lists them, which is the order Drupal's field held.
+*/
+const features = (await getEntries(entry.data.mapFeatures)).map(
+  (feature) => feature.data,
+);
 
 // `summary` is deliberately not rendered here, as on news articles: it is the
 // card blurb and the meta description (D7), and on the page it only repeated
@@ -42,7 +53,13 @@ const { Content } = await render(entry);
     )
   }
 
-  {/* TODO(Phase 4): this site's map, then the feature table and XContest links. */}
+  {
+    /*
+    The poster stands in for the map (Phase 4b). TODO(Phase 4b): it becomes the
+    facade that loads MapLibre on interaction; TODO(Phase 4d): XContest links.
+  */
+  }
+  <MapPoster features={features} title={title} />
 
   <Content components={MDX_COMPONENTS} />
 

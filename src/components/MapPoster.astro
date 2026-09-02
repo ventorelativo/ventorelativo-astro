@@ -1,0 +1,302 @@
+---
+/**
+ * A schematic of a site's geometry, drawn as inline SVG at build time.
+ *
+ * This is the poster half of the facade (MIGRATION-PLAN.md Phase 4b): what the
+ * page ships instead of a map. It costs about a kilobyte, needs no API key, no
+ * tiles and no JavaScript, and it cannot fail — there is nothing to fetch. When
+ * the real map lands it replaces this on interaction, and everyone who never
+ * asks for a map keeps a page that weighs what it weighs now.
+ *
+ * It is a diagram, not a map: no basemap, no scale bar, no north arrow. It
+ * answers "how do these takeoffs and landings sit relative to each other",
+ * which is the question a card-sized map answers anyway.
+ */
+import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
+import { boundsOf, niceScaleDistance, project, type LatLon } from '../lib/geo';
+
+interface Feature {
+  name: string;
+  type: FeatureType;
+  point?: LatLon;
+  shape?: { discriminant: 'polygon' | 'line'; value: [number, number][] };
+}
+
+interface Props {
+  features: Feature[];
+  /** The site's name, for the accessible description. */
+  title: string;
+}
+
+const { features, title } = Astro.props;
+
+// Every coordinate the drawing has to contain: markers and shape vertices both.
+const points: LatLon[] = features.flatMap((feature) => [
+  ...(feature.point ? [feature.point] : []),
+  ...(feature.shape?.value ?? []).map(([lon, lat]) => ({ lat, lon })),
+]);
+
+const projection = points.length > 0 ? project(boundsOf(points), 3 / 2) : null;
+
+/** `x,y x,y …` for a <polygon> or <polyline>. */
+function toPoints(coordinates: [number, number][]): string {
+  return coordinates
+    .map(([lon, lat]) => `${projection!.x(lon)},${projection!.y(lat)}`)
+    .join(' ');
+}
+
+// "2 decolli, 3 atterraggi" — a screen reader gets the content, not "image".
+const counts = new Map<FeatureType, number>();
+for (const feature of features)
+  counts.set(feature.type, (counts.get(feature.type) ?? 0) + 1);
+const summary = [...counts]
+  .map(
+    ([type, n]) => `${n} ${FEATURE_TYPES[type].label.toLowerCase()}${n > 1 ? 'i' : ''}`,
+  )
+  .join(', ');
+
+const shapes = features.filter((feature) => feature.shape);
+const markers = features.filter((feature) => feature.point);
+
+/*
+  A scale bar, because without a basemap there is nothing to judge distance
+  against, and "these two dots are close" is the main thing this drawing says.
+  Sites here span anything from a few hundred metres to ten kilometres.
+*/
+const scale = projection
+  ? (() => {
+      const metres = niceScaleDistance(projection.metresPerUnit * projection.width);
+      return {
+        length: metres / projection.metresPerUnit,
+        label: metres >= 1000 ? `${metres / 1000} km` : `${metres} m`,
+      };
+    })()
+  : null;
+
+/*
+  Label placement, which is most of what makes this drawing readable.
+
+  Two rules. Names flip to the left of their marker in the right-hand third of
+  the frame, so one near the edge is not clipped by it. And names that would
+  overlap get pushed down, because real sites have features a few hundred
+  metres apart — Montoso's "Atterraggio Ponte di Bibiana" and "Ritrovo: Ponte
+  di Bibiana" printed straight through each other before this existed.
+
+  Widths are estimated from character count rather than measured: there is no
+  layout engine at build time, and being a few units out only costs a little
+  extra spacing.
+*/
+const LABEL_OFFSET = 22;
+const LABEL_HEIGHT = 32;
+const CHAR_WIDTH = 12.5;
+
+interface PlacedLabel {
+  text: string;
+  x: number;
+  y: number;
+  anchor: 'start' | 'end';
+  left: number;
+  right: number;
+}
+
+/**
+ * Where a feature's name points at.
+ *
+ * Usually its marker. The obstacle has no point — it is a bare line — so it
+ * anchors to the middle of that line instead. Leaving it unlabelled would mean
+ * the one genuine hazard on the drawing, a high-tension cable, is the only
+ * thing without a name on it.
+ */
+function anchorOf(feature: Feature): LatLon | null {
+  if (feature.point) return feature.point;
+  const vertices = feature.shape?.value;
+  if (!vertices?.length) return null;
+  const [lon, lat] = vertices[Math.floor(vertices.length / 2)];
+  return { lat, lon };
+}
+
+function placeLabels(): PlacedLabel[] {
+  const placed: PlacedLabel[] = [];
+  if (!projection) return placed;
+
+  const labelled = features
+    .map((feature) => ({ feature, at: anchorOf(feature) }))
+    .filter((item): item is { feature: Feature; at: LatLon } => item.at !== null)
+    // Top to bottom, so a pushed label only ever displaces things below it.
+    .sort((a, b) => projection.y(a.at.lat) - projection.y(b.at.lat));
+
+  for (const { feature, at } of labelled) {
+    const markerX = projection.x(at.lon);
+    const flip = markerX > 0.66 * projection.width;
+    const anchor = flip ? ('end' as const) : ('start' as const);
+    const x = markerX + (flip ? -LABEL_OFFSET : LABEL_OFFSET);
+    const width = feature.name.length * CHAR_WIDTH;
+    const left = flip ? x - width : x;
+    const right = flip ? x : x + width;
+
+    let y = projection.y(at.lat) + 9;
+    // Nudge down until it clears everything already placed. Bounded because
+    // each pass can only move below the lowest collision.
+    for (let guard = 0; guard < 20; guard++) {
+      const clash = placed.find(
+        (other) =>
+          Math.abs(other.y - y) < LABEL_HEIGHT &&
+          other.left < right &&
+          left < other.right,
+      );
+      if (!clash) break;
+      y = clash.y + LABEL_HEIGHT;
+    }
+
+    placed.push({ text: feature.name, x, y, anchor, left, right });
+  }
+  return placed;
+}
+
+const labels = placeLabels();
+---
+
+{
+  projection && (
+    <figure class="poster">
+      <svg
+        viewBox={`0 0 ${projection.width} ${projection.height}`}
+        role="img"
+        aria-label={`Schema dei punti di volo di ${title}: ${summary}.`}
+      >
+        {/* Zones first so markers sit on top of them. */}
+        {shapes.map((feature) =>
+          feature.shape!.discriminant === 'polygon' ? (
+            <polygon
+              class={`zone zone--${feature.type}`}
+              points={toPoints(feature.shape!.value)}
+            />
+          ) : (
+            <polyline
+              class={`line line--${feature.type}`}
+              points={toPoints(feature.shape!.value)}
+            />
+          ),
+        )}
+
+        {markers.map((feature) => (
+          <circle
+            class={`marker marker--${feature.type}`}
+            cx={projection.x(feature.point!.lon)}
+            cy={projection.y(feature.point!.lat)}
+            r={feature.type === 'takeoff' ? 15 : 11}
+          />
+        ))}
+
+        {labels.map((label) => (
+          <text class="label" x={label.x} y={label.y} text-anchor={label.anchor}>
+            {label.text}
+          </text>
+        ))}
+
+        {scale && (
+          <g class="scale">
+            <line
+              x1={26}
+              y1={projection.height - 26}
+              x2={26 + scale.length}
+              y2={projection.height - 26}
+            />
+            <text x={26} y={projection.height - 38}>
+              {scale.label}
+            </text>
+          </g>
+        )}
+      </svg>
+    </figure>
+  )
+}
+
+<style>
+  .poster {
+    margin: 0 0 var(--space-md);
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-subtle);
+  }
+
+  /*
+    Every colour resolves through a token, so the diagram follows the theme
+    toggle with the rest of the page and no rule here knows a hex (rule 4).
+  */
+  .zone--landing {
+    fill: color-mix(in srgb, var(--color-map-landing) 22%, transparent);
+    stroke: var(--color-map-landing);
+    stroke-width: 3;
+  }
+
+  .line--obstacle {
+    fill: none;
+    stroke: var(--color-map-obstacle);
+    stroke-width: 5;
+    stroke-dasharray: 14 10;
+    stroke-linecap: round;
+  }
+
+  .marker {
+    /* The ring is the page background, so a marker stays legible on a zone. */
+    stroke: var(--color-bg-subtle);
+    stroke-width: 4;
+  }
+
+  .marker--takeoff {
+    fill: var(--color-map-takeoff);
+  }
+  .marker--landing {
+    fill: var(--color-map-landing);
+  }
+  .marker--poi {
+    fill: var(--color-map-poi);
+  }
+  .marker--obstacle {
+    fill: var(--color-map-obstacle);
+  }
+
+  /*
+    `paint-order: stroke` draws the halo behind the glyphs rather than over
+    them, which is what keeps a name legible where it crosses a zone outline.
+  */
+  .label,
+  .scale text {
+    fill: var(--color-text);
+    font-family: inherit;
+    font-size: 26px;
+    paint-order: stroke;
+    stroke: var(--color-bg-subtle);
+    stroke-width: 6;
+  }
+
+  .scale text {
+    fill: var(--color-text-muted);
+    font-size: 22px;
+  }
+
+  .scale line {
+    stroke: var(--color-text-muted);
+    stroke-width: 4;
+    stroke-linecap: square;
+  }
+
+  /*
+    Below this width the viewBox scales text down to about eight pixels, which
+    is not a label but a smudge. The table underneath carries every name, so
+    the diagram drops to shapes and positions rather than shipping something
+    unreadable.
+  */
+  @media (max-width: 40rem) {
+    .label {
+      display: none;
+    }
+  }
+</style>
