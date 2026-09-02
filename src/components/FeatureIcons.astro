@@ -1,0 +1,29 @@
+---
+/**
+ * One copy of each marker drawing, for everything on the page to reference.
+ *
+ * Rendered once per site page and referenced with `<use>` by both the poster
+ * and the table — about forty bytes a reference instead of repeating a whole
+ * drawing for every marker and every row.
+ */
+import { FEATURE_SYMBOLS } from '../lib/featureIcons';
+---
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  {
+    Object.entries(FEATURE_SYMBOLS).map(([type, body]) => (
+      <symbol id={`feature-${type}`} viewBox="0 0 100 100" set:html={body} />
+    ))
+  }
+</svg>
+
+<style>
+  /*
+    `display: none` rather than the `hidden` attribute: a <symbol> is never
+    painted where it is defined, so this only stops the empty <svg> box taking
+    up a line of its own.
+  */
+  .sprite {
+    display: none;
+  }
+</style>

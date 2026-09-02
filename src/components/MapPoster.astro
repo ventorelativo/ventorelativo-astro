@@ -13,6 +13,7 @@
  * which is the question a card-sized map answers anyway.
  */
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
+import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
 import { boundsOf, niceScaleDistance, project, type LatLon } from '../lib/geo';
 
 interface Feature {
@@ -192,14 +193,37 @@ const labels = placeLabels();
           ),
         )}
 
-        {markers.map((feature) => (
-          <circle
-            class={`marker marker--${feature.type}`}
-            cx={projection.x(feature.point!.lon)}
-            cy={projection.y(feature.point!.lat)}
-            r={feature.type === 'takeoff' ? 8 : 6}
-          />
-        ))}
+        {/*
+            The same artwork the map and the table use, from the sprite the page
+            renders once. Kinds without a drawing keep a dot.
+
+            Translating the group and placing the icon at -50,-50 centres it on
+            the coordinate, and leaves a single `transform` for the container
+            query below to scale.
+          */}
+        {markers.map((feature) => {
+          const x = projection.x(feature.point!.lon);
+          const y = projection.y(feature.point!.lat);
+          return FEATURE_SYMBOLS[feature.type] ? (
+            <g transform={`translate(${x} ${y})`}>
+              <use
+                class="marker-icon"
+                href={`#${symbolId(feature.type)}`}
+                x="-11"
+                y="-11"
+                width="22"
+                height="22"
+              />
+            </g>
+          ) : (
+            <circle
+              class={`marker marker--${feature.type}`}
+              cx={x}
+              cy={y}
+              r={feature.type === 'takeoff' ? 8 : 6}
+            />
+          );
+        })}
 
         {labels.map((label) => (
           <text class="label" x={label.x} y={label.y} text-anchor={label.anchor}>
@@ -330,8 +354,15 @@ const labels = placeLabels();
       stroke-width: 6;
     }
 
-    .marker--takeoff {
-      r: 17;
+    /*
+      `transform-box: fill-box` makes the origin the icon's own box rather than
+      the whole SVG, so this scales the marker in place instead of flinging it
+      across the drawing.
+    */
+    .marker-icon {
+      transform: scale(1.8);
+      transform-box: fill-box;
+      transform-origin: center;
     }
 
     .zone--landing {

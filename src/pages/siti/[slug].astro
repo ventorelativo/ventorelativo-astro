@@ -11,6 +11,7 @@ import EntryLayout from '../../layouts/EntryLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import Badge from '../../components/Badge.astro';
 import SiteMap from '../../components/SiteMap.astro';
+import FeatureIcons from '../../components/FeatureIcons.astro';
 import FeatureTable from '../../components/FeatureTable.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 
@@ -55,6 +56,8 @@ const { Content } = await render(entry);
   }
 
   {/* TODO(Phase 4d): XContest links for this site's takeoffs. */}
+  {/* Once per page: the poster and the table both point at these. */}
+  <FeatureIcons slot="media" />
   <SiteMap features={features} title={title} slot="media" />
 
   <Content components={MDX_COMPONENTS} />
