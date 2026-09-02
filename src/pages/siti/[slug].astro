@@ -62,7 +62,7 @@ const { Content } = await render(entry);
 
   <Content components={MDX_COMPONENTS} />
 
-  <FeatureTable features={features} />
+  <FeatureTable features={features} slot="sections" />
 
   {
     /*
@@ -72,7 +72,7 @@ const { Content } = await render(entry);
     once they have.
   */
   }
-  {images.length > 0 && <Gallery images={images} title="Immagini" />}
+  {images.length > 0 && <Gallery images={images} title="Immagini" slot="sections" />}
 </EntryLayout>
 
 <style>

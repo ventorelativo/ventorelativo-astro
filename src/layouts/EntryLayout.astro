@@ -74,6 +74,19 @@ const {
     <article class="prose entry__body">
       <slot />
     </article>
+
+    {
+      /*
+      Sections that are not prose.
+
+      `.prose` caps its width at a comfortable measure for reading — around 42
+      rem — which is right for paragraphs and wrong for everything else. A table
+      of flight points or a grid of photographs has no measure to respect and
+      only loses by being squeezed into one, so they go here: still inside the
+      container, but at its full width.
+    */
+    }
+    <slot name="sections" />
   </div>
 </BaseLayout>
 
