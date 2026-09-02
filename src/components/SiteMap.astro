@@ -47,7 +47,9 @@ import landingIcon from '../assets/map/landing.svg?url&no-inline';
   browser fetches them only when the buttons that reference them exist.
 */
 import terrainIcon from '../assets/map/terrain.svg?url&no-inline';
+import terrainOffIcon from '../assets/map/terrain-off.svg?url&no-inline';
 import fullscreenIcon from '../assets/map/fullscreen.svg?url&no-inline';
+import fullscreenCloseIcon from '../assets/map/fullscreen-close.svg?url&no-inline';
 import resetIcon from '../assets/map/reset.svg?raw';
 import type { LatLon } from '../lib/geo';
 
@@ -116,7 +118,12 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
   class="map"
   data-map={interactive ? '' : null}
   data-reset-icon={interactive ? resetIcon : null}
-  style={`--icon-terrain: url(${terrainIcon}); --icon-fullscreen: url(${fullscreenIcon})`}
+  style={[
+    `--icon-terrain: url(${terrainIcon})`,
+    `--icon-terrain-off: url(${terrainOffIcon})`,
+    `--icon-fullscreen: url(${fullscreenIcon})`,
+    `--icon-fullscreen-close: url(${fullscreenCloseIcon})`,
+  ].join('; ')}
 >
   <MapPoster features={features} title={title} />
 
@@ -217,25 +224,40 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
     them and the rules have to be :global — nothing here carries this
     component's scope attribute.
 
-    Both states of each control are covered: a fullscreen button becomes
-    `shrink` once it is in fullscreen, and terrain becomes `terrain-enabled`
-    when it is on, each with its own background image to replace.
+    Each control has two states and each state its own drawing. MapLibre names
+    them by what pressing the button will *do*, not by what is currently true:
+    `maplibregl-ctrl-terrain` is the button offering to turn terrain on, so it
+    carries the flat icon, and `-enabled` carries the peaks. Likewise `shrink`
+    is the one offering to leave fullscreen.
   */
-  .map :global(.maplibregl-ctrl-terrain .maplibregl-ctrl-icon),
+  .map :global(.maplibregl-ctrl-terrain .maplibregl-ctrl-icon) {
+    background-image: var(--icon-terrain-off);
+  }
+
   .map :global(.maplibregl-ctrl-terrain-enabled .maplibregl-ctrl-icon) {
     background-image: var(--icon-terrain);
   }
 
-  .map :global(.maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon),
-  .map :global(.maplibregl-ctrl-shrink .maplibregl-ctrl-icon) {
+  .map :global(.maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon) {
     background-image: var(--icon-fullscreen);
   }
 
-  /* The inlined reset icon, sized and coloured like MapLibre's own. */
+  .map :global(.maplibregl-ctrl-shrink .maplibregl-ctrl-icon) {
+    background-image: var(--icon-fullscreen-close);
+  }
+
+  /*
+    The inlined reset icon, sized and coloured like MapLibre's own.
+
+    Smaller than it looks it should be: MapLibre's stock icons carry their own
+    padding inside a 33-unit box, while this one is a Font Awesome glyph that
+    fills its 512 box edge to edge. Matching them by percentage made it the
+    largest thing in the stack.
+  */
   .map :global(.map-reset-icon) {
-    width: 60%;
-    height: 60%;
-    margin: 20%;
+    width: 46%;
+    height: 46%;
+    margin: 27%;
     fill: rgb(68, 73, 82);
   }
 </style>
