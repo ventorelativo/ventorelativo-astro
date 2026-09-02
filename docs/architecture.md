@@ -21,12 +21,20 @@ consequences worth internalising:
 - **Anything in a component's frontmatter runs once, at build, and never reaches
   the browser.** Secrets, file reads and heavy computation are all fine there.
 - **There is no server to hold state.** Contact form submissions go to Netlify
-  Forms; nothing else needs a backend.
+  Forms; nothing else needs a backend. (The CMS is the exception, and it stores
+  nothing — it reads and writes GitHub.)
 
-Astro's other mode (`server`, with an _adapter_) renders per request. We
-deliberately have no adapter yet: adding one emits a ~3.6 MB serverless function
-on every deploy even when every page is prerendered. It arrives in Phase 3, when
-Keystatic's admin routes genuinely need to run server-side.
+Astro's other mode (`server`, with an _adapter_) renders per request. This site
+has the Netlify adapter but **keeps `output: 'static'`**, which is not a
+contradiction: with an adapter present, `static` means "prerender everything
+unless a route opts out". Only Keystatic's two admin routes opt out, with
+`prerender = false`, so they are the entire contents of the serverless function
+while all 25 pages are still files on a CDN.
+
+The adapter was kept out until Phase 3 because with nothing to render on demand
+it uploaded a multi-megabyte function that answered no requests. Adding a
+`prerender = false` to a content page would undo the arrangement — that page
+would leave the CDN for a cold start.
 
 ## 2. Routing is the file tree
 
@@ -167,13 +175,13 @@ stay inline and synchronous to work.
 
 ## 7. What is deliberately absent
 
-| Absent                              | Why                                            | Arrives |
-| ----------------------------------- | ---------------------------------------------- | ------- |
-| Content collections, `src/content/` | Content migration not started                  | Phase 2 |
-| Keystatic CMS, `/keystatic`         | Needs GitHub App + server routes               | Phase 3 |
-| Netlify adapter                     | Dead 3.6 MB function until something needs SSR | Phase 3 |
-| Maps, flight data                   | Riskiest part, deliberately last               | Phase 4 |
-| Any UI framework (React etc.)       | Nothing here needs one                         | if ever |
+| Absent                     | Why                              | Arrives |
+| -------------------------- | -------------------------------- | ------- |
+| Maps, flight data          | Riskiest part, deliberately last | Phase 4 |
+| A UI framework on any page | Nothing here needs one           | if ever |
+
+React _is_ installed, but only because Keystatic's admin is a React app. It
+runs inside the serverless function; no page of the site ships a byte of it.
 
 Astro _can_ run React/Vue/Svelte components as "islands" — interactive
 components hydrated individually while the rest stays static HTML. This site has
