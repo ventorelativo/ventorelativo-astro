@@ -18,14 +18,20 @@ import { Picture } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
-import { HERO } from '../assets/hero';
+import { getEntry } from 'astro:content';
 
-// TODO(Phase 2): Keystatic `home` singleton.
-const CTAS = [
-  { label: 'Siti di volo', href: '/siti', primary: true },
-  { label: 'News', href: '/news', primary: false },
-  { label: 'Iscrizioni', href: '/iscrizioni', primary: false },
-];
+/*
+  The homepage's editable parts, from the `home` entry in the pages collection.
+
+  The credit travels inside `hero` rather than beside it because it belongs to
+  the picture and not to the page (G8) — a page that does not render `src` has
+  no credit to show, and an editor swapping the photograph is prompted for the
+  new one in the same place.
+*/
+const home = await getEntry('pages', 'home');
+if (!home?.data.hero) throw new Error('src/content/pages/home.mdx needs a hero image');
+const HERO = home.data.hero;
+const CTAS = home.data.ctas ?? [];
 ---
 
 {
@@ -87,11 +93,16 @@ const CTAS = [
       isn't, because it is inside the same element.
     */
     }
-    <p class="hero__credit">
-      Foto: <a href={HERO.credit.href} target="_blank" rel="noopener noreferrer">
-        {HERO.credit.text}
-      </a>
-    </p>
+    {
+      HERO.credit && (
+        <p class="hero__credit">
+          Foto:{' '}
+          <a href={HERO.credit.href} target="_blank" rel="noopener noreferrer">
+            {HERO.credit.text}
+          </a>
+        </p>
+      )
+    }
   </section>
 </BaseLayout>
 

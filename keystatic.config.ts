@@ -165,7 +165,8 @@ export default config({
     brand: { name: 'VentoRelativo' },
     navigation: {
       Contenuti: ['news', 'sites'],
-      Pagine: ['voli', 'iscrizioni', 'contatti'],
+      Pagine: ['home', 'voli', 'iscrizioni', 'contatti'],
+      Impostazioni: ['social'],
     },
   },
 
@@ -338,6 +339,84 @@ export default config({
   },
 
   singletons: {
+    /*
+      Site-wide, belonging to no page. The network is a choice rather than a
+      free-text name because the icon is an SVG path in Footer.astro — one that
+      is not in that list would render a hole, so the schema refuses it.
+    */
+    social: singleton({
+      label: 'Social',
+      path: 'src/content/settings/social',
+      format: 'yaml',
+      schema: {
+        links: fields.array(
+          fields.object({
+            network: fields.select({
+              label: 'Rete',
+              options: [
+                { label: 'Facebook', value: 'facebook' },
+                { label: 'Instagram', value: 'instagram' },
+                { label: 'YouTube', value: 'youtube' },
+              ],
+              defaultValue: 'facebook',
+            }),
+            href: fields.url({ label: 'Indirizzo', validation: { isRequired: true } }),
+          }),
+          { label: 'Profili', itemLabel: (props) => props.fields.network.value },
+        ),
+      },
+    }),
+
+    home: singleton({
+      previewUrl: `${PREVIEW_BASE}/`,
+      label: 'Pagina: Home',
+      path: 'src/content/pages/home',
+      format: { contentField: 'content' },
+      schema: {
+        title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
+        description: fields.text({ label: 'Descrizione per Google', multiline: true }),
+        hero: fields.object(
+          {
+            src: fields.image({
+              label: 'Immagine di sfondo',
+              directory: 'src/assets',
+              publicPath: '../../assets/',
+              validation: { isRequired: true },
+            }),
+            alt: fields.text({
+              label: 'Testo alternativo',
+              description:
+                'Lasciare vuoto: la foto è decorativa e il senso della pagina non dipende da essa.',
+            }),
+            /*
+              Inside the image, not beside it: the credit belongs to the
+              photograph, so swapping one asks for the other in the same breath.
+            */
+            credit: fields.object(
+              {
+                text: fields.text({ label: 'Autore' }),
+                href: fields.url({ label: 'Link all’originale' }),
+              },
+              { label: 'Crediti foto' },
+            ),
+          },
+          { label: 'Sfondo' },
+        ),
+        ctas: fields.array(
+          fields.object({
+            label: fields.text({ label: 'Testo', validation: { isRequired: true } }),
+            href: fields.text({ label: 'Indirizzo', validation: { isRequired: true } }),
+            primary: fields.checkbox({
+              label: 'Pulsante principale',
+              description: 'Uno solo: gli altri sono con il contorno.',
+            }),
+          }),
+          { label: 'Pulsanti', itemLabel: (props) => props.fields.label.value },
+        ),
+        content: fields.mdx({ label: 'Testo (non usato oggi)' }),
+      },
+    }),
+
     voli: singleton({
       previewUrl: `${PREVIEW_BASE}/voli/`,
       label: 'Pagina: I nostri voli',

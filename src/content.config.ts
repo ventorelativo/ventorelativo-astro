@@ -193,42 +193,70 @@ const sites = defineCollection({
  */
 const pages = defineCollection({
   loader: glob({ base: './src/content/pages', pattern: '**/*.mdx' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string().optional(),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
 
-    /** /iscrizioni — the pricing cards (§2.4, §5). */
-    tiers: z
-      .array(
-        z.object({
-          name: z.string(),
-          /** Euros. A number so a future Stripe integration can use it. */
-          price: z.number(),
-          benefits: z.array(z.string()),
-          /** Satispay today, a Stripe Payment Link if D10 goes that way. */
-          payUrl: z.url(), // z.string().url() is deprecated in Zod 4
-          highlight: z.boolean().default(false),
-        }),
-      )
-      .optional(),
-    bankTransfer: z
-      .object({
-        holder: z.string(),
-        iban: z.string(),
-      })
-      .optional(),
+      /**
+       * The homepage's background photograph, its credit and its buttons.
+       *
+       * Only `home` carries these. The credit lives inside `hero` rather than
+       * beside it because it belongs to the picture, not the page (G8): a page
+       * that does not render `src` has no credit to show, and the two cannot
+       * drift apart.
+       */
+      hero: z
+        .object({
+          src: image(),
+          /** Decorative by default: the page's meaning does not depend on it. */
+          alt: z.string().default(''),
+          credit: z.object({ text: z.string(), href: z.url() }).optional(),
+        })
+        .optional(),
+      ctas: z
+        .array(
+          z.object({
+            label: z.string(),
+            href: z.string(),
+            /** Exactly one should be primary; the rest are outlines. */
+            primary: z.boolean().default(false),
+          }),
+        )
+        .optional(),
 
-    /** /contatti — the phone / WhatsApp / email row (§2.4). */
-    contacts: z
-      .array(
-        z.object({
-          kind: z.enum(['phone', 'whatsapp', 'email']),
-          label: z.string(),
-          href: z.string(),
-        }),
-      )
-      .optional(),
-  }),
+      /** /iscrizioni — the pricing cards (§2.4, §5). */
+      tiers: z
+        .array(
+          z.object({
+            name: z.string(),
+            /** Euros. A number so a future Stripe integration can use it. */
+            price: z.number(),
+            benefits: z.array(z.string()),
+            /** Satispay today, a Stripe Payment Link if D10 goes that way. */
+            payUrl: z.url(), // z.string().url() is deprecated in Zod 4
+            highlight: z.boolean().default(false),
+          }),
+        )
+        .optional(),
+      bankTransfer: z
+        .object({
+          holder: z.string(),
+          iban: z.string(),
+        })
+        .optional(),
+
+      /** /contatti — the phone / WhatsApp / email row (§2.4). */
+      contacts: z
+        .array(
+          z.object({
+            kind: z.enum(['phone', 'whatsapp', 'email']),
+            label: z.string(),
+            href: z.string(),
+          }),
+        )
+        .optional(),
+    }),
 });
 
 /**
@@ -276,6 +304,33 @@ const coordinateList = z.string().transform((value, ctx) => {
     return z.NEVER;
   }
   return result.data;
+});
+
+/**
+ * Site-wide settings an editor can change but that belong to no page.
+ *
+ * A collection of one file today. It is here rather than in `pages` because a
+ * page has a URL and a body, and this has neither — putting it there would mean
+ * a volunteer meeting "Pagina: social" in a list of real pages.
+ */
+const settings = defineCollection({
+  loader: glob({ base: './src/content/settings', pattern: '**/*.yaml' }),
+  schema: z.object({
+    links: z
+      .array(
+        z.object({
+          /*
+            A known network, not a free-text name: the icon is an SVG path in
+            `Footer.astro`, and asking a volunteer to paste path data would be
+            asking for a broken footer. Adding a network means adding its icon
+            there and its name here, together.
+          */
+          network: z.enum(['facebook', 'instagram', 'youtube']),
+          href: z.url(),
+        }),
+      )
+      .default([]),
+  }),
 });
 
 const mapFeatures = defineCollection({
@@ -355,4 +410,10 @@ const mapFeatures = defineCollection({
     }),
 });
 
-export const collections = { news, sites, pages, mapFeatures };
+export const collections = {
+  settings,
+  news,
+  sites,
+  pages,
+  mapFeatures,
+};
