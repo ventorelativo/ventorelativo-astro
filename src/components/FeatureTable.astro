@@ -203,18 +203,20 @@ const sorted = [...features].sort(
   }
 
   /*
-    Underlined only on hover: seven of these in a column, all underlined, reads
-    as noise rather than as a table of numbers.
+    These are links and have to look like it. Muted and undecorated was tried
+    and read as plain text — nobody clicks what looks like a number. The link
+    colour carries it; the underline is faint so a column of seven does not
+    turn into stripes, and it firms up on hover.
   */
   .coords a {
-    color: var(--color-text-muted);
-    text-decoration: none;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
   }
 
   .coords a:hover,
   .coords a:focus-visible {
-    color: var(--color-accent);
-    text-decoration: underline;
+    text-decoration-color: currentColor;
   }
 
   .none {
