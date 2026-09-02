@@ -1049,7 +1049,31 @@ per-site maps and feature tables, XContest links.
 
 _Proposed 2026-09-02. Needs sign-off on the dependency (rule 6)._
 
-**There is nothing lighter that does this.** Measured, brotli, not quoted from a blog:
+**MapTiler and MapLibre are not alternatives — the map needs both.** MapTiler is the
+service: tiles, the club's style, the elevation data. MapLibre is the renderer that draws
+them in the browser. The old site used `maptiler-sdk`, which is MapLibre with MapTiler's
+conveniences wrapped around it, loaded from `cdn.maptiler.com` on every page carrying a
+map.
+
+**What the old site already had, recovered 2026-09-02 and verified live:**
+
+| Thing   | Value                                                                                                             |
+| ------- | ----------------------------------------------------------------------------------------------------------------- |
+| API key | hardcoded in `mapper/js/maptiler-base.js`; now `PUBLIC_MAPTILER_KEY` in `.env`                                    |
+| Style   | `3d203d09-e79b-4c16-a28d-b9564619b3a7` — the club's own "TopoPG", 132 layers, contours + hillshade + openmaptiles |
+| Camera  | `center [7.18, 44.88]`, `zoom 10.5`, fitted to bounds, `easeTo({ pitch: 25 })`                                    |
+| Terrain | on, `terrainExaggeration: 1.2`, with the terrain control                                                          |
+
+The key, the custom style and `terrain-rgb-v2` all still answer 200. So the look is not a
+design question — it exists, and the job is to reproduce it.
+
+**Use MapLibre directly rather than the SDK.** Measured brotli: `maptiler-sdk` 264 kB
+against `maplibre-gl` 225 kB. The SDK's `terrain: true` is a few lines of `setTerrain`
+plus a terrain-RGB source in raw MapLibre; the same style URL and key produce the same
+map. That is **40 kB saved for a handful of lines**, and one less layer between us and the
+renderer.
+
+**Nothing lighter than MapLibre does this.** Measured, brotli, not quoted from a blog:
 
 | Library        | Transfer          | Vector tiles | 3D terrain |
 | -------------- | ----------------- | ------------ | ---------- |
