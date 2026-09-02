@@ -424,14 +424,7 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
       await loadStylesheet('/vendor/maplibre-gl.css');
 
       const [
-        {
-          Map,
-          NavigationControl,
-          TerrainControl,
-          FullscreenControl,
-          prewarm,
-          setWorkerUrl,
-        },
+        { Map, NavigationControl, FullscreenControl, prewarm, setWorkerUrl },
         config,
       ] = await Promise.all([import('maplibre-gl'), import('../lib/mapConfig')]);
 
@@ -641,7 +634,6 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
             source: 'terrain',
             exaggeration: config.TERRAIN_EXAGGERATION,
           });
-          map.addControl(new TerrainControl({ source: 'terrain' }), 'top-right');
           tilted = true;
         } catch {
           /* Flat map, every feature still present. */
@@ -687,6 +679,19 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
         map.fitBounds(bounds, { padding: 60, pitch: tilt, duration: 0 });
 
         /*
+          The terrain button, once the tilt it restores is known. It replaces
+          MapLibre's own so that turning the relief off also takes the camera
+          back to straight down — and so the ground rises and falls instead of
+          snapping between the two.
+        */
+        if (tilted) {
+          map.addControl(
+            new TerrainToggle('terrain', config.TERRAIN_EXAGGERATION, tilt),
+            'top-right',
+          );
+        }
+
+        /*
           Where "reset" goes back to. Read off the map rather than recomputed,
           so it is exactly the view the visitor was given.
         */
@@ -729,6 +734,142 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
 
   function prefersReducedMotion(): boolean {
     return matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /** The bit of MapLibre a terrain animation needs. */
+  interface TerrainMap {
+    setTerrain(terrain: { source: string; exaggeration: number } | null): void;
+    // `exaggeration` is optional in MapLibre's own type, so it is here too, or
+    // the control stops being assignable to IControl.
+    getTerrain(): { exaggeration?: number } | null;
+    setPitch(pitch: number): void;
+    getPitch(): number;
+  }
+
+  /**
+   * Terrain on/off, with the ground rising rather than snapping.
+   *
+   * MapLibre's own `TerrainControl` sets terrain in one step, which lands as a
+   * jolt: the whole map jumps from flat to relief between two frames. Animating
+   * `exaggeration` from zero instead makes the valley grow out of the flat map
+   * the way MapTiler's SDK does it, and the same ramp in reverse flattens it.
+   *
+   * The tilt rides along, because the two belong together: a tilted view of a
+   * flat map is just skewed labels, so turning terrain off returns the camera
+   * to straight down and turning it on tilts back.
+   *
+   * It carries MapLibre's own class names, so the icons and styling that apply
+   * to its control apply to this one unchanged.
+   */
+  class TerrainToggle {
+    #map: TerrainMap | null = null;
+    #button: HTMLButtonElement | null = null;
+    #container: HTMLElement | null = null;
+    #enabled = true;
+    #frame = 0;
+    #source: string;
+    #exaggeration: number;
+    #pitch: number;
+
+    constructor(source: string, exaggeration: number, pitch: number) {
+      this.#source = source;
+      this.#exaggeration = exaggeration;
+      this.#pitch = pitch;
+    }
+
+    onAdd(map: TerrainMap) {
+      this.#map = map;
+
+      const container = document.createElement('div');
+      container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      // MapLibre puts the icon on a child span and the state on the button,
+      // which is what its stylesheet — and ours — selects on.
+      button.append(
+        Object.assign(document.createElement('span'), {
+          className: 'maplibregl-ctrl-icon',
+        }),
+      );
+      button.addEventListener('click', () => this.#toggle());
+
+      container.append(button);
+      this.#button = button;
+      this.#container = container;
+      this.#render();
+      return container;
+    }
+
+    onRemove() {
+      cancelAnimationFrame(this.#frame);
+      this.#container?.remove();
+      this.#container = null;
+      this.#map = null;
+    }
+
+    #render() {
+      const button = this.#button;
+      if (!button) return;
+      button.className = this.#enabled
+        ? 'maplibregl-ctrl-terrain-enabled'
+        : 'maplibregl-ctrl-terrain';
+      const label = this.#enabled ? 'Disattiva il rilievo 3D' : 'Attiva il rilievo 3D';
+      button.title = label;
+      button.setAttribute('aria-label', label);
+      button.setAttribute('aria-pressed', String(this.#enabled));
+    }
+
+    #toggle() {
+      this.#enabled = !this.#enabled;
+      this.#render();
+      this.#animate();
+    }
+
+    #animate() {
+      const map = this.#map;
+      if (!map) return;
+      cancelAnimationFrame(this.#frame);
+
+      const toExaggeration = this.#enabled ? this.#exaggeration : 0;
+      const toPitch = this.#enabled ? this.#pitch : 0;
+      const fromExaggeration = map.getTerrain()?.exaggeration ?? 0;
+      const fromPitch = map.getPitch();
+
+      // Growing terrain has to exist at zero before it can rise from it.
+      if (this.#enabled && !map.getTerrain()) {
+        map.setTerrain({ source: this.#source, exaggeration: 0 });
+      }
+
+      const settle = () => {
+        if (this.#enabled)
+          map.setTerrain({ source: this.#source, exaggeration: toExaggeration });
+        else map.setTerrain(null);
+        map.setPitch(toPitch);
+      };
+
+      // The setting exists precisely to refuse this kind of movement.
+      if (prefersReducedMotion()) {
+        settle();
+        return;
+      }
+
+      const DURATION = 900;
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min((now - start) / DURATION, 1);
+        // easeInOutQuad, so the ground neither snaps away nor drifts.
+        const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+        map.setTerrain({
+          source: this.#source,
+          exaggeration: fromExaggeration + (toExaggeration - fromExaggeration) * eased,
+        });
+        map.setPitch(fromPitch + (toPitch - fromPitch) * eased);
+        if (t < 1) this.#frame = requestAnimationFrame(step);
+        else settle();
+      };
+      this.#frame = requestAnimationFrame(step);
+    }
   }
 
   /** What the map goes back to. */
