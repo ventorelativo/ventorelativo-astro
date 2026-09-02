@@ -72,6 +72,7 @@ function parseArgs(argv) {
     eval: null,
     webgl: false,
     console: false,
+    requests: null,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -89,6 +90,7 @@ function parseArgs(argv) {
     else if (a === '--weight') opts.weight = true;
     else if (a === '--webgl') opts.webgl = true;
     else if (a === '--console') opts.console = true;
+    else if (a === '--requests') opts.requests = argv[++i];
     else if (a === '--computed')
       opts.computed = argv[++i].split(',').map((x) => x.trim());
     else if (a === '--no-shot') opts.shot = false;
@@ -333,11 +335,26 @@ try {
       compression counts — which is what a visitor actually pays.
     */
     const weight = new Map();
-    if (opts.weight) {
+    if (opts.weight || opts.requests) {
       await cdp.send('Network.enable', {}, sessionId);
       const types = new Map();
       cdp.on('Network.responseReceived', (p) => {
         if (p.sessionId === sessionId) types.set(p.requestId, p.type);
+        /*
+          Counting bytes says how much arrived; it does not say what was asked
+          for or what came back 404. `--requests <substring>` prints the status
+          of every URL matching it, which is how a silently missing worker gets
+          found.
+        */
+        if (
+          opts.requests &&
+          p.sessionId === sessionId &&
+          p.response?.url.includes(opts.requests)
+        ) {
+          console.log(
+            `  ${String(p.response.status).padEnd(4)} ${p.response.url.slice(0, 110)}`,
+          );
+        }
       });
       cdp.on('Network.loadingFinished', (p) => {
         if (p.sessionId !== sessionId) return;
@@ -469,7 +486,7 @@ try {
       );
     }
 
-    if (opts.weight) {
+    if (opts.weight || opts.requests) {
       const kb = (n) => `${(n / 1024).toFixed(1)} kB`;
       const total = [...weight.values()].reduce((a, b) => a + b.bytes, 0);
       const rows = [...weight.entries()].sort((a, b) => b[1].bytes - a[1].bytes);

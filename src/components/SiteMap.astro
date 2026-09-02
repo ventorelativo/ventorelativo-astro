@@ -247,10 +247,20 @@ const typeColours = Object.fromEntries(
       // for why it is not imported here.
       await loadStylesheet('/vendor/maplibre-gl.css');
 
-      const [{ Map, NavigationControl, TerrainControl }, config] = await Promise.all([
-        import('maplibre-gl'),
-        import('../lib/mapConfig'),
-      ]);
+      const [{ Map, NavigationControl, TerrainControl, setWorkerUrl }, config] =
+        await Promise.all([import('maplibre-gl'), import('../lib/mapConfig')]);
+
+      /*
+        Tell MapLibre where its worker is, before any map exists.
+
+        Left to itself it looks for `maplibre-gl-worker.mjs` beside its own
+        module URL, which after bundling is a hashed filename in /_astro/ with
+        no worker next to it. The 404 is silent and the symptom is bizarre:
+        only *vector* tiles are parsed in the worker, so the raster hillshade
+        draws and every road, label and marker vanishes. Copied to this fixed
+        path by scripts/sync-vendor.mjs.
+      */
+      setWorkerUrl('/vendor/maplibre-gl-worker.mjs');
 
       const data = readJson(root, '[data-map-data]');
       const colours = readJson(root, '[data-map-colours]') as Record<string, string>;

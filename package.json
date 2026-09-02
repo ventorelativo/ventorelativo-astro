@@ -15,8 +15,8 @@
     "shot": "node scripts/shot.mjs",
     "weight": "node scripts/shot.mjs --no-shot --weight",
     "navdata:check": "node scripts/check-navdata.mjs",
-    "predev": "node scripts/sync-vendor-css.mjs",
-    "prebuild": "node scripts/sync-vendor-css.mjs"
+    "predev": "node scripts/sync-vendor.mjs",
+    "prebuild": "node scripts/sync-vendor.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.0",
