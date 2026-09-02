@@ -127,12 +127,14 @@ export default defineConfig({
 
   vite: {
     /*
-      Bigger Picture is imported dynamically from a client script, which Vite
+      Both of these are imported dynamically from a client script, which Vite
       does not discover when it scans for dependencies at startup. Without this
-      the gallery works in a production build but silently does nothing in
-      `astro dev` — the worst kind of difference between the two.
+      they work in a production build and silently do nothing in `astro dev` —
+      the worst kind of difference between the two, and the one most likely to
+      be mistaken for broken code, because the dev server is where the site
+      gets looked at.
     */
-    optimizeDeps: { include: ['bigger-picture'] },
+    optimizeDeps: { include: ['bigger-picture', 'maplibre-gl'] },
 
     server: {
       // Vite rejects requests whose Host header it doesn't recognise (DNS
