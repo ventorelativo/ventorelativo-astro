@@ -16,6 +16,8 @@ interface Feature {
   name: string;
   type: FeatureType;
   point?: LatLon;
+  /** A fuller description of this point, elsewhere. */
+  guideUrl?: string;
 }
 
 interface Props {
@@ -64,7 +66,24 @@ const sorted = [...features].sort(
                   )}
                   {FEATURE_TYPES[feature.type].label}
                 </td>
-                <th scope="row">{feature.name}</th>
+                {/*
+                  The name is the link when there is somewhere to go — rather
+                  than a fifth column that would be empty on most rows and push
+                  the table wider on a phone.
+                */}
+                <th scope="row">
+                  {feature.guideUrl ? (
+                    <a
+                      href={feature.guideUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {feature.name}
+                    </a>
+                  ) : (
+                    feature.name
+                  )}
+                </th>
                 <td class="coords">
                   {feature.point ? (
                     /*

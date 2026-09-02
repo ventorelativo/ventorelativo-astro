@@ -58,6 +58,8 @@ interface Feature {
   type: FeatureType;
   point?: LatLon;
   shape?: { discriminant: 'polygon' | 'line'; value: [number, number][] };
+  /** A fuller description of this point, elsewhere. */
+  guideUrl?: string;
 }
 
 interface Props {
@@ -82,7 +84,13 @@ const geojson = {
       .filter((feature) => feature.point)
       .map((feature) => ({
         type: 'Feature',
-        properties: { name: feature.name, kind: feature.type },
+        properties: {
+          name: feature.name,
+          kind: feature.type,
+          // '' rather than undefined: JSON drops undefined, and an absent key
+          // reads as broken data where an empty string reads as "no guide".
+          guide: feature.guideUrl ?? '',
+        },
         geometry: {
           type: 'Point',
           coordinates: [feature.point!.lon, feature.point!.lat],
@@ -92,7 +100,13 @@ const geojson = {
       .filter((feature) => feature.shape)
       .map((feature) => ({
         type: 'Feature',
-        properties: { name: feature.name, kind: feature.type },
+        properties: {
+          name: feature.name,
+          kind: feature.type,
+          // '' rather than undefined: JSON drops undefined, and an absent key
+          // reads as broken data where an empty string reads as "no guide".
+          guide: feature.guideUrl ?? '',
+        },
         geometry:
           feature.shape!.discriminant === 'polygon'
             ? { type: 'Polygon', coordinates: [feature.shape!.value] }
@@ -807,6 +821,7 @@ const typeNames = Object.fromEntries(
               .setDOMContent(
                 popupContent({
                   kind,
+                  guide: String(feature.properties?.guide ?? ''),
                   emoji,
                   label,
                   // The kinds with artwork are exactly the ones with an icon file.
@@ -894,6 +909,8 @@ const typeNames = Object.fromEntries(
 
   interface PopupParts {
     kind: string;
+    /** Empty when this point has no page elsewhere. */
+    guide: string;
     emoji: string;
     label: string;
     name: string;
@@ -909,6 +926,7 @@ const typeNames = Object.fromEntries(
   /** The popup's contents, as elements. */
   function popupContent({
     kind,
+    guide,
     emoji,
     label,
     name,
@@ -922,9 +940,20 @@ const typeNames = Object.fromEntries(
     const heading = document.createElement('p');
     heading.className = 'map-popup__name';
     heading.append(popupIcon({ kind, emoji, hasIcon }), ' ');
-    heading.append(
-      Object.assign(document.createElement('strong'), { textContent: name }),
-    );
+    // The name is the way through to a fuller description, when there is one.
+    const title = Object.assign(document.createElement('strong'), {
+      textContent: name,
+    });
+    if (guide) {
+      const link = document.createElement('a');
+      link.href = guide;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.append(title);
+      heading.append(link);
+    } else {
+      heading.append(title);
+    }
 
     const kindLine = document.createElement('p');
     kindLine.className = 'map-popup__kind';
