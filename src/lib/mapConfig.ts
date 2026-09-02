@@ -25,11 +25,17 @@ export const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY ?? '';
 /** Elevation tiles, the thing that makes the terrain three-dimensional. */
 export const TERRAIN_SOURCE = 'terrain-rgb-v2';
 
-/** As the old map had it. A gentle lift, not a caricature of the valley. */
-export const TERRAIN_EXAGGERATION = 1.2;
+/**
+ * Stronger than the old site's 1.2, and the tilt below is stronger than its 25.
+ * Those numbers were faithful and produced something indistinguishable from the
+ * flat hillshade at the scale a single site is framed at — the relief was there
+ * and nobody could see it. These are the values at which a valley reads as a
+ * valley.
+ */
+export const TERRAIN_EXAGGERATION = 1.5;
 
-/** The tilt the old map eased to once its style had loaded. */
-export const PITCH = 25;
+/** See the note on exaggeration above. */
+export const PITCH = 55;
 
 export function styleUrl(): string {
   return `https://api.maptiler.com/maps/${STYLE_ID}/style.json?key=${MAPTILER_KEY}`;
