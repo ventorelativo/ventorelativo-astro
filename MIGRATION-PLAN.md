@@ -982,14 +982,30 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
 **Covers:** C1–C20, S1–S8, S10–S16, E4–E8, X1–X2, D13. (S9 dropped; S3 done with satori;
 X4 needs takeoff coordinates and moves to Phase 4.)
 
-### Phase 3 — Keystatic GitHub mode
+### Phase 3 — Keystatic GitHub mode ✅ BUILT (exit test outstanding)
 
 GitHub App, OAuth env vars, `/keystatic` + `/api/keystatic/*` with `prerender = false`,
 auto-deploy on push. Low risk now that D2 is settled — you're the only editor, and adding
 someone later is "create a GitHub account, get repo write access".
 **Exit:** a news post created and published end-to-end through `/keystatic` on the deployed
-site, without touching a terminal.
+site, without touching a terminal. **Not yet performed — this is the remaining gate.**
 **Covers:** E1–E3, E9–E10.
+
+**Built (2026-09-02):** the `@astrojs/netlify` adapter with `output: 'static'` kept, so the
+two admin routes are the only things in the serverless function and all 25 pages stay on
+the CDN; Keystatic in GitHub mode against `ventorelativo/ventorelativo-astro`; the
+`modifiche-` branch workflow with a `previewUrl` on every collection and singleton.
+Runbook: [`docs/deploying.md`](docs/deploying.md).
+
+**Two things found while doing it:**
+
+1. **The Astro build gets its own Netlify project.** `ventorelativo` already exists and
+   serves the live `ventorelativo.it`; this build deploys to `ventorelativo-astro` and the
+   domain moves at cutover (Phase 5). Meanwhile `robots.txt` disallows crawling on any host
+   that is not the apex, so the staging copy cannot compete with the site it replaces — and
+   it re-opens by itself when the domain arrives.
+2. **D9's open question is settled:** the canonical origin is the apex, `ventorelativo.it`.
+   The live Netlify project's primary URL says so; nothing in the Drupal repo did.
 
 **Editing workflow to set up with it:**
 
@@ -1002,6 +1018,10 @@ site, without touching a terminal.
   `{slug}` from wherever the editor currently is. Note that Netlify sanitises branch names
   in subdomains, so keep branch names free of slashes or the templated URL will not match.
 - **`/admin` → `/keystatic`** (already in `netlify.toml`) starts working here.
+
+**Still open on the new project:** Netlify **form detection is off**, so the `/contatti`
+form will accept a submission and store nothing. It has to be enabled in the project's
+settings before the exit test counts as a pass (D3).
 
 ### Phase 4 — Map & flight-data subsystems _(the risky part, deliberately last)_
 
