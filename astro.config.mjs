@@ -60,7 +60,28 @@ export default defineConfig({
     references _astro/*.avif; with it true, sixteen /.netlify/images URLs and no
     optimised file at all.
   */
-  adapter: netlify({ imageCDN: false }),
+  adapter: netlify({
+    imageCDN: false,
+
+    /*
+      Netlify's dev-time emulation, all of it off.
+
+      `edgeFunctions` spawns a Deno server to emulate `netlify/edge-functions/`.
+      There is no such directory here and no middleware to put in one, so on a
+      machine without Deno it does nothing but fail — an unhandled rejection on
+      every `astro dev` start, from a feature the site does not use.
+
+      `images` would route images through the Netlify Image CDN in dev while the
+      build uses the local pipeline, which is the dev/production divergence
+      `imageCDN: false` exists to avoid. `environmentVariables` reads from a
+      linked Netlify site; this repo is not linked and its .env is local.
+    */
+    devFeatures: {
+      edgeFunctions: false,
+      images: false,
+      environmentVariables: false,
+    },
+  }),
 
   // `directory` emits /siti/montoso/index.html, matching the Tome export's URL
   // shape exactly. Do not change this — it is what preserves the live URLs.
