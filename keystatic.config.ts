@@ -294,6 +294,21 @@ export default config({
             'Caratteristiche del sito, es. "Adatto ai principianti", "Hike&Fly".',
           itemLabel: (props) => props.value,
         }),
+        /*
+          Phase 4's map geometry, carried through untouched.
+
+          It has to be declared even though nobody edits it here: Keystatic
+          refuses to open an entry whose frontmatter contains a key its schema
+          does not know, and every site file carries `mapFeatures` (AGENTS.md
+          rule 11). `ignored()` parses the value and writes it back unchanged
+          while rendering no input at all.
+
+          Deliberately not an editable relationship yet. These slugs point at
+          the geometry behind /api/navdata/*, which pilots load into their
+          instruments (rule 9); attaching and detaching them is a Phase 4
+          design question, not a text box to add in passing.
+        */
+        mapFeatures: fields.ignored(),
         featured: fields.checkbox({
           label: 'In evidenza',
           description: 'I siti in evidenza compaiono per primi nell’elenco.',
