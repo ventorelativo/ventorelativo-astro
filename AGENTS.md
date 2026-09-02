@@ -227,6 +227,15 @@ rule: [`docs/performance.md`](docs/performance.md).
   `_astro/*.avif`, a cold resize in front of the LCP image, and a metered
   resource. `netlify({ imageCDN: false })` keeps the build-time pipeline. Check
   it the way it was caught: grep the built HTML for `/.netlify/images`.
+- **A bundled library that loads its own worker will lose it.** MapLibre finds
+  its worker with `new URL('./maplibre-gl-worker.mjs', import.meta.url)`, which
+  no bundler can see through: Vite hashes the main chunk and emits no worker
+  beside it. The 404 is silent and the symptom is misleading — only _vector_
+  tiles are parsed in the worker, so a raster basemap draws perfectly while
+  every road, label and marker is missing. `scripts/sync-vendor.mjs` copies the
+  worker **and the `maplibre-gl-shared.mjs` it imports** into `public/`, and
+  `setWorkerUrl` points at them. `isSourceLoaded()` returning false for every
+  source is the tell.
 - **A new `PUBLIC_` environment variable fails the Netlify build.** The secrets
   scanner treats every variable as a credential and finds this one in the output,
   where Astro deliberately put it. Add the name to `SECRETS_SCAN_OMIT_KEYS` in

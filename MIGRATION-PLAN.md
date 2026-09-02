@@ -1128,6 +1128,33 @@ byte of it.
 and MapLibre on click; (c) 3D terrain and the overview map; (d) `geo:export`/`geo:import`
 and the XContest links.
 
+**(b) and the terrain half of (c) are done (2026-09-02).** MapLibre 6.6 loads behind the
+poster, on its own but late: after `load`, only once scrolled into view, only when the
+browser is idle, and never on a metered or 2G connection. A site page still ships **2.9 kB**
+of JavaScript; measured on the built page with the map auto-opening, **LCP 220 ms, CLS
+0.00**.
+
+Four bugs, none of which the code review would have caught:
+
+1. **`load` never fires.** It waits for the style _and_ every tile of the opening view.
+   `style.load` is what adding layers actually needs, and it fires sooner — which matters
+   most to the person on mountain data.
+2. **The worker is not bundled.** MapLibre builds its worker URL beside its own module, so
+   Vite emitted none; the worker also imports `maplibre-gl-shared.mjs`, so copying it alone
+   fixed nothing. Only vector tiles are parsed there, so the failure showed as a perfect
+   raster hillshade with no roads, labels or markers at all.
+3. **`getPropertyValue` returns the declaration, not the colour** — the literal string
+   `light-dark(#1f52a6, #7997ca)`, which MapLibre cannot parse, so no markers drew.
+   Resolved now by painting it on a throwaway element and reading `color` back, which also
+   makes the map follow the visitor's theme.
+4. **The old site's 25° pitch and 1.2 exaggeration are invisible** at the scale one site is
+   framed at. 55 and 1.5 are a deliberate deviation: the terrain was applied either way,
+   but only these read as relief.
+
+Terrain is fenced in its own `try`, so elevation failing costs the third dimension and
+nothing else. `scripts/shot.mjs` gained `--webgl`, `--console` and `--requests` to find any
+of this at all.
+
 **(a) is done (2026-09-02).** Every site page carries a schematic of its geometry and a
 table of its points; `/siti` links the two navdata downloads. Measured: a site page ships
 **1.5 kB of JavaScript**, the theme toggle and nothing else, and `/siti` is 62.0 kB against
