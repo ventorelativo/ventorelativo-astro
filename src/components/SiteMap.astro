@@ -686,10 +686,13 @@ const typeNames = Object.fromEntries(
             url: config.terrainUrl(),
             tileSize: 256,
           });
-          map.setTerrain({
-            source: 'terrain',
-            exaggeration: config.TERRAIN_EXAGGERATION,
-          });
+          /*
+            Starts flat. The camera is framed at its final tilt a few lines
+            below, and then the ground rises into it — the same ramp the button
+            runs, so arriving at the map and switching terrain back on look
+            like one another rather than two unrelated behaviours.
+          */
+          map.setTerrain({ source: 'terrain', exaggeration: 0 });
           tilted = true;
         } catch {
           /* Flat map, every feature still present. */
@@ -789,10 +792,16 @@ const typeNames = Object.fromEntries(
           snapping between the two.
         */
         if (tilted) {
-          map.addControl(
-            new TerrainToggle('terrain', config.TERRAIN_EXAGGERATION, tilt),
-            'top-right',
+          const terrain = new TerrainToggle(
+            'terrain',
+            config.TERRAIN_EXAGGERATION,
+            tilt,
           );
+          map.addControl(terrain, 'top-right');
+          // Only the ground moves: the camera is already where it belongs, and
+          // animating the tilt as well would re-frame from a pitch the bounds
+          // were not solved for.
+          terrain.rise();
         }
 
         /*
@@ -984,6 +993,11 @@ const typeNames = Object.fromEntries(
     #toggle() {
       this.#enabled = !this.#enabled;
       this.#render();
+      this.#animate();
+    }
+
+    /** The opening ramp, from the flat map the camera was framed on. */
+    rise() {
       this.#animate();
     }
 
