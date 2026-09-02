@@ -11,15 +11,13 @@
  *
  * ## Storage: local, for now
  *
- * `kind: 'local'` means the UI writes straight to the files in this working
- * copy. It runs under `npm run dev` at http://localhost:4321/keystatic and is
- * not part of the production build — the admin needs server-rendered routes,
- * and this site is deliberately adapter-less until Phase 3
- * (MIGRATION-PLAN.md §7, AGENTS.md rule 3).
+ * `kind: 'github'` means the UI reads and writes this repository through the
+ * GitHub API: a save is a commit, and Netlify rebuilds from it. Who may edit is
+ * decided by GitHub — anyone with write access to the repo, nobody else.
  *
- * Phase 3 switches this to `kind: 'github'`, at which point the club edits the
- * live site from a browser and Netlify rebuilds on the commit Keystatic makes.
- * Nothing else in this file changes.
+ * It still runs under `npm run dev`, and it also ships with the deployed site,
+ * which is why the Netlify adapter arrives in the same phase: the admin needs
+ * two server-rendered routes.
  *
  * ## Italian labels
  *
@@ -109,7 +107,19 @@ const imageWithAlt = (directory: string, publicPath: string) =>
   );
 
 export default config({
-  storage: { kind: 'local' },
+  /*
+    GitHub mode: the admin reads and writes this repository through the GitHub
+    API, so the club edits the live site from a browser and every save is a
+    commit. `local` was Phase 2, and writing to the working copy only helped
+    someone who had the repository checked out.
+
+    Requires the four KEYSTATIC_* variables — see .env.example. Without them
+    /keystatic shows its setup screen rather than an error.
+  */
+  storage: {
+    kind: 'github',
+    repo: { owner: 'ventorelativo', name: 'ventorelativo-astro' },
+  },
 
   ui: {
     brand: { name: 'VentoRelativo' },
