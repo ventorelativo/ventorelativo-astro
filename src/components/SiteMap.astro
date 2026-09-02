@@ -313,6 +313,24 @@ const typeNames = Object.fromEntries(
     color: var(--color-text-strong);
   }
 
+  .map :global(.map-popup__icon) {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    vertical-align: -0.32em;
+  }
+
+  .map :global(.map-popup__dot) {
+    display: inline-block;
+    width: 0.62em;
+    height: 0.62em;
+    border-radius: 50%;
+  }
+
+  .map :global(.map-popup__dot--poi) {
+    background-color: var(--color-map-poi);
+  }
+
   .map :global(.map-popup__kind),
   .map :global(.map-popup__coords) {
     color: var(--color-text-muted);
@@ -788,8 +806,11 @@ const typeNames = Object.fromEntries(
               .setLngLat([lon, lat])
               .setDOMContent(
                 popupContent({
+                  kind,
                   emoji,
                   label,
+                  // The kinds with artwork are exactly the ones with an icon file.
+                  hasIcon: Boolean(icons[kind]),
                   name: String(feature.properties?.name ?? ''),
                   point: { lat, lon },
                   links,
@@ -872,9 +893,11 @@ const typeNames = Object.fromEntries(
   }
 
   interface PopupParts {
+    kind: string;
     emoji: string;
     label: string;
     name: string;
+    hasIcon: boolean;
     point: { lat: number; lon: number };
     links: {
       formatCoordinates(point: { lat: number; lon: number }): string;
@@ -884,25 +907,28 @@ const typeNames = Object.fromEntries(
   }
 
   /** The popup's contents, as elements. */
-  function popupContent({ emoji, label, name, point, links }: PopupParts): HTMLElement {
+  function popupContent({
+    kind,
+    emoji,
+    label,
+    name,
+    hasIcon,
+    point,
+    links,
+  }: PopupParts): HTMLElement {
     const root = document.createElement('div');
     root.className = 'map-popup';
 
     const heading = document.createElement('p');
     heading.className = 'map-popup__name';
-    // The glyph repeats what the word beside it says, so it is decorative.
-    const icon = document.createElement('span');
-    icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = emoji;
+    heading.append(popupIcon({ kind, emoji, hasIcon }), ' ');
     heading.append(
-      icon,
-      ' ',
       Object.assign(document.createElement('strong'), { textContent: name }),
     );
 
-    const kind = document.createElement('p');
-    kind.className = 'map-popup__kind';
-    kind.textContent = label;
+    const kindLine = document.createElement('p');
+    kindLine.className = 'map-popup__kind';
+    kindLine.textContent = label;
 
     const coords = document.createElement('p');
     coords.className = 'map-popup__coords';
@@ -910,10 +936,18 @@ const typeNames = Object.fromEntries(
 
     const actions = document.createElement('p');
     actions.className = 'map-popup__links';
-    for (const [href, text] of [
+    /*
+      The forecast is offered on takeoffs only. Meteo-Parapente answers "can I
+      fly from here", which is a question about the hill you launch from — on a
+      landing field or a car park it is noise dressed as information.
+    */
+    const destinations: [string, string][] = [
       [links.navigationUrl(point), '🗺️ Naviga'],
-      [links.forecastUrl(point), '🌤️ Previsioni'],
-    ]) {
+    ];
+    if (kind === 'takeoff')
+      destinations.push([links.forecastUrl(point), '🌤️ Previsioni']);
+
+    for (const [href, text] of destinations) {
       const link = document.createElement('a');
       link.href = href;
       link.target = '_blank';
@@ -924,8 +958,44 @@ const typeNames = Object.fromEntries(
       actions.append(link);
     }
 
-    root.append(heading, kind, coords, actions);
+    root.append(heading, kindLine, coords, actions);
     return root;
+  }
+
+  /**
+   * The marker's own drawing, so the popup matches the thing it points at.
+   *
+   * Takeoffs and landings have artwork and use it, from the sprite the page
+   * already renders. The obstacle keeps its warning glyph — a hazard should
+   * read as one, and there is no drawing for it. Anything else takes the
+   * coloured dot the table and the poster give it. Decorative in every case:
+   * the written label sits beside it.
+   */
+  function popupIcon({
+    kind,
+    emoji,
+    hasIcon,
+  }: {
+    kind: string;
+    emoji: string;
+    hasIcon: boolean;
+  }): Element {
+    if (hasIcon) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'map-popup__icon');
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.setAttribute('aria-hidden', 'true');
+      const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+      use.setAttribute('href', `#feature-${kind}`);
+      svg.append(use);
+      return svg;
+    }
+
+    const span = document.createElement('span');
+    span.setAttribute('aria-hidden', 'true');
+    if (kind === 'obstacle') span.textContent = emoji;
+    else span.className = `map-popup__dot map-popup__dot--${kind}`;
+    return span;
   }
 
   /** The bit of MapLibre a terrain animation needs. */
