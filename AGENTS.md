@@ -156,8 +156,10 @@ npm run build && npm run preview
 npm run weight -- http://localhost:4399/siti/
 ```
 
-Current budget: `/` 86 kB with 1.5 kB of JS; `/siti/` 61 kB; a photo-heavy site
-page 458 kB, almost all of it photographs. Details and the reasoning behind each
+Current budget: `/` 70 kB with 1.5 kB of JS; `/siti/` 80 kB; a photo-heavy site
+page 458 kB, almost all of it photographs. `/siti/` and the site pages carry the
+map's 5.6 kB of JavaScript — the facade, not MapLibre, which is 240 kB and
+arrives only when a map is opened. Details and the reasoning behind each
 rule: [`docs/performance.md`](docs/performance.md).
 
 ## Conventions
