@@ -6,12 +6,16 @@
  * one place and be forgotten in the other. Ported from the constants in the
  * Drupal `NavdataController`, which is the only record of these numbers.
  *
- * Marker colours and icons join this table with the maps (Phase 4b); nothing
- * needs them yet, and inventing them now would be guessing.
+ * Colours are deliberately *not* here. They are `--color-map-<type>` in
+ * tokens.css, because rule 4 says a colour is defined once as a `light-dark()`
+ * pair; a hex in this file would be a second definition that cannot follow the
+ * theme.
  */
 export type FeatureType = 'takeoff' | 'landing' | 'obstacle' | 'poi';
 
 interface FeatureTypeInfo {
+  /** Shown to visitors, so Italian. Singular — it labels one row. */
+  label: string;
   /**
    * SeeYou CUP waypoint style. 20 and 21 are what an instrument reads to draw a
    * takeoff or a landable field; the other two are informational.
@@ -28,8 +32,12 @@ interface FeatureTypeInfo {
 const OPENAIR_DEFAULT_CLASS = 'Q';
 
 export const FEATURE_TYPES: Record<FeatureType, FeatureTypeInfo> = {
-  takeoff: { cupStyle: 20, openAirClass: OPENAIR_DEFAULT_CLASS },
-  landing: { cupStyle: 21, openAirClass: 'W' },
-  obstacle: { cupStyle: 8, openAirClass: OPENAIR_DEFAULT_CLASS },
-  poi: { cupStyle: 19, openAirClass: OPENAIR_DEFAULT_CLASS },
+  takeoff: { label: 'Decollo', cupStyle: 20, openAirClass: OPENAIR_DEFAULT_CLASS },
+  landing: { label: 'Atterraggio', cupStyle: 21, openAirClass: 'W' },
+  obstacle: { label: 'Ostacolo', cupStyle: 8, openAirClass: OPENAIR_DEFAULT_CLASS },
+  poi: {
+    label: 'Punto di interesse',
+    cupStyle: 19,
+    openAirClass: OPENAIR_DEFAULT_CLASS,
+  },
 };

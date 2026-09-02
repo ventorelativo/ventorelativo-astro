@@ -76,6 +76,25 @@
   --color-accent-contrast: light-dark(#ffffff, #0f1214);
   --color-accent-subtle: light-dark(#eaf0fa, #1b2740);
 
+  /* ------------------------------------------------------------------ map */
+  /*
+    One colour per feature type, ported from the archived
+    `/api/sites/all/geo.json` — the only surviving record of what the old map
+    looked like. Takeoff blue is already --brand-blue, which is why the brand
+    note above says the two must stay coherent.
+
+    The light value is the archived colour exactly. The dark one is lifted, the
+    same treatment --brand-blue-bright gives links: the old markers sat on a
+    light topographic basemap, so they never had to survive a dark background.
+    The one deliberate departure is `poi` — archived gold is close to invisible
+    on white, so light mode darkens it. When the real map arrives it draws on
+    MapTiler's basemap rather than the page, and uses the archived values as-is.
+  */
+  --color-map-takeoff: light-dark(#1f52a6, #7997ca);
+  --color-map-landing: light-dark(#2ba52b, #5ee05e);
+  --color-map-obstacle: light-dark(#d100d1, #ff7bff);
+  --color-map-poi: light-dark(#a37a00, #ffd700);
+
   --color-focus: light-dark(var(--brand-blue), var(--brand-blue-bright));
 
   /* ---------------------------------------------------------- typography */
