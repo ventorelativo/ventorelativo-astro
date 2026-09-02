@@ -1,0 +1,302 @@
+---
+/**
+ * Language switcher (G11) — a facade over GTranslate.
+ *
+ * The old site ran GTranslate's `flags.js` widget in the footer: a row of five
+ * flags that, on click, drove Google's own translate element. Ported here as a
+ * *facade* — the row of flags is static HTML, and nothing third-party is
+ * fetched until a visitor shows interest. A page that nobody translates costs
+ * exactly the markup below.
+ *
+ * That matters because the alternative is Google's `element.js` on every page
+ * load, from a domain we do not control, for a feature most visitors of an
+ * Italian club site will never touch. See docs/performance.md.
+ *
+ * The mechanism is the same one `flags.js` used with `url_structure: 'none'`:
+ * Google's TranslateElement, driven through its hidden `goog-te-combo` select,
+ * remembering the choice in the `googtrans` cookie it sets itself. So a
+ * visitor who picked Deutsch stays in Deutsch across pages — and only they pay
+ * for the script, on every page, because the cookie says they asked to.
+ *
+ * The flags are drawn here rather than fetched: GTranslate's own `es.svg` is
+ * 48 kB of coat of arms for a 20px image. These are the same colours, minus
+ * the heraldry nobody can see at this size.
+ */
+
+/*
+  Order and language set come from the Drupal config
+  (`config/gtranslate.settings.yml`: it, fr, en, de, es), with the native
+  names GTranslate used — `native_language_names: 1`.
+*/
+const LANGUAGES = [
+  { code: 'it', name: 'Italiano' },
+  { code: 'fr', name: 'Français' },
+  { code: 'en', name: 'English' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'es', name: 'Español' },
+] as const;
+
+const FLAGS: Record<string, string> = {
+  it: `<path fill="#fff" d="M0 0h640v480H0z"/><path fill="#005700" d="M0 0h213.3v480H0z"/><path fill="#fc0000" d="M426.7 0H640v480H426.7z"/>`,
+  fr: `<path fill="#fff" d="M0 0h640v480H0z"/><path fill="#00267f" d="M0 0h213.3v480H0z"/><path fill="#f31830" d="M426.7 0H640v480H426.7z"/>`,
+  /* Simplified Union Flag: the saltire is drawn centred rather than
+     counterchanged, which is invisible at 20px and saves half the geometry. */
+  en: `<path fill="#012169" d="M0 0h640v480H0z"/><g fill="none"><path stroke="#fff" stroke-width="96" d="m0 0 640 480M640 0 0 480"/><path stroke="#c8102e" stroke-width="56" d="m0 0 640 480M640 0 0 480"/><path stroke="#fff" stroke-width="160" d="M320 0v480M0 240h640"/><path stroke="#c8102e" stroke-width="96" d="M320 0v480M0 240h640"/></g>`,
+  de: `<path d="M0 0h640v160H0z"/><path fill="#f00" d="M0 160h640v160H0z"/><path fill="#fc0" d="M0 320h640v160H0z"/>`,
+  es: `<path fill="#c60b1e" d="M0 0h640v480H0z"/><path fill="#ffc400" d="M0 120h640v240H0z"/>`,
+};
+---
+
+{
+  /*
+  `translate="no"` keeps Google from translating the switcher itself — the
+  language names are the one thing on the page that must stay put.
+*/
+}
+<div class="langs" data-langs translate="no">
+  <span class="visually-hidden" id="langs-label">Lingua del sito</span>
+  <ul aria-labelledby="langs-label">
+    {
+      LANGUAGES.map(({ code, name }) => (
+        <li>
+          <button
+            type="button"
+            lang={code}
+            data-lang={code}
+            aria-pressed={code === 'it' ? 'true' : 'false'}
+            title={name}
+          >
+            <svg
+              viewBox="0 0 640 480"
+              width="20"
+              height="15"
+              aria-hidden="true"
+              set:html={FLAGS[code]}
+            />
+            <span class="visually-hidden">{name}</span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .langs ul {
+    display: flex;
+    gap: var(--space-3xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  button {
+    display: flex;
+    padding: var(--space-3xs);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: none;
+    cursor: pointer;
+    /* GTranslate's own widget dimmed the inactive flags; same idea, but the
+       active one gets a border too, because opacity alone is a weak signal. */
+    opacity: 0.65;
+    transition:
+      opacity var(--transition),
+      border-color var(--transition);
+  }
+
+  button:hover,
+  button:focus-visible {
+    opacity: 1;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  button[aria-pressed='true'] {
+    opacity: 1;
+    border-color: var(--color-border-strong);
+  }
+
+  /* The flags are the one place on the site with fixed colours, so they need a
+     visible edge of their own against either background. */
+  svg {
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px var(--color-border);
+  }
+
+  /* Waiting on Google. Nothing to show but the fact that the click landed. */
+  [aria-busy='true'] button {
+    cursor: progress;
+  }
+
+  [data-pending] {
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-pending] {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  /** The language the pages are actually written in. */
+  const SOURCE = 'it';
+
+  /** Google's combo box does not exist until its script has initialised. */
+  const COMBO = 'select.goog-te-combo';
+
+  /**
+   * The language Google is currently showing, per the cookie it sets itself.
+   * Shape is `/<source>/<target>`.
+   */
+  function activeLang(): string {
+    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
+    const target = match ? decodeURIComponent(match[1]).split('/')[2] : '';
+    return target || SOURCE;
+  }
+
+  let pending: Promise<void> | null = null;
+
+  /**
+   * Fetch and initialise Google's translate element. Idempotent: the promise
+   * is cached, so hovering, clicking and a restored cookie all share one load.
+   */
+  function loadTranslate(): Promise<void> {
+    if (pending) return pending;
+
+    pending = new Promise<void>((resolve, reject) => {
+      /*
+        Google's widget rearranges the page it translates: a toolbar iframe, a
+        `top` offset pushing <body> down to make room for it, and a highlight
+        behind every translated phrase. This undoes all three. It ships with
+        the script rather than in the stylesheet so that visitors who never
+        translate never download rules for markup they will never have.
+      */
+      const css = document.createElement('style');
+      css.textContent =
+        '.skiptranslate{display:none!important}body{top:0!important}' +
+        'font font{background:transparent!important;box-shadow:none!important;position:static!important}';
+      document.head.appendChild(css);
+
+      // The element mounts into a container of its own; ours stays hidden by
+      // the rule above and exists only to give the widget somewhere to live.
+      const host = document.createElement('div');
+      host.id = 'google_translate_element2';
+      document.body.appendChild(host);
+
+      window.googleTranslateElementInit2 = () => {
+        const api = window.google?.translate;
+        if (!api) return reject(new Error('GTranslate loaded without its API'));
+        new api.TranslateElement({ pageLanguage: SOURCE, autoDisplay: false }, host.id);
+        resolve();
+      };
+
+      const script = document.createElement('script');
+      script.src =
+        'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit2';
+      script.addEventListener('error', () =>
+        reject(new Error('GTranslate did not load')),
+      );
+      document.body.appendChild(script);
+    });
+
+    return pending;
+  }
+
+  /**
+   * The callback fires before the widget has finished building its select, so
+   * having the script is not the same as being able to drive it.
+   */
+  function comboReady(timeout = 8000): Promise<HTMLSelectElement> {
+    return new Promise((resolve, reject) => {
+      const deadline = Date.now() + timeout;
+      const poll = () => {
+        const combo = document.querySelector<HTMLSelectElement>(COMBO);
+        if (combo?.options.length) return resolve(combo);
+        if (Date.now() > deadline)
+          return reject(new Error('GTranslate never became ready'));
+        setTimeout(poll, 100);
+      };
+      poll();
+    });
+  }
+
+  function init() {
+    const root = document.querySelector<HTMLElement>('[data-langs]');
+    if (!root) return;
+
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('button[data-lang]')];
+
+    function reflect(lang: string) {
+      for (const button of buttons) {
+        button.setAttribute('aria-pressed', String(button.dataset.lang === lang));
+      }
+    }
+
+    async function translate(lang: string, button: HTMLButtonElement) {
+      // Paint the busy state before awaiting anything: the network is slow,
+      // the click must not appear to have missed.
+      root!.setAttribute('aria-busy', 'true');
+      button.dataset.pending = '';
+
+      try {
+        await loadTranslate();
+        const combo = await comboReady();
+        combo.value = lang;
+        /*
+          Twice, as GTranslate's own widget does. The first change is dropped
+          if the element is still wiring its listeners up, and there is no
+          event to wait for that says it has finished.
+        */
+        combo.dispatchEvent(new Event('change'));
+        combo.dispatchEvent(new Event('change'));
+        reflect(lang);
+      } catch {
+        // Blocked, offline, or Google is down. The page stays in Italian,
+        // which is the language it is written in — nothing is broken.
+        reflect(activeLang());
+      } finally {
+        root!.removeAttribute('aria-busy');
+        delete button.dataset.pending;
+      }
+    }
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        const lang = button.dataset.lang;
+        if (!lang || button.getAttribute('aria-pressed') === 'true') return;
+        translate(lang, button);
+      });
+    }
+
+    const active = activeLang();
+    reflect(active);
+
+    if (active !== SOURCE) {
+      // A returning visitor who chose a language. Google's element reads the
+      // same cookie on init and re-applies the translation on its own.
+      loadTranslate().catch(() => reflect(SOURCE));
+    } else if (!navigator.connection?.saveData) {
+      // Otherwise warm it on intent, so the click has less to wait for. Not
+      // on a metered connection, where an unclicked hover is pure cost.
+      const warm = () => loadTranslate().catch(() => {});
+      root.addEventListener('pointerenter', warm, { once: true });
+      root.addEventListener('focusin', warm, { once: true });
+    }
+  }
+
+  init();
+  // Re-bind after client-side navigation.
+  document.addEventListener('astro:after-swap', init);
+</script>

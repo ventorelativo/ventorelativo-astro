@@ -11,7 +11,7 @@
  * appears nowhere in the archived `html/` build. It was a draft, not content.
  * (It also contains a personal codice fiscale — worth a deliberate decision
  * before publishing, not an accident of migration.)
- *   vr_gtranslate       -> GTranslate widget  (G11, wired up in Phase 2)
+ *   vr_gtranslate       -> <LanguageSwitcher> (G11)
  *   vr_themetoggle      -> <ThemeToggle>      (G10)
  *
  * `vr_creditiimmagine` (G8) is *not* here. It was a footer-region block in
@@ -25,6 +25,7 @@
  */
 import { getEntry } from 'astro:content';
 
+import LanguageSwitcher from './LanguageSwitcher.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
 /*
@@ -76,7 +77,7 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
     </ul>
 
     <div class="footer__controls">
-      {/* TODO(Phase 2): GTranslate widget (G11) goes here. */}
+      <LanguageSwitcher />
       <ThemeToggle />
     </div>
   </div>
