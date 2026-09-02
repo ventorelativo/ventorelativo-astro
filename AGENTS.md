@@ -43,9 +43,10 @@ carries a preview link to that branch's Netlify deploy. See
 - RSS: dropped by decision, not oversight (see MIGRATION-PLAN.md S9).
 - `/styleguide` is a temporary design reference and should be deleted before
   the site goes live (Phase 5).
-- **Nothing map-related** (Phase 4): no `map-features` collection, no geo data,
-  no per-site maps, feature tables, XContest links or `/api/navdata/*` files.
-  The site pages carry `TODO(Phase 4)` markers where those go.
+- **No maps** (Phase 4b): no per-site maps, no overview map, no feature tables,
+  no XContest links. The site pages carry `TODO(Phase 4)` markers where those go.
+  MapLibre is not installed and needs a rule 6 conversation first.
+  The `map-features` collection and `/api/navdata/*` **are** built.
 
 Do not write code that imports from, or assumes the shape of, anything in that
 second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7
@@ -63,7 +64,8 @@ npm run dev       # dev server on http://localhost:4321 (background-managed)
 npm run build     # static build into dist/
 npm run preview   # serve the built output
 npm run check     # astro check — types and template diagnostics
-npm run verify    # check + build. The gate. Run before claiming done.
+npm run verify    # check + lint + build + navdata gate. Run before claiming done.
+npm run navdata:check  # flight files vs the archived Drupal build (needs a build first)
 npm run shot      # screenshot + measure a page in a real emulated viewport
 npm run weight    # transferred bytes by resource type (run against the build)
 ```
@@ -104,9 +106,13 @@ something real.
 8. **Never modify or delete `../ventorelativo-drupal`.** It is the read-only
    reference for anything found missing later, and the byte-level source for the
    Phase 4 flight-data files.
-9. **Flight-computer data (`/api/navdata/*`, Phase 4) is safety-critical.** Pilots
-   load it into their instruments. Any change there must diff clean against the
-   archived Drupal output. Do not improvise its format.
+9. **Flight-computer data (`/api/navdata/*`) is safety-critical.** Pilots load it
+   into their instruments. `npm run verify` fails unless both files still match
+   the archived Drupal output, and that gate is the point — if it goes red, fix
+   the generator, do not update the reference. It is the evidence of what pilots
+   already have loaded. Do not improvise the format: it was ported from
+   `NavdataController.php`, and `src/lib/navdata.ts` records why each rule is
+   what it is.
 10. **UI copy is Italian.** Code, comments and documentation are English. That
     includes Keystatic's field labels — volunteers read them.
 11. **Three lists describe content, and they must agree.** A field added to a

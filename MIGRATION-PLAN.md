@@ -982,13 +982,14 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
 **Covers:** C1–C20, S1–S8, S10–S16, E4–E8, X1–X2, D13. (S9 dropped; S3 done with satori;
 X4 needs takeoff coordinates and moves to Phase 4.)
 
-### Phase 3 — Keystatic GitHub mode ✅ BUILT (exit test outstanding)
+### Phase 3 — Keystatic GitHub mode ✅ DONE
 
 GitHub App, OAuth env vars, `/keystatic` + `/api/keystatic/*` with `prerender = false`,
 auto-deploy on push. Low risk now that D2 is settled — you're the only editor, and adding
 someone later is "create a GitHub account, get repo write access".
 **Exit:** a news post created and published end-to-end through `/keystatic` on the deployed
-site, without touching a terminal. **Not yet performed — this is the remaining gate.**
+site, without touching a terminal. **Passed 2026-09-02** — `/news/a-test-news/`,
+written from the deployed CMS, image upload and event fields included.
 **Covers:** E1–E3, E9–E10.
 
 **Built (2026-09-02):** the `@astrojs/netlify` adapter with `output: 'static'` kept, so the
@@ -1024,6 +1025,27 @@ without it `/contatti` would have accepted submissions and stored nothing (D3). 
 verify by actually submitting the deployed form.
 
 ### Phase 4 — Map & flight-data subsystems _(the risky part, deliberately last)_
+
+**Flight data is done and gated (2026-09-02).** `/api/navdata/*.cup` and `*.txt` are
+prerendered again and `npm run verify` fails unless they match the archive: the CUP is
+byte-for-byte identical (same md5 as the Drupal build), the OpenAir identical but for its
+`* Generated:` date. Both corrections below proved necessary — the counts are 29 and 13.
+
+Three details worth keeping, all read off `NavdataController.php` rather than inferred:
+
+- **PHP rounds in `sprintf` and truncates in `(int)`.** Reproduced with `toFixed` and
+  `Math.trunc`. It is visible in the data: Bagnolo's longitude looks like exactly 18.1395
+  minutes, but the double is 18.139499999999984, so it renders `18.139`.
+- **The OpenAir file's last block ends with a blank element**, which supplies the final
+  newline through the join. Nothing is appended after it.
+- **Sort is `name ASC`** from the view's default display. Codepoint order, `localeCompare`
+  and `localeCompare('it')` all agree on the current 29 names, so the choice is not
+  load-bearing today — `it` was taken as the one that stays right if a name changes.
+
+**Remaining:** the maps (M-series), `geo:export`/`geo:import`, `/api/sites/all/geo.json`,
+per-site maps and feature tables, XContest links. MapLibre GL is a ~200 kB gzipped
+dependency against a homepage that ships 1.5 kB of JS — rule 6 conversation before any of
+it is installed.
 
 **Two corrections found while migrating the geometry (2026-09-02):**
 
