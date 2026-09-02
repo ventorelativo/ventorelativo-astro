@@ -10,6 +10,37 @@
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import type { LatLon } from '../lib/geo';
 
+/*
+  The same artwork the map draws, as `?raw` so the markup can go into the page
+  rather than being fetched.
+
+  Inlining a whole icon per row would repeat it up to seven times; a hidden
+  `<symbol>` sprite emits each drawing once and each row references it with
+  `<use>`, which costs about forty bytes. No request, no JavaScript, and the
+  table still says what it says with neither.
+*/
+import takeoffSvg from '../assets/map/takeoff.svg?raw';
+import landingSvg from '../assets/map/landing.svg?raw';
+
+/**
+ * The innards of an SVG file, ready to be wrapped in a `<symbol>`.
+ *
+ * Sliced rather than matched with a regular expression: a pattern containing
+ * literal tags inside `.astro` frontmatter derails the compiler's parse, and it
+ * fails in a way that names nothing useful — `Astro.props` silently degrades to
+ * `any` and the errors surface as unrelated indexing complaints further down.
+ */
+function symbolBody(markup: string): string {
+  const openTagEnd = markup.indexOf('>', markup.indexOf('<svg'));
+  const closeTag = markup.lastIndexOf('</svg>');
+  return markup.slice(openTagEnd + 1, closeTag);
+}
+
+const SPRITE: Partial<Record<FeatureType, string>> = {
+  takeoff: symbolBody(takeoffSvg),
+  landing: symbolBody(landingSvg),
+};
+
 interface Feature {
   name: string;
   type: FeatureType;
@@ -36,6 +67,17 @@ const sorted = [...features].sort(
 {
   sorted.length > 0 && (
     <section class="features">
+      {/*
+        One copy of each drawing, referenced by every row that needs it. Hidden
+        with `display: none` on the element rather than `hidden`, because a
+        `<symbol>` is never rendered where it is defined anyway.
+      */}
+      <svg class="sprite" aria-hidden="true" focusable="false">
+        {Object.entries(SPRITE).map(([type, body]) => (
+          <symbol id={`feature-${type}`} viewBox="0 0 100 100" set:html={body} />
+        ))}
+      </svg>
+
       <h2>Punti di volo</h2>
 
       {/* Scrolls itself rather than the page — AGENTS.md, wide content. */}
@@ -52,7 +94,13 @@ const sorted = [...features].sort(
             {sorted.map((feature) => (
               <tr>
                 <td>
-                  <span class={`dot dot--${feature.type}`} aria-hidden="true" />
+                  {SPRITE[feature.type] ? (
+                    <svg class="icon" viewBox="0 0 100 100" aria-hidden="true">
+                      <use href={`#feature-${feature.type}`} />
+                    </svg>
+                  ) : (
+                    <span class={`dot dot--${feature.type}`} aria-hidden="true" />
+                  )}
                   {FEATURE_TYPES[feature.type].label}
                 </td>
                 <th scope="row">{feature.name}</th>
@@ -110,12 +158,34 @@ const sorted = [...features].sort(
     white-space: normal;
   }
 
+  .sprite {
+    display: none;
+  }
+
+  /*
+    Sized to the cap height of the label beside it, so the two align.
+
+    `display: inline-block` undoes global.css, which makes every svg a block —
+    right for figures and diagrams, wrong for a glyph sitting in a line of text,
+    where it pushed the label onto its own row.
+  */
+  .icon {
+    display: inline-block;
+    width: 1.15em;
+    height: 1.15em;
+    margin-inline-end: 0.3em;
+    vertical-align: -0.28em;
+  }
+
   .dot {
     display: inline-block;
-    width: 0.6em;
-    height: 0.6em;
-    margin-inline-end: 0.4em;
+    width: 0.62em;
+    height: 0.62em;
+    /* Half of .icon's width, so dotted rows line up with iconned ones. */
+    margin-inline: 0.26em 0.53em;
     border-radius: 50%;
+    /* The keyline the icons have, so the two read as one family. */
+    box-shadow: 0 0 0 2px var(--color-bg);
     vertical-align: baseline;
   }
 
