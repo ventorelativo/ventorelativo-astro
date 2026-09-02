@@ -503,18 +503,18 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
           paint: { 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
         });
 
-        map.fitBounds(boundsOf(data), { padding: 60, duration: 0 });
-
         /*
-          Terrain last, and fenced off.
+          Terrain before the camera, and fenced off.
 
-          It is the one part of this that can fail on its own — elevation is a
-          second service, and a renderer without the support for it throws where
-          a flat map would have been fine. It used to run before the layers, so
-          when it threw it took the features and the framing with it and left a
-          map of the whole world. Now the worst it can cost is the third
-          dimension.
+          Fenced because elevation is a second service that can fail on its own,
+          and a renderer without the support for it throws where a flat map
+          would have been fine — the worst that may cost is the third dimension.
+
+          Before, because whether it worked decides how far to tilt, and the
+          tilt decides the camera. A flat map that is tilted anyway just skews
+          the labels for nothing.
         */
+        let tilted = false;
         try {
           map.addSource('terrain', {
             type: 'raster-dem',
@@ -526,12 +526,26 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
             exaggeration: config.TERRAIN_EXAGGERATION,
           });
           map.addControl(new TerrainControl({ source: 'terrain' }), 'top-right');
-          // The tilt the old site eased into once its style had loaded. Worth
-          // it only with relief underneath; flat, it just skews the labels.
-          map.easeTo({ pitch: config.PITCH, duration: 2000 });
+          tilted = true;
         } catch {
           /* Flat map, every feature still present. */
         }
+
+        /*
+          One camera, computed with the tilt already in it.
+
+          Fitting flat and tilting afterwards was wrong: `fitBounds` frames the
+          bounds for the camera it is given, and pitching afterwards swings the
+          view towards the horizon and pushes the near edge — the takeoffs, at
+          the bottom of the frame — straight out of it. `fitBounds` takes a
+          `pitch`, so the fit is solved once for the view actually used and
+          everything stays inside.
+
+          Reduced motion means no tilt at all: it is the one setting that says
+          plainly "do not move the ground under me".
+        */
+        const pitch = tilted && !prefersReducedMotion() ? config.PITCH : 0;
+        map.fitBounds(boundsOf(data), { padding: 60, pitch, duration: 0 });
       });
     } catch {
       back('Mappa non disponibile — riprova');
@@ -561,6 +575,10 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
 
   /** The icons' own square, and the size they are authored at. */
   const ICON_SIZE = 100;
+
+  function prefersReducedMotion(): boolean {
+    return matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
 
   /**
    * An SVG turned into pixels at the density of the screen it will be drawn on.
