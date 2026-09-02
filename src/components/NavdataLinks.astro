@@ -1,0 +1,73 @@
+---
+/**
+ * The two files a pilot loads into their flight computer.
+ *
+ * Restored at the URLs Drupal served them from, so a bookmark or an
+ * instrument's saved link keeps working. They are static files written at
+ * build and byte-identical to what the old site produced — `npm run verify`
+ * fails otherwise, because this is the one thing on the site that ends up
+ * inside an instrument (AGENTS.md rule 9).
+ *
+ * No `download` attribute: on a phone, letting the OS hand the file to the
+ * app that understands it is the point. On a desktop the browser downloads it
+ * anyway.
+ */
+const FILES = [
+  {
+    href: '/api/navdata/ventorelativo-waypoints.cup',
+    label: 'Waypoint (.cup)',
+    description: 'Decolli e atterraggi per SeeYou, XCTrack, Skytraxx e simili.',
+  },
+  {
+    href: '/api/navdata/ventorelativo-airspace.txt',
+    label: 'Zone di atterraggio (.txt)',
+    description: 'Le aree di atterraggio in formato OpenAir.',
+  },
+];
+---
+
+<section class="navdata">
+  <h2>Dati per il navigatore</h2>
+  <ul>
+    {
+      FILES.map((file) => (
+        <li>
+          <a href={file.href}>{file.label}</a>
+          <span>{file.description}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .navdata {
+    margin-block-start: var(--space-lg);
+    padding-block-start: var(--space-md);
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  a {
+    font-weight: 500;
+  }
+
+  span {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+</style>

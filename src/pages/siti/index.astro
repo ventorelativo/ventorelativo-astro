@@ -14,6 +14,7 @@
 import { getCollection } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import SiteCard from '../../components/SiteCard.astro';
+import NavdataLinks from '../../components/NavdataLinks.astro';
 
 const sites = (await getCollection('sites')).sort((a, b) => {
   if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
@@ -26,13 +27,13 @@ const sites = (await getCollection('sites')).sort((a, b) => {
   title="Siti di volo"
   description="I siti di volo del Parapendio Club Ventorelativo, tra Pinerolo, Val Chisone e Val Pellice."
 >
-  {/* TODO(Phase 4): overview map of all 34 features goes here. */}
+  {/* TODO(Phase 4c): overview map of all 34 features goes here. */}
 
   <div class="site-grid">
     {sites.map((entry) => <SiteCard entry={entry} />)}
   </div>
 
-  {/* TODO(Phase 4): navdata download links (OpenAir / CUP). */}
+  <NavdataLinks />
 </PageLayout>
 
 <style>
