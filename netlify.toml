@@ -76,8 +76,14 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Flight-computer data (Phase 4). Small, and pilots should get the current file.
+# Flight-computer data. Small, and pilots should get the current file.
+#
+# Content-Type is set explicitly because `.cup` is not an extension any server
+# recognises, so it would otherwise be served as a binary blob. Drupal sent
+# these as text/plain, and that is what the instruments and the browsers that
+# preview them have always seen.
 [[headers]]
   for = "/api/navdata/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "text/plain; charset=UTF-8"
