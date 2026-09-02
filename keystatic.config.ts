@@ -164,7 +164,7 @@ export default config({
   ui: {
     brand: { name: 'VentoRelativo' },
     navigation: {
-      Contenuti: ['news', 'sites'],
+      Contenuti: ['news', 'sites', 'mapFeatures'],
       Pagine: ['voli', 'iscrizioni', 'contatti'],
     },
   },
@@ -262,6 +262,51 @@ export default config({
           },
           components: contentComponents,
         }),
+      },
+    }),
+
+    /*
+      The takeoffs, landings and hazards behind the maps.
+
+      Deliberately narrow. The geometry is `ignored()` — parsed and written
+      back untouched, invisible in the editor — because those coordinates are
+      what `/api/navdata/*` is built from, and pilots load that into their
+      instruments (AGENTS.md rule 9). The only thing here anyone needs to edit
+      is the link to a fuller description.
+
+      The name is editable because Keystatic needs a slug field, and it does
+      appear in the waypoint file. `npm run verify` diffs that file against the
+      archived Drupal output, so a rename fails the build rather than reaching
+      an instrument quietly — but it is worth knowing before renaming one.
+    */
+    mapFeatures: collection({
+      label: 'Punti di volo',
+      path: 'src/content/map-features/*',
+      format: 'yaml',
+      slugField: 'name',
+      columns: ['name'],
+      schema: {
+        name: fields.slug({
+          name: {
+            label: 'Nome',
+            description:
+              'Compare sulla mappa e nel file per il navigatore. Cambiarlo modifica anche quel file.',
+            validation: { isRequired: true },
+          },
+        }),
+        guideUrl: fields.url({
+          label: 'Approfondimento',
+          description:
+            'Pagina con la descrizione completa del punto, per esempio su paragliding-kubernetes.web-forge.info. Lasciare vuoto se non ce n’è una.',
+        }),
+        /*
+          Present so Keystatic will open the file at all — it refuses an entry
+          whose frontmatter holds a key its schema does not declare — and
+          hidden so nobody edits flight data by accident.
+        */
+        type: fields.ignored(),
+        point: fields.ignored(),
+        shape: fields.ignored(),
       },
     }),
 
