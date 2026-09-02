@@ -1050,8 +1050,12 @@ Three details worth keeping, all read off `NavdataController.php` rather than in
   and `localeCompare('it')` all agree on the current 29 names, so the choice is not
   load-bearing today — `it` was taken as the one that stays right if a name changes.
 
-**Remaining:** the maps (M-series), `geo:export`/`geo:import`, `/api/sites/all/geo.json`,
-per-site maps and feature tables, XContest links.
+**The rest landed 2026-09-02/03, and Phase 4 is done.** The maps (M-series) as a facade
+— poster and feature table at build, MapLibre on interaction — with 3D terrain, the KK7
+thermal layers, the Tracestrack topo base, the overview map on `/siti`, XContest links per
+takeoff (X4), and `geo:export`/`geo:import` for round-tripping features through GeoJSON.
+`/api/sites/all/geo.json` was dropped along the way: it existed to feed the old MapTiler
+block, the maps inline their data now, and nothing else consumed it.
 
 #### Phase 4b — the map, and how it stays off the critical path
 

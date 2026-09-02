@@ -19,35 +19,39 @@ someone who does not read code.
 
 ## Current state — read before planning anything
 
-Phases 1, 2 and 3 are complete. **Phase 4 has not started.** As of the last
-update to this file:
+Phases 1 to 4 are complete. **Phase 5 — the cutover — is next.** As of the
+last update to this file:
 
-**Built:** every URL the old site had. `/`, `/news/` and its two published
-articles, `/siti/` and all fourteen flight sites, `/voli`, `/iscrizioni`,
-`/contatti` with a Netlify form and its thank-you page, `/404`, plus the
-temporary `/styleguide`. Three collections — `news`, `sites`, `pages` — in
+**Built:** every URL the old site had. `/`, `/news/` and its articles, `/siti/`
+and all fourteen flight sites, `/voli`, `/iscrizioni`, `/contatti` with a
+Netlify form and its thank-you page, `/404`, plus the temporary `/styleguide`.
+Four collections — `news`, `sites`, `pages`, `settings` — in
 `src/content.config.ts`, with MDX bodies in `src/content/`.
 
 Also built: the SEO layer (sitemap, robots, per-page generated social cards,
-schema.org, cookie-free analytics) and **Keystatic in GitHub mode**, deployed
-with the site. Editors work on a `modifiche-` branch and merge once; each entry
-carries a preview link to that branch's Netlify deploy. See
-[`docs/deploying.md`](docs/deploying.md).
+schema.org, cookie-free analytics, `llms.txt`); **Keystatic in GitHub mode**,
+deployed with the site — editors work on a `modifiche-` branch and merge once,
+and each entry carries a preview link to that branch's Netlify deploy (see
+[`docs/deploying.md`](docs/deploying.md)); the **flight-data files**, byte-gated
+against the Drupal archive; the **map** — MapLibre behind a facade, with 3D
+terrain, the KK7 thermal layers, the Tracestrack topo base, per-site and
+overview; the **XContest links** per takeoff; the **language switcher**, a
+facade over GTranslate; and `geo:export`/`geo:import` for round-tripping map
+features through GeoJSON.
 
-**Not built yet:**
+**Not built, and why:**
 
 - **The domain has not moved.** `ventorelativo.it` still serves the old Drupal
   export from a separate Netlify project; this build lives at
-  `ventorelativo-astro.netlify.app` and disallows crawling until it does. The
-  cutover is Phase 5, gated on Phase 4's byte-clean flight data.
-- RSS: dropped by decision, not oversight (see MIGRATION-PLAN.md S9).
+  `ventorelativo-astro.netlify.app` and disallows crawling until it does. That
+  move is Phase 5.
 - `/styleguide` is a temporary design reference and should be deleted before
   the site goes live (Phase 5).
-- **No interactive map** (Phase 4b): MapLibre is not installed and needs a rule 6
-  conversation first. What exists is the static half — `MapPoster.astro` draws
-  each site's geometry as inline SVG, `FeatureTable.astro` lists its points, and
-  `/api/navdata/*` is built and gated. Still missing: the map itself, the
-  overview map on `/siti`, and XContest links, marked `TODO(Phase 4b/4c/4d)`.
+- RSS: dropped by decision, not oversight (MIGRATION-PLAN.md S9).
+- `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it —
+  the maps inline their data.
+- Membership payments (Phase 6) wait on the committee (D10). `/iscrizioni`
+  ships today with the existing Satispay links and bank transfer.
 
 Do not write code that imports from, or assumes the shape of, anything in that
 second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7
