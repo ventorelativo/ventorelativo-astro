@@ -573,6 +573,17 @@ const typeNames = Object.fromEntries(
         const hasIcons = await iconsReady;
         map.addSource('features', { type: 'geojson', data });
 
+        /*
+          The face the basemap labels with, taken from the first style layer
+          that names one.
+        */
+        const styleFont = map
+          .getStyle()
+          .layers.map(
+            (layer) => (layer as { layout?: { 'text-font'?: string[] } }).layout,
+          )
+          .find((layout) => layout?.['text-font'])?.['text-font'];
+
         const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
         // ['match', kind, 'takeoff', <colour>, …, <fallback>] — one paint
         // expression fed from the CSS tokens, so map and poster stay in step.
@@ -660,6 +671,17 @@ const typeNames = Object.fromEntries(
           filter: ['==', ['geometry-type'], 'Point'],
           layout: {
             'text-field': ['get', 'name'],
+            /*
+              Borrow whatever face the style itself labels with.
+
+              Without this MapLibre falls back to its own default, Open Sans
+              plus Arial Unicode — a second font stack, so a second glyph
+              request, and marker labels set in a different typeface from every
+              other label on the map. Reading it from the style rather than
+              naming it means the club can change the font in MapTiler and
+              these follow.
+            */
+            ...(styleFont ? { 'text-font': styleFont } : {}),
             'text-size': 13,
             // Clear of a 22 px icon rather than a 14 px dot.
             'text-offset': [0, 1.6],
