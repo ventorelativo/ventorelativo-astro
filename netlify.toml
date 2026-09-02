@@ -8,6 +8,21 @@
 [build.environment]
   NODE_VERSION = "22"
 
+  # Netlify treats every environment variable as a secret and fails the build if
+  # it finds one in the output. Astro's `PUBLIC_` prefix means the opposite: the
+  # value is compiled into pages and sent to every visitor, so finding it in the
+  # output is the point, not a leak.
+  #
+  #  - PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is the GitHub App's URL name — the same
+  #    string as this repository, and readable at github.com/apps/<slug>.
+  #  - PUBLIC_CF_BEACON_TOKEN identifies the site to Cloudflare's analytics; it
+  #    is written into a script tag on every page.
+  #
+  # Listed by name rather than disabling the scan, so a real secret added later
+  # is still caught. The genuine ones — KEYSTATIC_GITHUB_CLIENT_SECRET and
+  # KEYSTATIC_SECRET — carry no prefix and stay scanned.
+  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG,PUBLIC_CF_BEACON_TOKEN"
+
 # Redirects (MIGRATION-PLAN.md S10, S11).
 #
 # These live here rather than in astro.config's `redirects` option: without a
