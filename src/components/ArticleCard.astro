@@ -25,7 +25,28 @@ interface Props {
 
 const { entry, priority = false } = Astro.props;
 
-onst { title, date, summary, image, category } = entry.data;
+/*
+  Cropped at build time to the box it is displayed in, not resized to the
+  card's width and cropped in the browser.
+
+  The difference is most of the page. These are portrait posters; the card
+  shows a 340x192 letterbox of one. Asking for 800w gave an 800x1231 image —
+  145 kB — of which the browser drew a 384px-tall strip and discarded the
+  rest. `fit: cover` makes sharp do the same crop, once, at build.
+
+  The candidate widths are chosen against the sizes below, not picked round:
+  a phone at 390 CSS px needs 684 device px, so a 680 candidate is one pixel
+  short and the browser silently steps up to the next one. That mistake cost
+  45 kB a page until it was measured.
+*/
+const CARD_IMAGE = {
+  width: 340,
+  /* 12rem, the height `.card__image` is pinned to below. */
+  height: 192,
+  fit: 'cover',
+  position: 'center',
+} as const;
+const { title, date, summary, image, category } = entry.data;
 const href = `/news/${entry.id}/`;
 ---
 
@@ -36,8 +57,9 @@ const href = `/news/${entry.id}/`;
         class="card__image"
         src={image.src}
         alt={image.alt}
-        widths={[400, 800]}
-        sizes="(width < 48rem) 100vw, 24rem"
+        {...CARD_IMAGE}
+        widths={[400, 700, 900]}
+        sizes="(width < 48rem) calc(100vw - 3rem), (width < 64rem) calc(50vw - 3rem), 21rem"
         quality={70}
         loading={priority ? 'eager' : 'lazy'}
         fetchpriority={priority ? 'high' : 'auto'}
