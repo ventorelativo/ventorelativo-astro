@@ -168,6 +168,12 @@ export function currentThermalSeason(now = new Date()): string {
  *
  * Reading the hostname at call time makes every one of those match, because
  * the browser's Referer and this parameter then name the same host.
+ *
+ * One quirk of theirs survives that and is not worth working around: they
+ * match `localhost` loosely and `127.0.0.1` exactly, so a referer carrying a
+ * port passes as `http://localhost:4321/` and is refused as
+ * `http://127.0.0.1:4321/`. Same machine, same server, same tiles. Develop on
+ * `localhost` and the layer works; nothing deployed is affected.
  */
 export function thermalTiles(layer: string, season: string, time: string): string {
   const host = typeof location === 'undefined' ? 'ventorelativo.it' : location.hostname;
