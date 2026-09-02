@@ -21,7 +21,7 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { title, summary, images, tags } = entry.data;
+const { title, summary, images, tags, guideUrl } = entry.data;
 
 /*
   `mapFeatures` holds references, not data — Zod's `reference()` stores the id
@@ -62,6 +62,26 @@ const { Content } = await render(entry);
 
   <Content components={MDX_COMPONENTS} />
 
+  {
+    /*
+      The club's fuller write-up of the site, when there is one. Below the body
+      and above the flight points: it belongs with the reading, not with the
+      data, and it is the one outward link here that no coordinate can produce.
+    */
+    guideUrl && (
+      <p class="guide" slot="sections">
+        <a
+          class="button button--outline"
+          href={guideUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Approfondimento sul sito
+        </a>
+      </p>
+    )
+  }
+
   <FeatureTable features={features} slot="sections" />
 
   {
@@ -76,6 +96,10 @@ const { Content } = await render(entry);
 </EntryLayout>
 
 <style>
+  .guide {
+    margin-block: var(--space-lg) 0;
+  }
+
   .tags {
     display: flex;
     flex-wrap: wrap;

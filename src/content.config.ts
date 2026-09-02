@@ -130,6 +130,16 @@ const sites = defineCollection({
        */
       summary: z.string(),
       /**
+       * A page elsewhere describing this site in more detail — today the club's
+       * guides on paragliding-kubernetes.web-forge.info.
+       *
+       * On the site rather than on each takeoff: those guides describe a flying
+       * area, and the takeoffs within one are not different enough to warrant a
+       * page each. It is also the only outward link here with no coordinate to
+       * derive it from, unlike the forecast and the directions.
+       */
+      guideUrl: z.url().optional(), // z.string().url() is deprecated in Zod 4
+      /**
        * From Drupal `sticky`. Sorts to the top of /siti.
        *
        * MIGRATION-PLAN.md §2.1 says "only Montoso"; the export has five —
@@ -278,15 +288,6 @@ const mapFeatures = defineCollection({
        * Drupal's `field_type`; the four values are the ones in use.
        */
       type: z.enum(['takeoff', 'landing', 'obstacle', 'poi']),
-      /**
-       * A page elsewhere describing this feature in more detail — today the
-       * club's own takeoff guides on paragliding-kubernetes.web-forge.info.
-       *
-       * Optional and deliberately unconstrained beyond being a URL: it covers
-       * some takeoffs now and more later, and nothing here should have to
-       * change when that happens.
-       */
-      guideUrl: z.url().optional(), // z.string().url() is deprecated in Zod 4
       /** Marker and waypoint position. Absent only on the obstacle line. */
       point: z
         .object({
