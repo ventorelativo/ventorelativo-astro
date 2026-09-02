@@ -70,6 +70,8 @@ function parseArgs(argv) {
     weight: false,
     clickWait: 700,
     eval: null,
+    webgl: false,
+    console: false,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -85,6 +87,8 @@ function parseArgs(argv) {
     else if (a === '--hover') opts.hover = argv[++i];
     else if (a === '--reduced-motion') opts.reducedMotion = true;
     else if (a === '--weight') opts.weight = true;
+    else if (a === '--webgl') opts.webgl = true;
+    else if (a === '--console') opts.console = true;
     else if (a === '--computed')
       opts.computed = argv[++i].split(',').map((x) => x.trim());
     else if (a === '--no-shot') opts.shot = false;
@@ -248,9 +252,20 @@ function measureInPage(selectors, computedSelectors) {
 
 const opts = parseArgs(process.argv.slice(2));
 const profile = join(tmpdir(), `vr-shot-${process.pid}`);
+/*
+  `--disable-gpu` is right for screenshots — it is faster and its output is
+  deterministic — but it also means no WebGL context at all, so anything drawn
+  with one comes out as an empty rectangle. `--webgl` swaps it for SwiftShader,
+  Chrome's software renderer, which is slow and entirely enough to prove that a
+  map renders. Opt-in, because every shot would otherwise pay for it.
+*/
+const gpuArgs = opts.webgl
+  ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
+  : ['--disable-gpu'];
+
 const chrome = spawn(findChrome(), [
   '--headless=new',
-  '--disable-gpu',
+  ...gpuArgs,
   '--remote-debugging-port=0',
   `--user-data-dir=${profile}`,
   '--no-first-run',
@@ -287,6 +302,29 @@ try {
 
     await cdp.send('Page.enable', {}, sessionId);
     await cdp.send('Runtime.enable', {}, sessionId);
+
+    /*
+      Without this, a script that throws inside a callback fails silently: the
+      page looks merely wrong, and there is nothing to read. Finding why a map
+      rendered the whole world instead of one valley took a run with this on.
+    */
+    if (opts.console) {
+      const say = (kind, text) => {
+        if (text) console.log(`  ${kind.padEnd(9)} ${String(text).slice(0, 300)}`);
+      };
+      cdp.on('Runtime.consoleAPICalled', (p) => {
+        if (p.sessionId !== sessionId) return;
+        say(
+          p.type,
+          (p.args ?? []).map((a) => a.value ?? a.description ?? a.type).join(' '),
+        );
+      });
+      cdp.on('Runtime.exceptionThrown', (p) => {
+        if (p.sessionId !== sessionId) return;
+        const d = p.exceptionDetails ?? {};
+        say('exception', d.exception?.description ?? d.text);
+      });
+    }
 
     /*
       Page weight, measured rather than assumed. This site's budget is small
