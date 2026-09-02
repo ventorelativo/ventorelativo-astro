@@ -17,6 +17,12 @@ interface FeatureTypeInfo {
   /** Shown to visitors, so Italian. Singular — it labels one row. */
   label: string;
   /**
+   * The glyph the old site's map popups used for this kind, kept so a pilot
+   * who knew that map still recognises this one. Decorative — every place it
+   * appears is beside the written label, so it is hidden from assistive tech.
+   */
+  emoji: string;
+  /**
    * The plural, written out rather than derived.
    *
    * Italian does not pluralise by appending a letter: decollo → decolli,
@@ -43,24 +49,28 @@ const OPENAIR_DEFAULT_CLASS = 'Q';
 
 export const FEATURE_TYPES: Record<FeatureType, FeatureTypeInfo> = {
   takeoff: {
+    emoji: '🪂',
     label: 'Decollo',
     labelPlural: 'decolli',
     cupStyle: 20,
     openAirClass: OPENAIR_DEFAULT_CLASS,
   },
   landing: {
+    emoji: '🎯',
     label: 'Atterraggio',
     labelPlural: 'atterraggi',
     cupStyle: 21,
     openAirClass: 'W',
   },
   obstacle: {
+    emoji: '⚠️',
     label: 'Ostacolo',
     labelPlural: 'ostacoli',
     cupStyle: 8,
     openAirClass: OPENAIR_DEFAULT_CLASS,
   },
   poi: {
+    emoji: 'ℹ️',
     label: 'Punto di interesse',
     labelPlural: 'punti di interesse',
     cupStyle: 19,
