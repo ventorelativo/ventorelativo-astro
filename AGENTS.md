@@ -43,10 +43,11 @@ carries a preview link to that branch's Netlify deploy. See
 - RSS: dropped by decision, not oversight (see MIGRATION-PLAN.md S9).
 - `/styleguide` is a temporary design reference and should be deleted before
   the site goes live (Phase 5).
-- **No maps** (Phase 4b): no per-site maps, no overview map, no feature tables,
-  no XContest links. The site pages carry `TODO(Phase 4)` markers where those go.
-  MapLibre is not installed and needs a rule 6 conversation first.
-  The `map-features` collection and `/api/navdata/*` **are** built.
+- **No interactive map** (Phase 4b): MapLibre is not installed and needs a rule 6
+  conversation first. What exists is the static half — `MapPoster.astro` draws
+  each site's geometry as inline SVG, `FeatureTable.astro` lists its points, and
+  `/api/navdata/*` is built and gated. Still missing: the map itself, the
+  overview map on `/siti`, and XContest links, marked `TODO(Phase 4b/4c/4d)`.
 
 Do not write code that imports from, or assumes the shape of, anything in that
 second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7

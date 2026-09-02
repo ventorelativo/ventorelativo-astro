@@ -1128,6 +1128,23 @@ byte of it.
 and MapLibre on click; (c) 3D terrain and the overview map; (d) `geo:export`/`geo:import`
 and the XContest links.
 
+**(a) is done (2026-09-02).** Every site page carries a schematic of its geometry and a
+table of its points; `/siti` links the two navdata downloads. Measured: a site page ships
+**1.5 kB of JavaScript**, the theme toggle and nothing else, and `/siti` is 62.0 kB against
+its 61 kB budget. Three things worth keeping:
+
+- **A migration bug surfaced.** Montoso's seven `field_map_elements` had been dropped — it
+  would have rendered an empty diagram. Every site was then cross-checked against the
+  Drupal nodes: 14/14 match, 43/43 links, which the archived `geo.json` independently
+  confirms at 43 entries.
+- **Labels are most of the work.** Names collide (Montoso has a landing and a meeting point
+  400 m apart) and clip at the frame edge. Both needed solving before the drawing was worth
+  looking at. They are hidden below 40rem, where the viewBox scales them to about eight
+  pixels; the table carries the names there.
+- **The obstacle anchors its label to the middle of its line.** It has no point, and the
+  one genuine hazard on the drawing being the only unnamed thing was worse than the
+  special case.
+
 **Exit:** a site page gains **no** JavaScript on load, measured with `npm run weight`;
 the map's cost is measured separately, as the price of opening it.
 
