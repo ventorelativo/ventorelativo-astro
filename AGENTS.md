@@ -207,6 +207,12 @@ rule: [`docs/performance.md`](docs/performance.md).
 - **`vite.optimizeDeps.include`** is required for a dependency reached only
   through a dynamic import inside a client script — without it the feature works
   in the build and silently does nothing in `astro dev`.
+- **The Netlify adapter replaces the image pipeline unless you stop it.**
+  `imageCDN` defaults to `true`, which swaps `astro:assets` for
+  `/.netlify/images?url=…` URLs — no build-time optimisation, no immutable
+  `_astro/*.avif`, a cold resize in front of the LCP image, and a metered
+  resource. `netlify({ imageCDN: false })` keeps the build-time pipeline. Check
+  it the way it was caught: grep the built HTML for `/.netlify/images`.
 - **A new `PUBLIC_` environment variable fails the Netlify build.** The secrets
   scanner treats every variable as a credential and finds this one in the output,
   where Astro deliberately put it. Add the name to `SECRETS_SCAN_OMIT_KEYS` in

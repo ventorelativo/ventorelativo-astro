@@ -90,6 +90,44 @@ exactly as `.env` has them. The deployed admin cannot authenticate without them,
 and there is no error message that says so plainly — it simply shows the setup
 screen again.
 
+## The App's callback URLs
+
+Keystatic's setup flow runs on localhost, so the GitHub App it creates registers
+only `http://127.0.0.1:4321/…`. Logging in on the deployed site then fails with
+_"The `redirect_uri` is not associated with this application"_ — the App is
+correct, it simply has never been told about the deployed origin.
+
+In the App's settings (**GitHub → Settings → Developer settings → GitHub Apps →
+ventorelativo-astro**), the **Callback URL** list needs one entry per origin the
+CMS is served from:
+
+```
+https://ventorelativo-astro.netlify.app/api/keystatic/github/oauth/callback
+https://ventorelativo.it/api/keystatic/github/oauth/callback   ← add at go-live
+```
+
+The `127.0.0.1` entries are not needed: `npm run dev` uses local storage and
+never logs in (see below). Keep one only if you want to test GitHub mode from
+localhost.
+
+Branch previews do **not** need their own entry. Keystatic authenticates on the
+origin the admin is open at, and editors use the admin on the main deploy; a
+branch URL only ever serves the preview of a page.
+
+## Local development uses the working copy
+
+`keystatic.config.ts` picks its storage from `import.meta.env.DEV`:
+
+|               | Storage  | Login  | A save is                         |
+| ------------- | -------- | ------ | --------------------------------- |
+| `npm run dev` | `local`  | none   | a file change in your checkout    |
+| deployed      | `github` | GitHub | a commit on a `modifiche-` branch |
+
+Vite replaces `import.meta.env.DEV` with a literal `false` when building, so the
+deployed admin cannot take the local branch — which matters, because a
+serverless filesystem is discarded after each request and every edit would
+vanish silently.
+
 ## Trap: Netlify's secrets scanner and `PUBLIC_` variables
 
 Every build scans the output for the value of every environment variable, and
