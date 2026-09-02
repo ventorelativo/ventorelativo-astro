@@ -102,8 +102,7 @@ export const RASTER_BASE = {
  *  - **Times are 04, 07 and 10**, hours since sunrise, plus `all`. The docs
  *    say 00, 07 and 12; 00 and 12 return 400 at every zoom and every season.
  *
- * `src` identifies the site to kk7, which is how they ask to be told who is
- * using the tiles.
+ * `src` must name the host the page is served from — see `thermalTiles`.
  */
 export const THERMAL_LAYERS = [
   { value: 'thermals', label: 'Termiche' },
@@ -157,8 +156,22 @@ export function currentThermalSeason(now = new Date()): string {
   return quarters[now.getMonth()];
 }
 
+/**
+ * `src` is not a courtesy — kk7 checks it against the Referer and refuses the
+ * tile when the two disagree.
+ *
+ * Hardcoding `ventorelativo.it` therefore worked on the live domain and on
+ * localhost, which kk7 waves through, and 403'd everywhere else: the Netlify
+ * staging host, every branch preview, 127.0.0.1, and the ngrok tunnel the site
+ * gets reviewed through. The tiles arrive as a 403 the map simply does not
+ * draw, so it reads as the layer being broken rather than refused.
+ *
+ * Reading the hostname at call time makes every one of those match, because
+ * the browser's Referer and this parameter then name the same host.
+ */
 export function thermalTiles(layer: string, season: string, time: string): string {
-  return `https://thermal.kk7.ch/tiles/${layer}_${season}_${time}/{z}/{x}/{y}.png?src=ventorelativo.it`;
+  const host = typeof location === 'undefined' ? 'ventorelativo.it' : location.hostname;
+  return `https://thermal.kk7.ch/tiles/${layer}_${season}_${time}/{z}/{x}/{y}.png?src=${host}`;
 }
 
 export const THERMAL_ATTRIBUTION =
