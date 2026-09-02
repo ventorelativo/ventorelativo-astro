@@ -36,6 +36,19 @@ import { MAPTILER_KEY } from '../lib/mapConfig';
 */
 import takeoffIcon from '../assets/map/takeoff.svg?url&no-inline';
 import landingIcon from '../assets/map/landing.svg?url&no-inline';
+/*
+  The club's own control icons, replacing MapLibre's stock ones. Terrain and
+  fullscreen belong to controls the library builds, so they are swapped as CSS
+  background images; `reset` is inlined into the button this component makes,
+  where its `currentColor` fill can inherit.
+
+  `no-inline` again: as data: URIs these would be compiled into the page's
+  stylesheet, which is render-blocking and reaches every visitor. As files, the
+  browser fetches them only when the buttons that reference them exist.
+*/
+import terrainIcon from '../assets/map/terrain.svg?url&no-inline';
+import fullscreenIcon from '../assets/map/fullscreen.svg?url&no-inline';
+import resetIcon from '../assets/map/reset.svg?raw';
 import type { LatLon } from '../lib/geo';
 
 interface Feature {
@@ -99,7 +112,12 @@ const typeColours = Object.fromEntries(
 const icons = { takeoff: takeoffIcon, landing: landingIcon };
 ---
 
-<div class="map" data-map={interactive ? '' : null}>
+<div
+  class="map"
+  data-map={interactive ? '' : null}
+  data-reset-icon={interactive ? resetIcon : null}
+  style={`--icon-terrain: url(${terrainIcon}); --icon-fullscreen: url(${fullscreenIcon})`}
+>
   <MapPoster features={features} title={title} />
 
   {
@@ -192,6 +210,33 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
 
   .map--open .map__open {
     display: none;
+  }
+
+  /*
+    MapLibre builds these buttons itself, so its classes are the only handle on
+    them and the rules have to be :global — nothing here carries this
+    component's scope attribute.
+
+    Both states of each control are covered: a fullscreen button becomes
+    `shrink` once it is in fullscreen, and terrain becomes `terrain-enabled`
+    when it is on, each with its own background image to replace.
+  */
+  .map :global(.maplibregl-ctrl-terrain .maplibregl-ctrl-icon),
+  .map :global(.maplibregl-ctrl-terrain-enabled .maplibregl-ctrl-icon) {
+    background-image: var(--icon-terrain);
+  }
+
+  .map :global(.maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon),
+  .map :global(.maplibregl-ctrl-shrink .maplibregl-ctrl-icon) {
+    background-image: var(--icon-fullscreen);
+  }
+
+  /* The inlined reset icon, sized and coloured like MapLibre's own. */
+  .map :global(.map-reset-icon) {
+    width: 60%;
+    height: 60%;
+    margin: 20%;
+    fill: rgb(68, 73, 82);
   }
 </style>
 
@@ -562,7 +607,7 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
           bearing: map.getBearing(),
           pitch: map.getPitch(),
         };
-        map.addControl(new ResetControl(home), 'top-right');
+        map.addControl(new ResetControl(home, root), 'top-right');
       });
     } catch {
       back('Mappa non disponibile — riprova');
@@ -616,13 +661,16 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
    */
   class ResetControl {
     #home: Camera;
+    #root: HTMLElement;
     #container: HTMLElement | null = null;
 
-    constructor(home: Camera) {
+    constructor(home: Camera, root: HTMLElement) {
       this.#home = home;
+      this.#root = root;
     }
 
     onAdd(map: { easeTo(options: Camera & { duration: number }): void }) {
+      const root = this.#root;
       const container = document.createElement('div');
       container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
 
@@ -632,10 +680,15 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
       // The control is icon-only, so the name has to come from somewhere.
       button.title = 'Torna alla vista iniziale';
       button.setAttribute('aria-label', 'Torna alla vista iniziale');
-      button.innerHTML =
-        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" ' +
-        'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
+      /*
+        The club's icon, carried over from the old site's Leaflet reset control.
+        It arrives as markup rather than a URL so its `currentColor` fill has a
+        context to inherit from; a background image would have none.
+      */
+      button.innerHTML = (root.dataset.resetIcon ?? '').replace(
+        '<svg',
+        '<svg class="map-reset-icon"',
+      );
       button.addEventListener('click', () => {
         map.easeTo({ ...this.#home, duration: prefersReducedMotion() ? 0 : 800 });
       });
