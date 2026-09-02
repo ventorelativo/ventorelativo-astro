@@ -11,10 +11,12 @@
     "lint": "eslint . && node scripts/check-content.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "astro check && npm run lint && prettier --check . && astro build && npm run navdata:check",
+    "verify": "astro check && npm run lint && prettier --check . && npm run build && npm run navdata:check",
     "shot": "node scripts/shot.mjs",
     "weight": "node scripts/shot.mjs --no-shot --weight",
-    "navdata:check": "node scripts/check-navdata.mjs"
+    "navdata:check": "node scripts/check-navdata.mjs",
+    "predev": "node scripts/sync-vendor-css.mjs",
+    "prebuild": "node scripts/sync-vendor-css.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.0",
@@ -27,6 +29,7 @@
     "@keystatic/core": "^0.6.9",
     "astro": "^7.2.10",
     "bigger-picture": "^1.1.20",
+    "maplibre-gl": "^6.6.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
