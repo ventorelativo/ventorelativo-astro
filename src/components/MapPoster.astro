@@ -11,10 +11,15 @@
  * It is a diagram, not a map: no basemap, no scale bar, no north arrow. It
  * answers "how do these takeoffs and landings sit relative to each other",
  * which is the question a card-sized map answers anyway.
+ *
+ * It did carry a scale bar for a while. The MapLibre map it stands in for
+ * prints none, so the bar appeared, then vanished the moment anyone opened the
+ * map — a measurement that only exists in the placeholder is worse than no
+ * measurement at all.
  */
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
-import { boundsOf, niceScaleDistance, project, type LatLon } from '../lib/geo';
+import { boundsOf, project, type LatLon } from '../lib/geo';
 
 interface Feature {
   name: string;
@@ -70,21 +75,6 @@ const summary = [...counts]
 
 const shapes = features.filter((feature) => feature.shape);
 const markers = features.filter((feature) => feature.point);
-
-/*
-  A scale bar, because without a basemap there is nothing to judge distance
-  against, and "these two dots are close" is the main thing this drawing says.
-  Sites here span anything from a few hundred metres to ten kilometres.
-*/
-const scale = projection
-  ? (() => {
-      const metres = niceScaleDistance(projection.metresPerUnit * projection.width);
-      return {
-        length: metres / projection.metresPerUnit,
-        label: metres >= 1000 ? `${metres / 1000} km` : `${metres} m`,
-      };
-    })()
-  : null;
 
 /*
   Label placement, which is most of what makes this drawing readable.
@@ -248,20 +238,6 @@ const labels = markers.length <= LABEL_LIMIT ? placeLabels() : [];
             {label.text}
           </text>
         ))}
-
-        {scale && (
-          <g class="scale">
-            <line
-              x1={26}
-              y1={projection.height - 26}
-              x2={26 + scale.length}
-              y2={projection.height - 26}
-            />
-            <text x={26} y={projection.height - 34}>
-              {scale.label}
-            </text>
-          </g>
-        )}
       </svg>
     </figure>
   )
@@ -339,25 +315,13 @@ const labels = markers.length <= LABEL_LIMIT ? placeLabels() : [];
     `paint-order: stroke` draws the halo behind the glyphs rather than over
     them, which is what keeps a name legible where it crosses a zone outline.
   */
-  .label,
-  .scale text {
+  .label {
     fill: var(--color-text);
     font-family: inherit;
     font-size: 15px;
     paint-order: stroke;
     stroke: var(--color-bg-subtle);
     stroke-width: 4;
-  }
-
-  .scale text {
-    fill: var(--color-text-muted);
-    font-size: 13px;
-  }
-
-  .scale line {
-    stroke: var(--color-text-muted);
-    stroke-width: 2.5;
-    stroke-linecap: square;
   }
 
   /*
@@ -399,14 +363,6 @@ const labels = markers.length <= LABEL_LIMIT ? placeLabels() : [];
     .line--obstacle {
       stroke-width: 8;
       stroke-dasharray: 24 16;
-    }
-
-    .scale text {
-      font-size: 34px;
-    }
-
-    .scale line {
-      stroke-width: 7;
     }
   }
 </style>

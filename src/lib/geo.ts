@@ -49,24 +49,6 @@ export interface Projection {
   height: number;
   x(lon: number): number;
   y(lat: number): number;
-  /** Ground distance one viewBox unit covers, for drawing a scale bar. */
-  metresPerUnit: number;
-}
-
-/** Metres in a degree of latitude. Constant enough at this scale. */
-const METRES_PER_DEGREE = 111_320;
-
-/**
- * A round distance that fills roughly a quarter of the frame — 1-2-5 rather
- * than "1.37 km", which is what makes a scale bar readable at a glance.
- */
-export function niceScaleDistance(metresAcross: number): number {
-  const target = metresAcross / 4;
-  const magnitude = 10 ** Math.floor(Math.log10(target));
-  const steps = [1, 2, 5, 10].map((step) => step * magnitude);
-  return steps.reduce((best, step) =>
-    Math.abs(step - target) < Math.abs(best - target) ? step : best,
-  );
 }
 
 const VIEW_WIDTH = 1000;
@@ -109,6 +91,5 @@ export function project(bounds: Bounds, aspect: number, padding = 0.12): Project
     height: round(VIEW_WIDTH / aspect),
     x: (lon) => round((lon * lonScale - left) * scale),
     y: (lat) => round((top - lat) * scale),
-    metresPerUnit: (width * METRES_PER_DEGREE) / VIEW_WIDTH,
   };
 }
