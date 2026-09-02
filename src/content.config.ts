@@ -278,6 +278,15 @@ const mapFeatures = defineCollection({
        * Drupal's `field_type`; the four values are the ones in use.
        */
       type: z.enum(['takeoff', 'landing', 'obstacle', 'poi']),
+      /**
+       * A page elsewhere describing this feature in more detail — today the
+       * club's own takeoff guides on paragliding-kubernetes.web-forge.info.
+       *
+       * Optional and deliberately unconstrained beyond being a URL: it covers
+       * some takeoffs now and more later, and nothing here should have to
+       * change when that happens.
+       */
+      guideUrl: z.url().optional(), // z.string().url() is deprecated in Zod 4
       /** Marker and waypoint position. Absent only on the obstacle line. */
       point: z
         .object({
