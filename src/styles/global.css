@@ -205,14 +205,28 @@ hr {
   justify-content: center;
   gap: var(--space-2xs);
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--brand-blue);
+  border: 1px solid var(--button-color);
   border-radius: var(--radius-md);
-  background-color: var(--brand-blue);
-  /* Not `--color-accent`: Bootstrap left `.btn-primary` on the same solid blue
-     in dark mode, and white on that blue is legible in both. */
-  color: #ffffff;
+
+  /*
+    Three colours make a button, and every variant sets the same three. That is
+    what lets `--outline` combine with any of them instead of existing once per
+    colour: it swaps which of the three the background and the text take.
+
+    Primary's fill is `--brand-blue` rather than `--color-accent` because
+    Bootstrap left `.btn-primary` on the same solid blue in dark mode and white
+    on it is legible in both. Its *outline* does follow `--color-accent`, or a
+    #1f52a6 hairline would sit on a near-black background at about 2:1.
+  */
+  --button-color: var(--brand-blue);
+  --button-color-hover: #1a468d;
+  --button-contrast: #ffffff;
+  --button-outline-color: var(--color-accent);
+
+  background-color: var(--button-color);
+  color: var(--button-contrast);
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
   text-decoration: none;
   cursor: pointer;
@@ -225,9 +239,25 @@ hr {
 /* Measured on the old site under a real pointer: rgb(26,70,141) on
    rgb(25,66,133), text still white. */
 .button:hover {
-  background-color: #1a468d;
-  border-color: #194285;
-  color: #ffffff;
+  background-color: var(--button-color-hover);
+  border-color: var(--button-color-hover);
+  color: var(--button-contrast);
+}
+
+/* Grey filled — the old theme's `.btn-secondary`. */
+.button--secondary {
+  --button-color: var(--brand-secondary);
+  --button-color-hover: var(--brand-secondary-hover);
+  --button-contrast: #000000;
+  --button-outline-color: var(--brand-secondary);
+}
+
+/* Green filled, for WhatsApp and anything else that means "go ahead". */
+.button--success {
+  --button-color: var(--brand-success);
+  --button-color-hover: var(--brand-success-hover);
+  --button-contrast: #ffffff;
+  --button-outline-color: var(--brand-success);
 }
 
 /* A row of call-to-action links inside an article body (see mdx/ActionLink). */
@@ -238,19 +268,18 @@ hr {
 }
 
 /*
- * `.btn-outline-primary`. One divergence from the old rendering: it hardcoded
- * the light-mode blue in both schemes, which left a #1f52a6 outline on a near
- * black background at roughly 2:1 contrast. This follows `--color-accent`, so
- * dark mode gets the lighter blue Bootstrap uses for links there.
+ * A modifier, not a variant: it reads whichever colour the button already has,
+ * so `.button--success.button--outline` is a green outline that fills green.
+ * On its own it outlines the primary blue, which is `.btn-outline-primary`.
  */
 .button--outline {
+  border-color: var(--button-outline-color);
   background-color: transparent;
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  color: var(--button-outline-color);
 }
 
 .button--outline:hover {
-  background-color: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-accent-contrast);
+  background-color: var(--button-outline-color);
+  border-color: var(--button-outline-color);
+  color: var(--button-contrast);
 }

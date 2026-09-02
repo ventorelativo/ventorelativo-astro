@@ -24,9 +24,22 @@
   */
   --brand-blue-bright: #7997ca;
   --brand-yellow: #fabd14;
-  /* WhatsApp's own green. The old theme used Bootstrap's `btn-success` here;
-     the brand colour is more recognisable at button size and costs nothing. */
-  --brand-whatsapp: #25d366;
+  /*
+    Bootstrap's `$success`, which is what the old theme used for the WhatsApp
+    button. Tried WhatsApp's own #25d366 first — more recognisable, but bright
+    enough that white text fails contrast on it, and a green button with black
+    text reads as a different component from every other button on the site.
+
+    One value, not a light-dark() pair: a status colour means the same thing in
+    both schemes, and white on this clears AA either way.
+  */
+  --brand-success: #198754;
+  --brand-success-hover: #157347;
+
+  /* The old theme's `.btn-secondary`, read off its compiled CSS: a light slate
+     with black text, not Bootstrap's default grey. */
+  --brand-secondary: #e2e8f0;
+  --brand-secondary-hover: #e6ebf2;
 
   /* ------------------------------------------------------------- surfaces */
   --color-bg: light-dark(#ffffff, #16191c);

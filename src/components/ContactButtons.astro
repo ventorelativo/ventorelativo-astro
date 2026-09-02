@@ -38,8 +38,8 @@ const ICONS: Record<Contact['kind'], string> = {
           <a
             class:list={[
               'button',
-              kind === 'whatsapp' && 'button--whatsapp',
-              kind === 'email' && 'button--outline',
+              kind === 'whatsapp' && 'button--success',
+              kind === 'email' && 'button--secondary',
             ]}
             href={href}
             target={external ? '_blank' : undefined}
@@ -66,18 +66,5 @@ const ICONS: Record<Contact['kind'], string> = {
     list-style: none;
     margin-block: var(--space-md);
     padding: 0;
-  }
-
-  .button--whatsapp {
-    background-color: var(--brand-whatsapp);
-    border-color: var(--brand-whatsapp);
-    /* WhatsApp green is bright; black text clears AA on it, white does not. */
-    color: #0f1214;
-  }
-
-  .button--whatsapp:hover {
-    background-color: color-mix(in srgb, var(--brand-whatsapp) 85%, black);
-    border-color: color-mix(in srgb, var(--brand-whatsapp) 80%, black);
-    color: #0f1214;
   }
 </style>
