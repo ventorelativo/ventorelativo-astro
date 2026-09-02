@@ -118,8 +118,44 @@ const sorted = [...features].sort(
     margin-block: var(--space-lg);
   }
 
+  /*
+    Scroll shadows, ported from the old site (Bootstrap's `.table-responsive`,
+    itself Roman Cortés' trick). Four backgrounds on the scrolling box: two
+    covers in the page colour that scroll *with* the content (`local`), and two
+    shadows pinned to the box's edges (`scroll`). At rest a cover sits exactly
+    over its shadow and hides it; scroll away from an edge and the cover goes
+    with the content, uncovering the shadow.
+
+    The point is that it needs no JavaScript and no media query — the hint
+    appears precisely when there is something to scroll to, on exactly the
+    edges that have more table behind them, and disappears on a wide screen
+    where the table fits.
+
+    Deviation from the original: its covers fade from the first pixel, which
+    leaves about a seventh of the shadow showing at rest. Ours holds the page
+    colour solid for 20px — wider than the shadow — before it starts to fade,
+    so at rest there is nothing to see at all.
+  */
   .features__scroll {
     overflow-x: auto;
+    background-color: var(--color-bg);
+    background-image:
+      linear-gradient(90deg, var(--color-bg) 0 20px, transparent),
+      linear-gradient(-90deg, var(--color-bg) 0 20px, transparent),
+      radial-gradient(farthest-side at 0 50%, var(--color-scroll-edge), transparent),
+      radial-gradient(farthest-side at 100% 50%, var(--color-scroll-edge), transparent);
+    background-position:
+      0 0,
+      100% 0,
+      0 0,
+      100% 0;
+    background-repeat: no-repeat;
+    background-size:
+      60px 100%,
+      60px 100%,
+      14px 100%,
+      14px 100%;
+    background-attachment: local, local, scroll, scroll;
   }
 
   table {

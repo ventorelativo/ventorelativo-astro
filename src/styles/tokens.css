@@ -168,6 +168,17 @@
   --shadow-sm: 0 1px 2px light-dark(#0f172a0f, #00000040);
   --shadow-md: 0 4px 16px light-dark(#0f172a14, #00000059);
 
+  /*
+    The veil at the edge of a box that has more content out of sight — the
+    scroll hint on a wide table, drawn as a gradient rather than a `box-shadow`.
+
+    Light and dark are not the same colour with a different alpha, because a
+    shadow on a dark surface has nowhere to go: black at full strength over
+    `#16191c` moves it 22 levels, which nobody sees. Dark mode lifts instead of
+    darkens, which is how depth reads on a dark UI anyway.
+  */
+  --color-scroll-edge: light-dark(#0f172a40, #ffffff26);
+
   /* --------------------------------------------------------------- layout */
   /* 5.25rem — the old `--header-height`, measured at 84px. */
   --header-height: 5.25rem;
