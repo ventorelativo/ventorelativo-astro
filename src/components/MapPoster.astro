@@ -36,7 +36,12 @@ const points: LatLon[] = features.flatMap((feature) => [
   ...(feature.shape?.value ?? []).map(([lon, lat]) => ({ lat, lon })),
 ]);
 
-const projection = points.length > 0 ? project(boundsOf(points), 3 / 2) : null;
+/*
+  16:9. The poster sits in the layout's `media` slot, which is the full
+  container width rather than the reading column, so a squarer frame would
+  push the whole article below the fold on a laptop.
+*/
+const projection = points.length > 0 ? project(boundsOf(points), 16 / 9) : null;
 
 /** `x,y x,y …` for a <polygon> or <polyline>. */
 function toPoints(coordinates: [number, number][]): string {
@@ -86,9 +91,16 @@ const scale = projection
   layout engine at build time, and being a few units out only costs a little
   extra spacing.
 */
-const LABEL_OFFSET = 22;
-const LABEL_HEIGHT = 32;
-const CHAR_WIDTH = 12.5;
+/*
+  Sizes are in viewBox units, and the viewBox is 1000 wide against a frame that
+  renders around 1040 px on a laptop — so one unit is roughly one pixel, and
+  these numbers can be read as pixel sizes. They were halved when the poster
+  moved from the reading column to the full container width: the same units
+  had been drawing 27 px text.
+*/
+const LABEL_OFFSET = 13;
+const LABEL_HEIGHT = 19;
+const CHAR_WIDTH = 7.2;
 
 interface PlacedLabel {
   text: string;
@@ -134,7 +146,7 @@ function placeLabels(): PlacedLabel[] {
     const left = flip ? x - width : x;
     const right = flip ? x : x + width;
 
-    let y = projection.y(at.lat) + 9;
+    let y = projection.y(at.lat) + 5;
     // Nudge down until it clears everything already placed. Bounded because
     // each pass can only move below the lowest collision.
     for (let guard = 0; guard < 20; guard++) {
@@ -184,7 +196,7 @@ const labels = placeLabels();
             class={`marker marker--${feature.type}`}
             cx={projection.x(feature.point!.lon)}
             cy={projection.y(feature.point!.lat)}
-            r={feature.type === 'takeoff' ? 15 : 11}
+            r={feature.type === 'takeoff' ? 8 : 6}
           />
         ))}
 
@@ -202,7 +214,7 @@ const labels = placeLabels();
               x2={26 + scale.length}
               y2={projection.height - 26}
             />
-            <text x={26} y={projection.height - 38}>
+            <text x={26} y={projection.height - 34}>
               {scale.label}
             </text>
           </g>
@@ -215,6 +227,14 @@ const labels = placeLabels();
 <style>
   .poster {
     margin: 0 0 var(--space-md);
+    /*
+      The drawing is sized in viewBox units, so how big a unit renders depends
+      on how wide the poster is — 1040 px in the container on a laptop, 342 px
+      on a phone. That is a factor of three, which no single set of numbers
+      survives. A container query is the right tool rather than a viewport
+      media query: what matters is this element's width, not the window's.
+    */
+    container-type: inline-size;
   }
 
   svg {
@@ -233,21 +253,21 @@ const labels = placeLabels();
   .zone--landing {
     fill: color-mix(in srgb, var(--color-map-landing) 22%, transparent);
     stroke: var(--color-map-landing);
-    stroke-width: 3;
+    stroke-width: 2;
   }
 
   .line--obstacle {
     fill: none;
     stroke: var(--color-map-obstacle);
-    stroke-width: 5;
-    stroke-dasharray: 14 10;
+    stroke-width: 3;
+    stroke-dasharray: 9 6;
     stroke-linecap: round;
   }
 
   .marker {
     /* The ring is the page background, so a marker stays legible on a zone. */
     stroke: var(--color-bg-subtle);
-    stroke-width: 4;
+    stroke-width: 2.5;
   }
 
   .marker--takeoff {
@@ -271,32 +291,63 @@ const labels = placeLabels();
   .scale text {
     fill: var(--color-text);
     font-family: inherit;
-    font-size: 26px;
+    font-size: 15px;
     paint-order: stroke;
     stroke: var(--color-bg-subtle);
-    stroke-width: 6;
+    stroke-width: 4;
   }
 
   .scale text {
     fill: var(--color-text-muted);
-    font-size: 22px;
+    font-size: 13px;
   }
 
   .scale line {
     stroke: var(--color-text-muted);
-    stroke-width: 4;
+    stroke-width: 2.5;
     stroke-linecap: square;
   }
 
   /*
-    Below this width the viewBox scales text down to about eight pixels, which
-    is not a label but a smudge. The table underneath carries every name, so
-    the diagram drops to shapes and positions rather than shipping something
-    unreadable.
+    Narrow: everything scales up in viewBox units to come out the same size on
+    screen, and the names go — at this width they render around five pixels,
+    which is not a label but a smudge. The table underneath carries every name,
+    so the diagram falls back to shapes and positions.
+
+    `r` is settable from CSS on an SVG circle, which is what keeps the markers
+    in one place rather than duplicating the whole drawing for small screens.
+    A browser too old for that keeps the `r` attribute and draws them small —
+    a worse diagram, not a broken one.
   */
-  @media (max-width: 40rem) {
+  @container (max-width: 40rem) {
     .label {
       display: none;
+    }
+
+    .marker {
+      r: 13;
+      stroke-width: 6;
+    }
+
+    .marker--takeoff {
+      r: 17;
+    }
+
+    .zone--landing {
+      stroke-width: 5;
+    }
+
+    .line--obstacle {
+      stroke-width: 8;
+      stroke-dasharray: 24 16;
+    }
+
+    .scale text {
+      font-size: 34px;
+    }
+
+    .scale line {
+      stroke-width: 7;
     }
   }
 </style>
