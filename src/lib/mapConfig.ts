@@ -110,12 +110,20 @@ export const THERMAL_LAYERS = [
   { value: 'skyways', label: 'Rotte percorse' },
 ] as const;
 
+/**
+ * The four quarters, named by their *middle* month.
+ *
+ * `jul` is June to August, not July to September: the month in the path sits at
+ * the centre of its window, which is what kk7's "three consecutive months"
+ * means and the opposite of the obvious reading. Backwards, it puts a September
+ * visitor on summer data.
+ */
 export const THERMAL_SEASONS = [
   { value: 'all', label: 'Tutto l’anno' },
-  { value: 'jan', label: 'Gen–Mar' },
-  { value: 'apr', label: 'Apr–Giu' },
-  { value: 'jul', label: 'Lug–Set' },
-  { value: 'oct', label: 'Ott–Dic' },
+  { value: 'jan', label: 'Dic–Feb' },
+  { value: 'apr', label: 'Mar–Mag' },
+  { value: 'jul', label: 'Giu–Ago' },
+  { value: 'oct', label: 'Set–Nov' },
 ] as const;
 
 export const THERMAL_TIMES = [
@@ -130,8 +138,9 @@ export const THERMAL_TIMES = [
  * rather than on an average of the whole year.
  */
 export function currentThermalSeason(now = new Date()): string {
-  return [
-    'jan',
+  // Centred on the named month, so December and January share `jan`.
+  //        Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec
+  const quarters = [
     'jan',
     'jan',
     'apr',
@@ -143,7 +152,9 @@ export function currentThermalSeason(now = new Date()): string {
     'oct',
     'oct',
     'oct',
-  ][now.getMonth()];
+    'jan',
+  ];
+  return quarters[now.getMonth()];
 }
 
 export function thermalTiles(layer: string, season: string, time: string): string {
