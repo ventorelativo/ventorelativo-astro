@@ -9,6 +9,7 @@
  */
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
+import { formatCoordinates, navigationUrl } from '../lib/coordinateLinks';
 import type { LatLon } from '../lib/geo';
 
 interface Feature {
@@ -65,7 +66,21 @@ const sorted = [...features].sort(
                 <th scope="row">{feature.name}</th>
                 <td class="coords">
                   {feature.point ? (
-                    `${feature.point.lat.toFixed(6)}, ${feature.point.lon.toFixed(6)}`
+                    /*
+                      The coordinates are the link, as they are in the map's
+                      popups — same destination, same decimal degrees, so a
+                      pilot gets the same thing whichever they happen to be
+                      looking at. Still selectable for copying into an
+                      instrument.
+                    */
+                    <a
+                      href={navigationUrl(feature.point)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`Naviga verso ${feature.name}`}
+                    >
+                      {formatCoordinates(feature.point)}
+                    </a>
                   ) : (
                     <span class="none">—</span>
                   )}
@@ -166,7 +181,21 @@ const sorted = [...features].sort(
 
   .coords {
     font-variant-numeric: tabular-nums;
+  }
+
+  /*
+    Underlined only on hover: seven of these in a column, all underlined, reads
+    as noise rather than as a table of numbers.
+  */
+  .coords a {
     color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .coords a:hover,
+  .coords a:focus-visible {
+    color: var(--color-accent);
+    text-decoration: underline;
   }
 
   .none {
