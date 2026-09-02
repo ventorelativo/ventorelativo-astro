@@ -63,3 +63,42 @@ export const MAX_BOUNDS: [[number, number], [number, number]] = [
   [6.74, 44.49],
   [7.61, 45.31],
 ];
+
+/**
+ * A plain raster basemap, as an alternative to the club's vector style.
+ *
+ * Tracestrack Topo is what the old site offered in its style switcher, with
+ * the same key — recovered from `leaflet_more_maps.settings.yml`. The key is
+ * restricted by referrer rather than kept secret, which is why it can sit in a
+ * public repository: it answers for ventorelativo.it and the Netlify hosts and
+ * 403s everywhere else.
+ *
+ * `.webp` rather than `.png`, as the old module requested: the same tile at
+ * roughly half the bytes, and every browser that can run MapLibre can decode
+ * it.
+ */
+export const RASTER_BASE = {
+  label: 'Topografica (raster)',
+  tiles:
+    'https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=b9c2fabd9b0774eb89ea495c32bb7c91',
+  attribution: 'Tiles © <a href="https://tracestrack.com">Tracestrack</a>',
+  maxzoom: 19,
+};
+
+/**
+ * Thermal hotspots, from the flights other pilots have already flown.
+ *
+ * `skyways_all` is the whole archive rather than one season — the seasonal
+ * paths return 400, and for deciding where a valley works the aggregate is the
+ * more useful picture anyway.
+ *
+ * `src` identifies the site to kk7, which is how they ask to be told who is
+ * using the tiles.
+ */
+export const THERMAL_OVERLAY = {
+  label: 'Termiche',
+  tiles:
+    'https://thermal.kk7.ch/tiles/skyways_all/{z}/{x}/{y}.png?src=ventorelativo.it',
+  attribution: '<a href="https://thermal.kk7.ch">thermal.kk7.ch</a>',
+  maxzoom: 12,
+};

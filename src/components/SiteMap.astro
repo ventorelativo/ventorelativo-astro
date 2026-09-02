@@ -350,6 +350,56 @@ const typeNames = Object.fromEntries(
     margin-block-start: var(--space-3xs);
   }
 
+  /*
+    The layers panel. It hangs off its own button in the control stack, so it is
+    positioned against that button rather than against the map.
+  */
+  .map :global(.map-layers) {
+    position: relative;
+  }
+
+  .map :global(.map-layers__panel) {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: calc(100% + 4px);
+    min-width: 12rem;
+    padding: var(--space-2xs);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+    font-size: var(--text-sm);
+    text-align: start;
+  }
+
+  .map :global(.map-layers__panel fieldset) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .map :global(.map-layers__panel fieldset + fieldset) {
+    margin-block-start: var(--space-2xs);
+    padding-block-start: var(--space-2xs);
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .map :global(.map-layers__panel legend) {
+    padding: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .map :global(.map-layers__panel label) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    padding-block: 0.15rem;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
   .map :global(.map-reset-icon) {
     width: 46%;
     height: 46%;
@@ -589,6 +639,50 @@ const typeNames = Object.fromEntries(
       map.on('style.load', async () => {
         loaded = true;
         const hasIcons = await iconsReady;
+        /*
+          The style's own layers, noted before we add any of ours. Switching to
+          the raster basemap hides all of these at once rather than swapping
+          the style, which would throw away every layer, source and image we
+          have just built and make the switch a reload rather than a toggle.
+        */
+        const styleLayerIds = map.getStyle().layers.map((layer) => layer.id);
+        const firstStyleLayer = styleLayerIds[0];
+
+        map.addSource('raster-base', {
+          type: 'raster',
+          tiles: [config.RASTER_BASE.tiles],
+          tileSize: 256,
+          maxzoom: config.RASTER_BASE.maxzoom,
+          attribution: config.RASTER_BASE.attribution,
+        });
+        map.addLayer(
+          {
+            id: 'raster-base',
+            type: 'raster',
+            source: 'raster-base',
+            layout: { visibility: 'none' },
+          },
+          // Underneath everything, so turning it on is a matter of hiding what
+          // is above it rather than restacking.
+          firstStyleLayer,
+        );
+
+        map.addSource('thermals', {
+          type: 'raster',
+          tiles: [config.THERMAL_OVERLAY.tiles],
+          tileSize: 256,
+          maxzoom: config.THERMAL_OVERLAY.maxzoom,
+          attribution: config.THERMAL_OVERLAY.attribution,
+          /*
+            kk7 numbers its rows from the south, not the north. Without this the
+            tiles still arrive with a 200 and still paint nothing, because the
+            row asked for is in the southern hemisphere and empty. The give-away
+            was the size: 68 bytes for the tile MapLibre wanted, 137 kB for the
+            one directly opposite it.
+          */
+          scheme: 'tms',
+        });
+
         map.addSource('features', { type: 'geojson', data });
 
         /*
@@ -601,6 +695,15 @@ const typeNames = Object.fromEntries(
             (layer) => (layer as { layout?: { 'text-font'?: string[] } }).layout,
           )
           .find((layout) => layout?.['text-font'])?.['text-font'];
+
+        map.addLayer({
+          id: 'thermals',
+          type: 'raster',
+          source: 'thermals',
+          layout: { visibility: 'none' },
+          // Ghosted, so the map underneath still reads through the heat.
+          paint: { 'raster-opacity': 0.65 },
+        });
 
         const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
         // ['match', kind, 'takeoff', <colour>, …, <fallback>] — one paint
@@ -858,6 +961,13 @@ const typeNames = Object.fromEntries(
           pitch: map.getPitch(),
         };
         map.addControl(new ResetControl(home, root), 'top-right');
+        map.addControl(
+          new LayersControl(map, styleLayerIds, [
+            config.RASTER_BASE.label,
+            config.THERMAL_OVERLAY.label,
+          ]),
+          'top-right',
+        );
       });
     } catch {
       back('Mappa non disponibile — riprova');
@@ -996,6 +1106,125 @@ const typeNames = Object.fromEntries(
     if (kind === 'obstacle') span.textContent = emoji;
     else span.className = `map-popup__dot map-popup__dot--${kind}`;
     return span;
+  }
+
+  /** What a layers panel needs from the map. */
+  interface LayerMap {
+    setLayoutProperty(layer: string, name: string, value: unknown): void;
+    getLayer(id: string): unknown;
+  }
+
+  /**
+   * Choose the basemap, and turn the thermals on.
+   *
+   * Two decisions worth recording. The basemap switch hides the style's layers
+   * rather than calling `setStyle`: a style swap discards every source, layer
+   * and image the map has built, so the markers, the terrain and the icons
+   * would all have to be rebuilt and the switch would read as a reload. Hiding
+   * is instant and reversible.
+   *
+   * And it is a panel rather than two more buttons in the stack, because there
+   * are already six there and neither of these is a thing anyone presses twice.
+   */
+  class LayersControl {
+    #map: LayerMap;
+    #styleLayerIds: string[];
+    #labels: [string, string];
+    #container: HTMLElement | null = null;
+
+    constructor(map: LayerMap, styleLayerIds: string[], labels: [string, string]) {
+      this.#map = map;
+      this.#styleLayerIds = styleLayerIds;
+      this.#labels = labels;
+    }
+
+    onAdd() {
+      const [rasterLabel, thermalLabel] = this.#labels;
+
+      const container = document.createElement('div');
+      container.className = 'maplibregl-ctrl maplibregl-ctrl-group map-layers';
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'maplibregl-ctrl-icon map-layers__toggle';
+      toggle.title = 'Livelli della mappa';
+      toggle.setAttribute('aria-label', 'Livelli della mappa');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.innerHTML =
+        '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" ' +
+        'stroke="currentColor" stroke-width="2" stroke-linejoin="round">' +
+        '<path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M2 16l10 5 10-5"/></svg>';
+
+      const panel = document.createElement('div');
+      panel.className = 'map-layers__panel';
+      panel.hidden = true;
+
+      const base = document.createElement('fieldset');
+      base.append(
+        Object.assign(document.createElement('legend'), { textContent: 'Sfondo' }),
+      );
+      // A name unique to this map, so two maps on one page do not share a group.
+      const group = `base-${Math.random().toString(36).slice(2, 8)}`;
+      base.append(
+        this.#option('radio', group, 'Topografica (vettoriale)', true, () =>
+          this.#showRaster(false),
+        ),
+        this.#option('radio', group, rasterLabel, false, () => this.#showRaster(true)),
+      );
+
+      const extra = document.createElement('fieldset');
+      extra.append(
+        Object.assign(document.createElement('legend'), { textContent: 'Livelli' }),
+      );
+      extra.append(
+        this.#option('checkbox', '', thermalLabel, false, (on) =>
+          this.#setVisible('thermals', on),
+        ),
+      );
+
+      panel.append(base, extra);
+      toggle.addEventListener('click', () => {
+        panel.hidden = !panel.hidden;
+        toggle.setAttribute('aria-expanded', String(!panel.hidden));
+      });
+
+      container.append(toggle, panel);
+      this.#container = container;
+      return container;
+    }
+
+    onRemove() {
+      this.#container?.remove();
+      this.#container = null;
+    }
+
+    #option(
+      type: 'radio' | 'checkbox',
+      name: string,
+      text: string,
+      checked: boolean,
+      onChange: (on: boolean) => void,
+    ) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = type;
+      if (name) input.name = name;
+      input.checked = checked;
+      input.addEventListener('change', () => onChange(input.checked));
+      label.append(input, document.createTextNode(text));
+      return label;
+    }
+
+    #setVisible(id: string, visible: boolean) {
+      if (this.#map.getLayer(id)) {
+        this.#map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+      }
+    }
+
+    #showRaster(on: boolean) {
+      this.#setVisible('raster-base', on);
+      for (const id of this.#styleLayerIds) this.#setVisible(id, !on);
+    }
   }
 
   /** The bit of MapLibre a terrain animation needs. */
