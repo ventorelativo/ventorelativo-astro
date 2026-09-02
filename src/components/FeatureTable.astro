@@ -1,0 +1,143 @@
+---
+/**
+ * The site's takeoffs, landings and hazards as a table (M-series).
+ *
+ * The map is the nice way to read this; the table is the reliable one. It
+ * works with no JavaScript, no WebGL and no network, it can be read aloud, and
+ * the coordinates can be selected and pasted into whatever a pilot actually
+ * uses. That is also the fallback when the map cannot run at all.
+ */
+import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
+import type { LatLon } from '../lib/geo';
+
+interface Feature {
+  name: string;
+  type: FeatureType;
+  point?: LatLon;
+}
+
+interface Props {
+  features: Feature[];
+}
+
+const { features } = Astro.props;
+
+/*
+  Takeoffs first, then landings, then the rest — the order a pilot reads them
+  in, rather than alphabetical. Within a group, by name.
+*/
+const ORDER: FeatureType[] = ['takeoff', 'landing', 'poi', 'obstacle'];
+const sorted = [...features].sort(
+  (a, b) =>
+    ORDER.indexOf(a.type) - ORDER.indexOf(b.type) || a.name.localeCompare(b.name, 'it'),
+);
+---
+
+{
+  sorted.length > 0 && (
+    <section class="features">
+      <h2>Punti di volo</h2>
+
+      {/* Scrolls itself rather than the page — AGENTS.md, wide content. */}
+      <div class="features__scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Nome</th>
+              <th scope="col">Coordinate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((feature) => (
+              <tr>
+                <td>
+                  <span class={`dot dot--${feature.type}`} aria-hidden="true" />
+                  {FEATURE_TYPES[feature.type].label}
+                </td>
+                <th scope="row">{feature.name}</th>
+                <td class="coords">
+                  {feature.point ? (
+                    `${feature.point.lat.toFixed(6)}, ${feature.point.lon.toFixed(6)}`
+                  ) : (
+                    <span class="none">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .features {
+    margin-block: var(--space-lg);
+  }
+
+  .features__scroll {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  th,
+  td {
+    padding: var(--space-2xs) var(--space-xs);
+    border-block-end: 1px solid var(--color-border);
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  thead th {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  tbody th {
+    color: var(--color-text-strong);
+    font-weight: 500;
+    /* The name is the one column allowed to wrap on a narrow screen. */
+    white-space: normal;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-inline-end: 0.4em;
+    border-radius: 50%;
+    vertical-align: baseline;
+  }
+
+  .dot--takeoff {
+    background-color: var(--color-map-takeoff);
+  }
+  .dot--landing {
+    background-color: var(--color-map-landing);
+  }
+  .dot--obstacle {
+    background-color: var(--color-map-obstacle);
+  }
+  .dot--poi {
+    background-color: var(--color-map-poi);
+  }
+
+  .coords {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+  }
+
+  .none {
+    color: var(--color-text-muted);
+  }
+</style>

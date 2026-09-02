@@ -11,6 +11,7 @@ import EntryLayout from '../../layouts/EntryLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import Badge from '../../components/Badge.astro';
 import MapPoster from '../../components/MapPoster.astro';
+import FeatureTable from '../../components/FeatureTable.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 
 export async function getStaticPaths() {
@@ -64,6 +65,8 @@ const { Content } = await render(entry);
   <Content components={MDX_COMPONENTS} />
 
   {images.length > 0 && <Gallery images={images} title="Immagini" />}
+
+  <FeatureTable features={features} />
 </EntryLayout>
 
 <style>
