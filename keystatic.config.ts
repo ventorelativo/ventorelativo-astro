@@ -106,6 +106,37 @@ const imageWithAlt = (directory: string, publicPath: string) =>
     { label: 'Immagine' },
   );
 
+/**
+ * Where an entry's "Anteprima" button points.
+ *
+ * Netlify gives every branch its own deploy at `{branch}--{project}.netlify.app`,
+ * so an editor sees their own unmerged work rather than the public site.
+ * Keystatic substitutes `{branch}` and `{slug}` from wherever the editor is.
+ *
+ * Two things this depends on, both easy to break:
+ *
+ *  - **Netlify sanitises branch names into subdomains**, turning anything that
+ *    is not alphanumeric into a dash. A branch called `modifiche/estate` is
+ *    served at `modifiche-estate--…`, which `{branch}` would not produce — so
+ *    BRANCH_PREFIX below ends in a dash rather than a slash.
+ *  - **The project name**, not the domain. This stays correct after go-live
+ *    moves ventorelativo.it to this project, because branch deploys keep their
+ *    netlify.app address regardless.
+ */
+const PREVIEW_BASE = 'https://{branch}--ventorelativo-astro.netlify.app';
+
+/**
+ * Every edit happens on a branch named `modifiche-…`.
+ *
+ * Without this a save commits straight to `main` and rebuilds the public site —
+ * once per save, with half-finished work visible in between. With it an editor
+ * makes a batch of changes, previews them, and merges once.
+ *
+ * It also filters the branch picker, so a volunteer sees their own drafts
+ * rather than every development branch in the repository.
+ */
+const BRANCH_PREFIX = 'modifiche-';
+
 export default config({
   /*
     GitHub mode: the admin reads and writes this repository through the GitHub
@@ -119,6 +150,7 @@ export default config({
   storage: {
     kind: 'github',
     repo: { owner: 'ventorelativo', name: 'ventorelativo-astro' },
+    branchPrefix: BRANCH_PREFIX,
   },
 
   ui: {
@@ -133,6 +165,7 @@ export default config({
     news: collection({
       label: 'News',
       path: 'src/content/news/*',
+      previewUrl: `${PREVIEW_BASE}/news/{slug}/`,
       format: { contentField: 'content' },
       /*
         The slug is the URL. Existing posts keep theirs — these URLs are live
@@ -227,6 +260,7 @@ export default config({
     sites: collection({
       label: 'Siti di volo',
       path: 'src/content/sites/*',
+      previewUrl: `${PREVIEW_BASE}/siti/{slug}/`,
       format: { contentField: 'content' },
       slugField: 'title',
       entryLayout: 'content',
@@ -277,6 +311,7 @@ export default config({
 
   singletons: {
     voli: singleton({
+      previewUrl: `${PREVIEW_BASE}/voli/`,
       label: 'Pagina: I nostri voli',
       path: 'src/content/pages/voli',
       format: { contentField: 'content' },
@@ -291,6 +326,7 @@ export default config({
     }),
 
     iscrizioni: singleton({
+      previewUrl: `${PREVIEW_BASE}/iscrizioni/`,
       label: 'Pagina: Iscrizioni',
       path: 'src/content/pages/iscrizioni',
       format: { contentField: 'content' },
@@ -338,6 +374,7 @@ export default config({
     }),
 
     contatti: singleton({
+      previewUrl: `${PREVIEW_BASE}/contatti/`,
       label: 'Pagina: Contatti',
       path: 'src/content/pages/contatti',
       format: { contentField: 'content' },
