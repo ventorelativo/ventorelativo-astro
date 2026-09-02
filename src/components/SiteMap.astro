@@ -18,6 +18,14 @@
 import MapPoster from './MapPoster.astro';
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { MAPTILER_KEY } from '../lib/mapConfig';
+/*
+  The old map's own marker icons, carried over from the Drupal mapper module: a
+  blue wing for a takeoff, a green target for a landing. Imported rather than
+  written as paths so Astro fingerprints them and they cache forever. 100x100
+  each, drawn at `icon-size` 0.22 exactly as the old map drew them.
+*/
+import takeoffIcon from '../assets/map/takeoff.png';
+import landingIcon from '../assets/map/landing.png';
 import type { LatLon } from '../lib/geo';
 
 interface Feature {
@@ -75,6 +83,10 @@ const interactive = features.length > 0 && MAPTILER_KEY !== '';
 const typeColours = Object.fromEntries(
   Object.keys(FEATURE_TYPES).map((type) => [type, `--color-map-${type}`]),
 );
+
+// Only the two kinds that have an icon. A point of interest stays a dot in the
+// logo's yellow, and the obstacle is a line.
+const icons = { takeoff: takeoffIcon.src, landing: landingIcon.src };
 ---
 
 <div class="map" data-map={interactive ? '' : null}>
@@ -87,15 +99,24 @@ const typeColours = Object.fromEntries(
           <span data-map-label>Apri la mappa</span>
         </button>
         <div class="map__canvas" data-map-canvas hidden />
+        {/* Data, not modules — is:inline keeps Astro from trying to bundle them. */}
         <script
+          is:inline
           type="application/json"
           data-map-data
           set:html={JSON.stringify(geojson)}
         />
         <script
+          is:inline
           type="application/json"
           data-map-colours
           set:html={JSON.stringify(typeColours)}
+        />
+        <script
+          is:inline
+          type="application/json"
+          data-map-icons
+          set:html={JSON.stringify(icons)}
         />
       </>
     )
@@ -315,6 +336,7 @@ const typeColours = Object.fromEntries(
 
       const data = readJson(root, '[data-map-data]');
       const colours = readJson(root, '[data-map-colours]') as Record<string, string>;
+      const icons = readJson(root, '[data-map-icons]') as Record<string, string>;
       const colourFor = (kind: string) => resolveColour(colours[kind] ?? '');
 
       canvas.hidden = false;
@@ -354,8 +376,26 @@ const typeColours = Object.fromEntries(
         `style.load` reports. It also fires sooner, which matters most to the
         person on mountain data this site is built for.
       */
-      map.on('style.load', () => {
+      /*
+        The two icons have to be registered before a layer names them, and
+        loading them is asynchronous, so this is where `style.load` earns its
+        keep — everything below runs once, in order, after the style is parsed.
+      */
+      const iconsReady = Promise.all(
+        Object.entries(icons).map(async ([kind, url]) => {
+          const image = await map.loadImage(url);
+          if (!map.hasImage(kind)) map.addImage(kind, image.data);
+          return kind;
+        }),
+      )
+        .then(() => true)
+        // An icon that will not load is not worth losing the map over: the
+        // circle layer below covers every kind when this fails.
+        .catch(() => false);
+
+      map.on('style.load', async () => {
         loaded = true;
+        const hasIcons = await iconsReady;
         map.addSource('features', { type: 'geojson', data });
 
         const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
@@ -390,11 +430,21 @@ const typeColours = Object.fromEntries(
             'line-dasharray': [3, 2],
           },
         });
+        /*
+          Dots for whatever has no icon — points of interest, and everything if
+          the icons failed to load.
+        */
         map.addLayer({
           id: 'points',
           type: 'circle',
           source: 'features',
-          filter: ['==', ['geometry-type'], 'Point'],
+          filter: hasIcons
+            ? [
+                'all',
+                ['==', ['geometry-type'], 'Point'],
+                ['!', ['in', ['get', 'kind'], ['literal', Object.keys(icons)]]],
+              ]
+            : ['==', ['geometry-type'], 'Point'],
           paint: {
             'circle-radius': 7,
             'circle-color': colourExpression as never,
@@ -402,6 +452,32 @@ const typeColours = Object.fromEntries(
             'circle-stroke-width': 2,
           },
         });
+
+        if (hasIcons) {
+          for (const kind of Object.keys(icons)) {
+            map.addLayer({
+              id: `icons-${kind}`,
+              type: 'symbol',
+              source: 'features',
+              filter: [
+                'all',
+                ['==', ['geometry-type'], 'Point'],
+                ['==', ['get', 'kind'], kind],
+              ],
+              layout: {
+                'icon-image': kind,
+                'icon-size': 0.22,
+                /*
+                  A takeoff and its landing can be a few hundred metres apart,
+                  and MapLibre hides colliding symbols by default. These are the
+                  reason the map exists — none of them may be dropped.
+                */
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+              },
+            });
+          }
+        }
         map.addLayer({
           id: 'labels',
           type: 'symbol',
@@ -410,7 +486,8 @@ const typeColours = Object.fromEntries(
           layout: {
             'text-field': ['get', 'name'],
             'text-size': 13,
-            'text-offset': [0, 1.2],
+            // Clear of a 22 px icon rather than a 14 px dot.
+            'text-offset': [0, 1.6],
             'text-anchor': 'top',
           },
           paint: { 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },

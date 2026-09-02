@@ -93,7 +93,13 @@
   --color-map-takeoff: light-dark(#1f52a6, #7997ca);
   --color-map-landing: light-dark(#2ba52b, #5ee05e);
   --color-map-obstacle: light-dark(#d100d1, #ff7bff);
-  --color-map-poi: light-dark(#a37a00, #ffd700);
+  /*
+    The logo's yellow, not the archived gold, and not a light-dark pair: a brand
+    colour is the same colour in both schemes. It sits on a map basemap or on a
+    marker with a background-coloured ring, never on the page itself, so it does
+    not need the darkening the other map colours get for light mode.
+  */
+  --color-map-poi: var(--brand-yellow);
 
   --color-focus: light-dark(var(--brand-blue), var(--brand-blue-bright));
 
