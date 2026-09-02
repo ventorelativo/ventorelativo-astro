@@ -164,6 +164,31 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
   }
 
   /*
+    One height for the poster and the map, so swapping one for the other shifts
+    nothing — the whole reason CLS stays at zero.
+
+    600 px fixed, as the old site had it: the frame keeps its height and lets
+    its aspect follow the container, which reads far better than a frame that
+    grows and shrinks with the window.
+
+    Narrow screens go back to a ratio. A phone is only ~340 px wide, so a fixed
+    600 would be a tall portrait slot filling most of the screen before any of
+    the article — and the drawing, which is 16:9, would sit in the middle of it
+    with empty bands above and below.
+  */
+  .map,
+  :global(.poster) {
+    --map-height: 600px;
+  }
+
+  @media (max-width: 48rem) {
+    .map,
+    :global(.poster) {
+      --map-height: auto;
+    }
+  }
+
+  /*
     The button sits over the poster rather than beside it, so the whole drawing
     reads as the control. It is a real <button>, so it is focusable, announced,
     and works from the keyboard without anything being added for it.
@@ -204,6 +229,8 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
     the reason to size it here rather than let MapLibre size itself.
   */
   .map__canvas {
+    height: var(--map-height);
+    /* Ignored while the height is fixed; takes over when it goes `auto`. */
     aspect-ratio: 16 / 9;
     width: 100%;
     border: 1px solid var(--color-border);
@@ -638,12 +665,9 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
         const bounds = boundsOf(data);
         const span = Math.max(bounds[1][0] - bounds[0][0], bounds[1][1] - bounds[0][1]);
         const TILT_MINIMUM_SPAN = 0.02; // Roughly two kilometres.
+        const tilt = span >= TILT_MINIMUM_SPAN ? pitch : 0;
 
-        map.fitBounds(bounds, {
-          padding: 60,
-          pitch: span >= TILT_MINIMUM_SPAN ? pitch : 0,
-          duration: 0,
-        });
+        map.fitBounds(bounds, { padding: 60, pitch: tilt, duration: 0 });
 
         /*
           Where "reset" goes back to. Read off the map rather than recomputed,

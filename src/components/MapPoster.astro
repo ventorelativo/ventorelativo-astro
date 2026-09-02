@@ -38,9 +38,15 @@ const points: LatLon[] = features.flatMap((feature) => [
 ]);
 
 /*
-  16:9. The poster sits in the layout's `media` slot, which is the full
-  container width rather than the reading column, so a squarer frame would
-  push the whole article below the fold on a laptop.
+  16:9, matched to the widest shape the frame takes.
+
+  The frame is 600 px tall and container-wide on a laptop — about 1.73 — and
+  reverts to this same 16:9 on a phone, so a 16:9 drawing fits by width in both
+  and fills them. `preserveAspectRatio` absorbs the small difference into the
+  frame's own background, which is flat, so the leftover is invisible.
+
+  Squarer was tried and is worse: it fits by *height* in a wide frame, which
+  drops the scale to 0.6 and shrinks every label and marker with it.
 */
 const projection = points.length > 0 ? project(boundsOf(points), 16 / 9) : null;
 
@@ -175,6 +181,7 @@ const labels = placeLabels();
     <figure class="poster">
       <svg
         viewBox={`0 0 ${projection.width} ${projection.height}`}
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={`Schema dei punti di volo di ${title}: ${summary}.`}
       >
@@ -262,10 +269,19 @@ const labels = placeLabels();
     container-type: inline-size;
   }
 
+  /*
+    The same box the map gets, so swapping one for the other moves nothing on
+    the page. Height is fixed and the width follows the container, which is how
+    the old site's map behaved and reads far better than a frame whose height
+    changes with the viewport.
+  */
   svg {
     display: block;
     width: 100%;
-    height: auto;
+    /* Fallback so the poster stands on its own if ever used outside SiteMap. */
+    height: var(--map-height, 600px);
+    /* Ignored while the height is fixed; takes over when it goes `auto`. */
+    aspect-ratio: 16 / 9;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background-color: var(--color-bg-subtle);
