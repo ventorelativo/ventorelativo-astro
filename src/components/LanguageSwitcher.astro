@@ -4,9 +4,9 @@
  *
  * The old site ran GTranslate's `flags.js` widget in the footer: a row of five
  * flags that, on click, drove Google's own translate element. Ported here as a
- * *facade* — the row of flags is static HTML, and nothing third-party is
- * fetched until a visitor shows interest. A page that nobody translates costs
- * exactly the markup below.
+ * *facade* — the control is static HTML, and nothing third-party is fetched
+ * until a visitor shows interest. A page that nobody translates costs exactly
+ * the markup below.
  *
  * That matters because the alternative is Google's `element.js` on every page
  * load, from a domain we do not control, for a feature most visitors of an
@@ -22,6 +22,14 @@
  * 48 kB of coat of arms for a 20px image. These are the same colours, minus
  * the heraldry nobody can see at this size.
  */
+
+/*
+  The control is <details>, the same shape as <ThemeToggle> beside it, and for
+  the same reasons: a popover would need anchor positioning to sit under its
+  button, while <details> brings open/close state and keyboard support with
+  it. The radios stay the real control — grouping, arrow keys and the checked
+  state are the browser's job, and the summary is a label for them.
+*/
 
 /*
   Order and language set come from the Drupal config
@@ -45,6 +53,33 @@ const FLAGS: Record<string, string> = {
   de: `<path d="M0 0h640v160H0z"/><path fill="#f00" d="M0 160h640v160H0z"/><path fill="#fc0" d="M0 320h640v160H0z"/>`,
   es: `<path fill="#c60b1e" d="M0 0h640v480H0z"/><path fill="#ffc400" d="M0 120h640v240H0z"/>`,
 };
+
+/*
+  The class lives inside the spread rather than as a `class` attribute beside
+  it: on an element that has both, Astro's scoped-style class injection
+  overwrites the standalone one and the rule silently never matches.
+*/
+const FLAG_ATTRS = {
+  viewBox: '0 0 640 480',
+  width: 20,
+  height: 15,
+  'aria-hidden': 'true',
+  class: 'flag',
+} as const;
+
+/* Same tick as <ThemeToggle>, drawn the same way. */
+const CHECK_ATTRS = {
+  viewBox: '0 0 24 24',
+  width: 16,
+  height: 16,
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': 1.75,
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+  class: 'check',
+} as const;
 ---
 
 {
@@ -53,98 +88,160 @@ const FLAGS: Record<string, string> = {
   language names are the one thing on the page that must stay put.
 */
 }
-<div class="langs" data-langs translate="no">
-  <span class="visually-hidden" id="langs-label">Lingua del sito</span>
-  <ul aria-labelledby="langs-label">
-    {
-      LANGUAGES.map(({ code, name }) => (
-        <li>
-          <button
-            type="button"
-            lang={code}
-            data-lang={code}
-            aria-pressed={code === 'it' ? 'true' : 'false'}
-            title={name}
-          >
-            <svg
-              viewBox="0 0 640 480"
-              width="20"
-              height="15"
-              aria-hidden="true"
-              set:html={FLAGS[code]}
-            />
-            <span class="visually-hidden">{name}</span>
-          </button>
-        </li>
-      ))
-    }
-  </ul>
-</div>
+<details class="langs" data-langs translate="no">
+  <summary aria-label="Lingua del sito: Italiano" data-langs-summary>
+    <svg {...FLAG_ATTRS} data-langs-flag set:html={FLAGS.it} />
+  </summary>
+
+  <div class="langs__menu">
+    <fieldset>
+      <legend class="visually-hidden">Lingua del sito</legend>
+      {
+        LANGUAGES.map(({ code, name }) => (
+          <>
+            <input type="radio" name="lang" id={`lang-${code}`} value={code} />
+            <label for={`lang-${code}`} lang={code}>
+              <svg {...FLAG_ATTRS} set:html={FLAGS[code]} />
+              <span>{name}</span>
+              <svg {...CHECK_ATTRS}>
+                <path d="m4.5 12.5 5 5 10-11" />
+              </svg>
+            </label>
+          </>
+        ))
+      }
+    </fieldset>
+  </div>
+</details>
 
 <style>
-  .langs ul {
-    display: flex;
-    gap: var(--space-3xs);
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .langs {
+    position: relative;
   }
 
-  button {
+  summary {
     display: flex;
-    padding: var(--space-3xs);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: none;
+    padding: 0.375rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-bg);
     cursor: pointer;
-    /* GTranslate's own widget dimmed the inactive flags; same idea, but the
-       active one gets a border too, because opacity alone is a weak signal. */
-    opacity: 0.65;
+    list-style: none; /* Firefox */
     transition:
-      opacity var(--transition),
+      background-color var(--transition),
       border-color var(--transition);
   }
 
-  button:hover,
-  button:focus-visible {
-    opacity: 1;
+  summary::-webkit-details-marker {
+    display: none;
   }
 
-  button:focus-visible {
+  summary:hover,
+  [open] summary {
+    border-color: var(--color-border-strong);
+  }
+
+  summary:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
-  button[aria-pressed='true'] {
-    opacity: 1;
-    border-color: var(--color-border-strong);
+  .langs__menu {
+    position: absolute;
+    z-index: 50;
+    /* Opens upward: the footer is the bottom of the page, and a downward menu
+       would fall outside the viewport. */
+    inset-block-end: calc(100% + var(--space-2xs));
+    inset-inline-end: 0;
+    min-width: 11rem;
+    padding: var(--space-3xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+    box-shadow: var(--shadow-md);
   }
 
-  /* The flags are the one place on the site with fixed colours, so they need a
-     visible edge of their own against either background. */
-  svg {
+  fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color var(--transition);
+  }
+
+  label:hover {
+    background-color: var(--color-bg-subtle);
+  }
+
+  /* The inputs are visually hidden, so mirror their focus onto the label. */
+  input:focus-visible + label {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+
+  input:checked + label {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .check {
+    margin-inline-start: auto;
+    visibility: hidden;
+  }
+
+  input:checked + label .check {
+    visibility: visible;
+  }
+
+  /* The flags carry fixed colours, so they need an edge of their own against
+     either background. */
+  .flag {
+    flex: none;
     border-radius: 2px;
     box-shadow: 0 0 0 1px var(--color-border);
   }
 
   /* Waiting on Google. Nothing to show but the fact that the click landed. */
-  [aria-busy='true'] button {
+  [aria-busy='true'] summary {
     cursor: progress;
   }
 
-  [data-pending] {
+  [aria-busy='true'] [data-langs-flag] {
     animation: pulse 1s ease-in-out infinite;
   }
 
   @keyframes pulse {
     50% {
-      opacity: 0.4;
+      opacity: 0.35;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-pending] {
+    [aria-busy='true'] [data-langs-flag] {
       animation: none;
+      opacity: 0.5;
     }
   }
 </style>
@@ -233,22 +330,38 @@ const FLAGS: Record<string, string> = {
   }
 
   function init() {
-    const root = document.querySelector<HTMLElement>('[data-langs]');
+    const root = document.querySelector<HTMLDetailsElement>('[data-langs]');
     if (!root) return;
 
-    const buttons = [...root.querySelectorAll<HTMLButtonElement>('button[data-lang]')];
+    const summary = root.querySelector<HTMLElement>('[data-langs-summary]');
+    const flag = root.querySelector<SVGElement>('[data-langs-flag]');
+    const inputs = [...root.querySelectorAll<HTMLInputElement>('input[name="lang"]')];
 
+    /**
+     * Mirror the chosen language onto the closed control. The flag is copied
+     * from that option's own label rather than kept in a second map here —
+     * one definition, in the markup above.
+     */
     function reflect(lang: string) {
-      for (const button of buttons) {
-        button.setAttribute('aria-pressed', String(button.dataset.lang === lang));
+      for (const input of inputs) input.checked = input.value === lang;
+
+      const label = root!.querySelector(`label[for="lang-${lang}"]`);
+      const source = label?.querySelector('svg');
+      if (flag && source) flag.innerHTML = source.innerHTML;
+      if (summary && label) {
+        summary.setAttribute(
+          'aria-label',
+          `Lingua del sito: ${label.querySelector('span')?.textContent ?? lang}`,
+        );
       }
     }
 
-    async function translate(lang: string, button: HTMLButtonElement) {
-      // Paint the busy state before awaiting anything: the network is slow,
-      // the click must not appear to have missed.
+    async function translate(lang: string) {
+      // Paint the busy state and close the menu before awaiting anything: the
+      // network is slow, and the choice must not appear to have missed.
+      reflect(lang);
+      root!.open = false;
       root!.setAttribute('aria-busy', 'true');
-      button.dataset.pending = '';
 
       try {
         await loadTranslate();
@@ -261,35 +374,44 @@ const FLAGS: Record<string, string> = {
         */
         combo.dispatchEvent(new Event('change'));
         combo.dispatchEvent(new Event('change'));
-        reflect(lang);
       } catch {
-        // Blocked, offline, or Google is down. The page stays in Italian,
-        // which is the language it is written in — nothing is broken.
+        // Blocked, offline, or Google is down. The page stays in the language
+        // it is written in — nothing is broken — so put the control back to
+        // what is actually on screen rather than what was asked for.
         reflect(activeLang());
       } finally {
         root!.removeAttribute('aria-busy');
-        delete button.dataset.pending;
       }
     }
 
-    for (const button of buttons) {
-      button.addEventListener('click', () => {
-        const lang = button.dataset.lang;
-        if (!lang || button.getAttribute('aria-pressed') === 'true') return;
-        translate(lang, button);
+    for (const input of inputs) {
+      input.addEventListener('change', () => {
+        if (input.checked) translate(input.value);
       });
     }
 
     const active = activeLang();
     reflect(active);
 
+    // <details> has no light-dismiss of its own.
+    document.addEventListener('click', (event) => {
+      if (root.open && !root.contains(event.target as Node)) root.open = false;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && root.open) {
+        root.open = false;
+        summary?.focus();
+      }
+    });
+
     if (active !== SOURCE) {
       // A returning visitor who chose a language. Google's element reads the
       // same cookie on init and re-applies the translation on its own.
       loadTranslate().catch(() => reflect(SOURCE));
     } else if (!navigator.connection?.saveData) {
-      // Otherwise warm it on intent, so the click has less to wait for. Not
-      // on a metered connection, where an unclicked hover is pure cost.
+      // Otherwise warm it on intent, so the choice has less to wait for. Not
+      // on a metered connection, where an unopened menu is pure cost.
       const warm = () => loadTranslate().catch(() => {});
       root.addEventListener('pointerenter', warm, { once: true });
       root.addEventListener('focusin', warm, { once: true });

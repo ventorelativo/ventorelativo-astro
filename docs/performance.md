@@ -106,9 +106,9 @@ once they show they want it.
 
 - **The map** (`SiteMap.astro`) paints an SVG of the markers, and loads MapLibre
   (240 kB) on click.
-- **The language switcher** (`LanguageSwitcher.astro`) draws five flags, and
-  loads Google's `translate_a/element.js` on hover or click — never on page
-  load. A visitor who has translated before carries a `googtrans` cookie, and
+- **The language switcher** (`LanguageSwitcher.astro`) is a flag and a menu of
+  five, and loads Google's `translate_a/element.js` on hover or click — never
+  on page load. A visitor who has translated before carries a `googtrans` cookie, and
   only they pay for it, on every page, because they asked to.
 
 The pattern has one rule that matters: **paint the busy state synchronously,
