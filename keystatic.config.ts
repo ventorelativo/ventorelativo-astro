@@ -139,19 +139,27 @@ const BRANCH_PREFIX = 'modifiche-';
 
 export default config({
   /*
-    GitHub mode: the admin reads and writes this repository through the GitHub
-    API, so the club edits the live site from a browser and every save is a
-    commit. `local` was Phase 2, and writing to the working copy only helped
-    someone who had the repository checked out.
+    Deployed: GitHub mode. The club edits from a browser and every save is a
+    commit, which Netlify builds. Requires the four KEYSTATIC_* variables — see
+    .env.example; without them /keystatic shows its setup screen.
 
-    Requires the four KEYSTATIC_* variables — see .env.example. Without them
-    /keystatic shows its setup screen rather than an error.
+    Local: the working copy, and no login at all. A developer running
+    `npm run dev` wants to edit the files in front of them, not authenticate
+    against GitHub and commit to the real repository from a dev machine.
+
+    `import.meta.env.DEV` and not a variable of our own, because Vite replaces
+    it with a literal `false` when building. The dangerous direction is a
+    deployed admin that thinks it is local — it would write to a serverless
+    filesystem and lose every edit — and a compile-time constant makes that
+    unreachable rather than merely unlikely.
   */
-  storage: {
-    kind: 'github',
-    repo: { owner: 'ventorelativo', name: 'ventorelativo-astro' },
-    branchPrefix: BRANCH_PREFIX,
-  },
+  storage: import.meta.env.DEV
+    ? { kind: 'local' }
+    : {
+        kind: 'github',
+        repo: { owner: 'ventorelativo', name: 'ventorelativo-astro' },
+        branchPrefix: BRANCH_PREFIX,
+      },
 
   ui: {
     brand: { name: 'VentoRelativo' },
