@@ -86,19 +86,72 @@ export const RASTER_BASE = {
 };
 
 /**
- * Thermal hotspots, from the flights other pilots have already flown.
+ * kk7's flight data, as a raster overlay.
  *
- * `skyways_all` is the whole archive rather than one season — the seasonal
- * paths return 400, and for deciding where a valley works the aggregate is the
- * more useful picture anyway.
+ * Two views of the same archive: `thermals` marks where pilots climbed, which
+ * is the question a takeoff decision actually asks, and `skyways` draws every
+ * track flown, which shows the routes but buries the lift under them. Thermals
+ * is the default for that reason.
+ *
+ * Path is `{layer}_{season}_{time}`, and the published values for the last two
+ * are not what their documentation says. Probed against the live tiles:
+ *
+ *  - **Seasons are quarters, not months.** `jan`, `apr`, `jul`, `oct`, each
+ *    covering three months, plus `all`. September is `jul`, not `sep`, which
+ *    404s — the docs' `thermals_jul_07` example is the only clue to this.
+ *  - **Times are 04, 07 and 10**, hours since sunrise, plus `all`. The docs
+ *    say 00, 07 and 12; 00 and 12 return 400 at every zoom and every season.
  *
  * `src` identifies the site to kk7, which is how they ask to be told who is
  * using the tiles.
  */
-export const THERMAL_OVERLAY = {
-  label: 'Termiche',
-  tiles:
-    'https://thermal.kk7.ch/tiles/skyways_all/{z}/{x}/{y}.png?src=ventorelativo.it',
-  attribution: '<a href="https://thermal.kk7.ch">thermal.kk7.ch</a>',
-  maxzoom: 12,
-};
+export const THERMAL_LAYERS = [
+  { value: 'thermals', label: 'Termiche' },
+  { value: 'skyways', label: 'Rotte percorse' },
+] as const;
+
+export const THERMAL_SEASONS = [
+  { value: 'all', label: 'Tutto l’anno' },
+  { value: 'jan', label: 'Gen–Mar' },
+  { value: 'apr', label: 'Apr–Giu' },
+  { value: 'jul', label: 'Lug–Set' },
+  { value: 'oct', label: 'Ott–Dic' },
+] as const;
+
+export const THERMAL_TIMES = [
+  { value: 'all', label: 'Tutta la giornata' },
+  { value: '04', label: 'Mattina' },
+  { value: '07', label: 'Metà giornata' },
+  { value: '10', label: 'Sera' },
+] as const;
+
+/**
+ * The quarter today falls in, so the overlay opens on the season being flown
+ * rather than on an average of the whole year.
+ */
+export function currentThermalSeason(now = new Date()): string {
+  return [
+    'jan',
+    'jan',
+    'jan',
+    'apr',
+    'apr',
+    'apr',
+    'jul',
+    'jul',
+    'jul',
+    'oct',
+    'oct',
+    'oct',
+  ][now.getMonth()];
+}
+
+export function thermalTiles(layer: string, season: string, time: string): string {
+  return `https://thermal.kk7.ch/tiles/${layer}_${season}_${time}/{z}/{x}/{y}.png?src=ventorelativo.it`;
+}
+
+export const THERMAL_ATTRIBUTION =
+  '<a href="https://thermal.kk7.ch">thermal.kk7.ch</a>';
+
+/** kk7 numbers its tile rows from the south. */
+export const THERMAL_MAXZOOM = 12;

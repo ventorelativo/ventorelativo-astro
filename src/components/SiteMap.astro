@@ -410,6 +410,34 @@ const typeNames = Object.fromEntries(
     text-transform: uppercase;
   }
 
+  .map :global(.map-layers__filters) {
+    display: grid;
+    gap: var(--space-3xs);
+    margin-block-start: var(--space-3xs);
+  }
+
+  .map :global(.map-layers__filter) {
+    display: grid;
+    grid-template-columns: 3.2rem 1fr;
+    align-items: center;
+    gap: var(--space-3xs);
+  }
+
+  .map :global(.map-layers__filter span) {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .map :global(.map-layers__filter select) {
+    padding: 0.1rem 0.2rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--text-xs);
+  }
+
   .map :global(.map-layers__panel label) {
     display: flex;
     align-items: center;
@@ -688,10 +716,13 @@ const typeNames = Object.fromEntries(
 
         map.addSource('thermals', {
           type: 'raster',
-          tiles: [config.THERMAL_OVERLAY.tiles],
+          // Opens on the current quarter; the panel can change all three parts.
+          tiles: [
+            config.thermalTiles('thermals', config.currentThermalSeason(), 'all'),
+          ],
           tileSize: 256,
-          maxzoom: config.THERMAL_OVERLAY.maxzoom,
-          attribution: config.THERMAL_OVERLAY.attribution,
+          maxzoom: config.THERMAL_MAXZOOM,
+          attribution: config.THERMAL_ATTRIBUTION,
           /*
             kk7 numbers its rows from the south, not the north. Without this the
             tiles still arrive with a 200 and still paint nothing, because the
@@ -721,7 +752,7 @@ const typeNames = Object.fromEntries(
           source: 'thermals',
           layout: { visibility: 'none' },
           // Ghosted, so the map underneath still reads through the heat.
-          paint: { 'raster-opacity': 0.65 },
+          paint: { 'raster-opacity': 0.7 },
         });
 
         const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
@@ -984,13 +1015,7 @@ const typeNames = Object.fromEntries(
           pitch: map.getPitch(),
         };
         map.addControl(new ResetControl(home, root), 'top-right');
-        map.addControl(
-          new LayersControl(map, styleLayerIds, [
-            config.RASTER_BASE.label,
-            config.THERMAL_OVERLAY.label,
-          ]),
-          'top-right',
-        );
+        map.addControl(new LayersControl(map, styleLayerIds, config), 'top-right');
       });
     } catch {
       back('Mappa non disponibile — riprova');
@@ -1146,35 +1171,52 @@ const typeNames = Object.fromEntries(
   interface LayerMap {
     setLayoutProperty(layer: string, name: string, value: unknown): void;
     getLayer(id: string): unknown;
+    // `unknown` because MapLibre's own return type is a union of every source
+    // kind, and only the raster ones carry setTiles.
+    getSource(id: string): unknown;
+  }
+
+  interface ThermalConfig {
+    RASTER_BASE: { label: string };
+    THERMAL_LAYERS: readonly { value: string; label: string }[];
+    THERMAL_SEASONS: readonly { value: string; label: string }[];
+    THERMAL_TIMES: readonly { value: string; label: string }[];
+    currentThermalSeason(): string;
+    thermalTiles(layer: string, season: string, time: string): string;
   }
 
   /**
-   * Choose the basemap, and turn the thermals on.
+   * Choose the basemap, and what kk7 data to lay over it.
    *
    * Two decisions worth recording. The basemap switch hides the style's layers
    * rather than calling `setStyle`: a style swap discards every source, layer
    * and image the map has built, so the markers, the terrain and the icons
-   * would all have to be rebuilt and the switch would read as a reload. Hiding
-   * is instant and reversible.
+   * would all need rebuilding and the switch would read as a reload. Hiding is
+   * instant and reversible.
    *
-   * And it is a panel rather than two more buttons in the stack, because there
-   * are already six there and neither of these is a thing anyone presses twice.
+   * And the kk7 filters change the source's tile URLs in place rather than
+   * adding a layer per combination — there are forty of them, and MapLibre
+   * refetches on `setTiles` anyway.
    */
   class LayersControl {
     #map: LayerMap;
     #styleLayerIds: string[];
-    #labels: [string, string];
+    #config: ThermalConfig;
     #container: HTMLElement | null = null;
 
-    constructor(map: LayerMap, styleLayerIds: string[], labels: [string, string]) {
+    // What the overlay currently shows. Empty layer means it is off.
+    #layer = '';
+    #season: string;
+    #time = 'all';
+
+    constructor(map: LayerMap, styleLayerIds: string[], config: ThermalConfig) {
       this.#map = map;
       this.#styleLayerIds = styleLayerIds;
-      this.#labels = labels;
+      this.#config = config;
+      this.#season = config.currentThermalSeason();
     }
 
     onAdd() {
-      const [rasterLabel, thermalLabel] = this.#labels;
-
       const container = document.createElement('div');
       container.className = 'maplibregl-ctrl maplibregl-ctrl-group map-layers';
 
@@ -1193,30 +1235,51 @@ const typeNames = Object.fromEntries(
       panel.className = 'map-layers__panel';
       panel.hidden = true;
 
+      // Background.
       const base = document.createElement('fieldset');
       base.append(
         Object.assign(document.createElement('legend'), { textContent: 'Sfondo' }),
       );
-      // A name unique to this map, so two maps on one page do not share a group.
       const group = `base-${Math.random().toString(36).slice(2, 8)}`;
       base.append(
-        this.#option('radio', group, 'Topografica (vettoriale)', true, () =>
+        this.#radio(group, 'Topografica (vettoriale)', true, () =>
           this.#showRaster(false),
         ),
-        this.#option('radio', group, rasterLabel, false, () => this.#showRaster(true)),
-      );
-
-      const extra = document.createElement('fieldset');
-      extra.append(
-        Object.assign(document.createElement('legend'), { textContent: 'Livelli' }),
-      );
-      extra.append(
-        this.#option('checkbox', '', thermalLabel, false, (on) =>
-          this.#setVisible('thermals', on),
+        this.#radio(group, this.#config.RASTER_BASE.label, false, () =>
+          this.#showRaster(true),
         ),
       );
 
-      panel.append(base, extra);
+      // The kk7 overlay, and the two filters that shape it.
+      const overlay = document.createElement('fieldset');
+      overlay.append(
+        Object.assign(document.createElement('legend'), { textContent: 'Voli' }),
+      );
+      const layerGroup = `kk7-${Math.random().toString(36).slice(2, 8)}`;
+      overlay.append(
+        this.#radio(layerGroup, 'Nessuno', true, () => this.#setLayer('')),
+        ...this.#config.THERMAL_LAYERS.map((option) =>
+          this.#radio(layerGroup, option.label, false, () =>
+            this.#setLayer(option.value),
+          ),
+        ),
+      );
+
+      const filters = document.createElement('div');
+      filters.className = 'map-layers__filters';
+      filters.append(
+        this.#select('Periodo', this.#config.THERMAL_SEASONS, this.#season, (value) => {
+          this.#season = value;
+          this.#refresh();
+        }),
+        this.#select('Ora', this.#config.THERMAL_TIMES, this.#time, (value) => {
+          this.#time = value;
+          this.#refresh();
+        }),
+      );
+      overlay.append(filters);
+
+      panel.append(base, overlay);
       toggle.addEventListener('click', () => {
         panel.hidden = !panel.hidden;
         toggle.setAttribute('aria-expanded', String(!panel.hidden));
@@ -1232,21 +1295,57 @@ const typeNames = Object.fromEntries(
       this.#container = null;
     }
 
-    #option(
-      type: 'radio' | 'checkbox',
-      name: string,
-      text: string,
-      checked: boolean,
-      onChange: (on: boolean) => void,
-    ) {
+    #radio(name: string, text: string, checked: boolean, onPick: () => void) {
       const label = document.createElement('label');
       const input = document.createElement('input');
-      input.type = type;
-      if (name) input.name = name;
+      input.type = 'radio';
+      input.name = name;
       input.checked = checked;
-      input.addEventListener('change', () => onChange(input.checked));
+      input.addEventListener('change', () => input.checked && onPick());
       label.append(input, document.createTextNode(text));
       return label;
+    }
+
+    #select(
+      text: string,
+      options: readonly { value: string; label: string }[],
+      selected: string,
+      onPick: (value: string) => void,
+    ) {
+      const label = document.createElement('label');
+      label.className = 'map-layers__filter';
+      label.append(
+        Object.assign(document.createElement('span'), { textContent: text }),
+      );
+
+      const select = document.createElement('select');
+      for (const option of options) {
+        const element = document.createElement('option');
+        element.value = option.value;
+        element.textContent = option.label;
+        element.selected = option.value === selected;
+        select.append(element);
+      }
+      select.addEventListener('change', () => onPick(select.value));
+      label.append(select);
+      return label;
+    }
+
+    #setLayer(layer: string) {
+      this.#layer = layer;
+      this.#refresh();
+    }
+
+    /** Point the source at the chosen combination, and show or hide it. */
+    #refresh() {
+      if (this.#layer) {
+        const source = this.#map.getSource('thermals') as
+          { setTiles?(tiles: string[]): unknown } | undefined;
+        source?.setTiles?.([
+          this.#config.thermalTiles(this.#layer, this.#season, this.#time),
+        ]);
+      }
+      this.#setVisible('thermals', Boolean(this.#layer));
     }
 
     #setVisible(id: string, visible: boolean) {
