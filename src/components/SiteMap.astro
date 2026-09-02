@@ -19,13 +19,23 @@ import MapPoster from './MapPoster.astro';
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { MAPTILER_KEY } from '../lib/mapConfig';
 /*
-  The old map's own marker icons, carried over from the Drupal mapper module: a
-  blue wing for a takeoff, a green target for a landing. Imported rather than
-  written as paths so Astro fingerprints them and they cache forever. 100x100
-  each, drawn at `icon-size` 0.22 exactly as the old map drew them.
+  The club's own marker icons: a blue wing for a takeoff, a green target for a
+  landing, both with a white keyline so they hold up over any basemap.
+
+  `?url&no-inline`, and the `no-inline` is not decoration. Both files are under
+  Vite's 4 kB inline threshold, so by default they become data: URIs compiled
+  into the page — 4,166 bytes of base64 in every site page's HTML, a tenth of
+  its weight, carried by everyone including the visitors on a metered
+  connection who never open a map at all. As files they are fetched only when
+  one is opened, and Astro fingerprints them so they cache forever.
+
+  MapLibre cannot take SVG directly — `addImage` wants pixels — so these are
+  rasterised in the browser at the device's own resolution. That is the whole
+  advantage over shipping PNGs: one drawing, sharp on a phone and on a 5K
+  display, instead of a bitmap that was only ever right at one size.
 */
-import takeoffIcon from '../assets/map/takeoff.png';
-import landingIcon from '../assets/map/landing.png';
+import takeoffIcon from '../assets/map/takeoff.svg?url&no-inline';
+import landingIcon from '../assets/map/landing.svg?url&no-inline';
 import type { LatLon } from '../lib/geo';
 
 interface Feature {
@@ -86,7 +96,7 @@ const typeColours = Object.fromEntries(
 
 // Only the two kinds that have an icon. A point of interest stays a dot in the
 // logo's yellow, and the obstacle is a line.
-const icons = { takeoff: takeoffIcon.src, landing: landingIcon.src };
+const icons = { takeoff: takeoffIcon, landing: landingIcon };
 ---
 
 <div class="map" data-map={interactive ? '' : null}>
@@ -383,8 +393,8 @@ const icons = { takeoff: takeoffIcon.src, landing: landingIcon.src };
       */
       const iconsReady = Promise.all(
         Object.entries(icons).map(async ([kind, url]) => {
-          const image = await map.loadImage(url);
-          if (!map.hasImage(kind)) map.addImage(kind, image.data);
+          const { pixels, pixelRatio } = await rasterise(url);
+          if (!map.hasImage(kind)) map.addImage(kind, pixels, { pixelRatio });
           return kind;
         }),
       )
@@ -547,6 +557,37 @@ const icons = { takeoff: takeoffIcon.src, landing: landingIcon.src };
     canvas.replaceChildren();
     button.disabled = false;
     label.textContent = message;
+  }
+
+  /** The icons' own square, and the size they are authored at. */
+  const ICON_SIZE = 100;
+
+  /**
+   * An SVG turned into pixels at the density of the screen it will be drawn on.
+   *
+   * MapLibre's `addImage` takes bitmap data, so vector artwork has to be
+   * rasterised somewhere; doing it here rather than shipping a PNG means the
+   * same file is sharp at 1x and at 3x. `pixelRatio` is how MapLibre is told
+   * the bitmap is oversampled, so `icon-size` keeps meaning CSS pixels and the
+   * 0.22 the old map used still renders 22 of them.
+   */
+  async function rasterise(url: string) {
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
+    const side = Math.round(ICON_SIZE * pixelRatio);
+
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = url;
+    await image.decode();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = side;
+    canvas.height = side;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('no 2d context');
+    context.drawImage(image, 0, 0, side, side);
+
+    return { pixels: context.getImageData(0, 0, side, side), pixelRatio };
   }
 
   /**

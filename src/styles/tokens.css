@@ -91,7 +91,7 @@
     MapTiler's basemap rather than the page, and uses the archived values as-is.
   */
   --color-map-takeoff: light-dark(#1f52a6, #7997ca);
-  --color-map-landing: light-dark(#2ba52b, #5ee05e);
+  --color-map-landing: light-dark(#40c12a, #5ee05e);
   --color-map-obstacle: light-dark(#d100d1, #ff7bff);
   /*
     The logo's yellow, not the archived gold, and not a light-dark pair: a brand
