@@ -130,8 +130,8 @@ const sites = defineCollection({
        */
       summary: z.string(),
       /**
-       * A page elsewhere describing this site in more detail — today the club's
-       * guides on paragliding-kubernetes.web-forge.info.
+       * The site's windgram and forecast page — today the club's own on
+       * paragliding-kubernetes.web-forge.info.
        *
        * On the site rather than on each takeoff: those guides describe a flying
        * area, and the takeoffs within one are not different enough to warrant a

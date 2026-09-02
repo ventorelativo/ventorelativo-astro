@@ -289,9 +289,9 @@ export default config({
           validation: { isRequired: true },
         }),
         guideUrl: fields.url({
-          label: 'Approfondimento',
+          label: 'Windgram',
           description:
-            'Pagina esterna con la descrizione completa del sito, per esempio su paragliding-kubernetes.web-forge.info. Lasciare vuoto se non ce n’è una.',
+            'Pagina con il windgram e le previsioni per questo sito, per esempio su paragliding-kubernetes.web-forge.info. Lasciare vuoto se non ce n’è una.',
         }),
         tags: fields.array(fields.text({ label: 'Etichetta' }), {
           label: 'Etichette',
