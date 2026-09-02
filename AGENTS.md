@@ -207,5 +207,9 @@ rule: [`docs/performance.md`](docs/performance.md).
 - **`vite.optimizeDeps.include`** is required for a dependency reached only
   through a dynamic import inside a client script — without it the feature works
   in the build and silently does nothing in `astro dev`.
+- **A new `PUBLIC_` environment variable fails the Netlify build.** The secrets
+  scanner treats every variable as a credential and finds this one in the output,
+  where Astro deliberately put it. Add the name to `SECRETS_SCAN_OMIT_KEYS` in
+  `netlify.toml`; never disable the scan, which still has real secrets to catch.
 - **`<Picture>` and `<Image>` put your `class` on the inner `<img>`**, not on the
   `<picture>` wrapper. Positioning the wrapper needs `:global(picture)`.

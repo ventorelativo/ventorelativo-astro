@@ -1019,9 +1019,9 @@ Runbook: [`docs/deploying.md`](docs/deploying.md).
   in subdomains, so keep branch names free of slashes or the templated URL will not match.
 - **`/admin` → `/keystatic`** (already in `netlify.toml`) starts working here.
 
-**Still open on the new project:** Netlify **form detection is off**, so the `/contatti`
-form will accept a submission and store nothing. It has to be enabled in the project's
-settings before the exit test counts as a pass (D3).
+**Netlify form detection** was off on the new project and is now enabled (2026-09-02);
+without it `/contatti` would have accepted submissions and stored nothing (D3). Still to
+verify by actually submitting the deployed form.
 
 ### Phase 4 — Map & flight-data subsystems _(the risky part, deliberately last)_
 

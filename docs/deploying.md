@@ -90,6 +90,25 @@ exactly as `.env` has them. The deployed admin cannot authenticate without them,
 and there is no error message that says so plainly — it simply shows the setup
 screen again.
 
+## Trap: Netlify's secrets scanner and `PUBLIC_` variables
+
+Every build scans the output for the value of every environment variable, and
+fails if it finds one. That is right for a credential and wrong for anything
+Astro prefixes `PUBLIC_`, which by definition is compiled into the pages and
+sent to visitors — being in the output is the whole point.
+
+The failure names the file and line, which makes it look like a leak:
+
+```
+Secret env var "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG"'s value detected:
+  found value at line 41 in AGENTS.md
+```
+
+`netlify.toml` lists the offenders by name in `SECRETS_SCAN_OMIT_KEYS`. **Add
+any new `PUBLIC_` variable to that list**, rather than switching the scan off —
+`KEYSTATIC_GITHUB_CLIENT_SECRET` and `KEYSTATIC_SECRET` carry no prefix and must
+stay scanned.
+
 ## What editing looks like afterwards
 
 An editor opens `/keystatic` on the deployed site, logs in with GitHub, and
