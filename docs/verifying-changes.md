@@ -70,17 +70,34 @@ lives somewhere unusual.
 
 ## Traps
 
-### The dev server can serve stale CSS
+### The dev server goes stale
 
-**Symptom:** you edit a `<style>` block, the browser shows the old layout, and
-the markup changes from the same edit _do_ appear.
+Two versions of this, and the second is the one that wastes an afternoon.
 
-**Cause:** Vite's transform cache for the component's style module did not
-invalidate. The page is server-rendered fresh while the stylesheet it links is
-from before your edit. You can confirm it: `curl http://localhost:4321/` shows
-the new CSS while the browser's computed styles show the old rule.
+**Stale CSS.** You edit a `<style>` block, the browser shows the old layout, and
+the markup changes from the same edit _do_ appear. Vite's transform cache for
+that style module did not invalidate. Confirm it with `curl
+http://localhost:4321/`, which shows the new CSS while the browser's computed
+styles show the old rule.
 
-**Fix:** `npx astro dev stop`, `npm run dev`, hard-reload (⌘⇧R / Ctrl⇧R).
+**Stale pages after a config change.** Add an integration or an adapter to
+`astro.config.mjs` and the running server can carry on serving pages built
+before it — entire new components missing, no error anywhere. This reads exactly
+like code that does not work.
+
+**Telling them apart takes one command.** Build, and compare:
+
+```
+npm run build
+grep -c 'class="poster' dist/siti/montoso/index.html        # 1
+curl -s http://localhost:4321/siti/montoso/ | grep -c poster # 0  → stale server
+```
+
+If it is in `dist/` and not on `:4321`, the code is fine and the server is not.
+
+**Fix:** `npx astro dev stop`, `npm run dev`, hard-reload (⌘⇧R / Ctrl⇧R). A
+server started by hand rather than with `--background` is not managed by that
+command and has to be stopped in the terminal it is running in.
 
 If in doubt, `npm run build && npm run preview` bypasses the dev pipeline
 entirely and is always authoritative.

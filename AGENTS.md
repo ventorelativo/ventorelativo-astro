@@ -197,10 +197,17 @@ rule: [`docs/performance.md`](docs/performance.md).
 
 ## Known traps
 
-- **The dev server can serve stale CSS.** If a style edit does not appear in the
-  browser, its Vite transform cache did not invalidate: the markup is fresh while
-  the stylesheet is not. `npx astro dev stop`, start it again, hard-reload. This
-  has already cost one debugging session.
+- **A long-running dev server goes stale, and not only for CSS.** Two shapes of
+  this, both seen here. A style edit that does not appear: the Vite transform
+  cache did not invalidate, so the markup is fresh and the stylesheet is not.
+  And, worse because it looks like broken code: after `astro.config.mjs`
+  changes — an integration or an adapter — the server can keep serving pages
+  built before them, with whole new components silently missing. A page that
+  renders correctly in `dist/` and not at `:4321` is this, every time.
+  `npx astro dev stop`, start it again, hard-reload; a server started by hand
+  rather than with `--background` has to be stopped in its own terminal.
+  Between them these have cost two debugging sessions. When in doubt,
+  `npm run build && npm run preview` is authoritative.
 - **`chrome --headless --window-size=390,844` lies on macOS** — the window is
   clamped to a 500px minimum width, so you get a 500px layout cropped to 390 and
   every narrow media query is wrong. Use `npm run shot`, which emulates device
