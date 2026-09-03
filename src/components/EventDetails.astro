@@ -76,6 +76,21 @@ const DESTINATIONS = [
   { label: 'Scarica il file (.ics)', href: ics, download: true },
 ] as const;
 
+/*
+  When the event stops being addable.
+
+  The same exclusive end every calendar format here uses: the day *after* the
+  last day, so an event is still current all through its final day. Emitted
+  into the markup because a static page cannot know today's date — the build
+  renders whichever state is right at build time, and three lines of inline
+  script correct it for anyone who arrives after an event has passed but
+  before the site is next deployed. Without that, a post announcing a May
+  event would still be offering "aggiungi al calendario" in September.
+*/
+const endsAt = new Date(event.end ?? event.start);
+endsAt.setUTCDate(endsAt.getUTCDate() + 1);
+const expired = Date.now() >= endsAt.getTime();
+
 const it = (options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat('it-IT', options);
 
@@ -145,41 +160,55 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
     Google or Microsoft until somebody picks one.
   */
   }
-  <details class="event__add" data-calendar>
-    <summary class="button" data-calendar-summary>
+  <div class="event__add" data-calendar-wrap data-ends={endsAt.toISOString()}>
+    <details class="event__menu-root" hidden={expired} data-calendar>
+      <summary class="button" data-calendar-summary>
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+          <g class="stroke" set:html={CALENDAR} />
+        </svg>
+        Aggiungi al calendario
+        <svg
+          viewBox="0 0 20 20"
+          width="14"
+          height="14"
+          aria-hidden="true"
+          class="chevron"
+        >
+          <path class="stroke" d="m5 8 5 5 5-5"></path>
+        </svg>
+      </summary>
+
+      <ul class="event__menu">
+        {
+          DESTINATIONS.map((to) => (
+            <li>
+              <a
+                href={to.href}
+                download={'download' in to ? true : undefined}
+                target={'external' in to ? '_blank' : undefined}
+                rel={'external' in to ? 'noopener noreferrer' : undefined}
+              >
+                <span>{to.label}</span>
+                {'external' in to && <ExternalIcon size={13} />}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </details>
+
+    {
+      /* Not a `<button disabled>`: there is no action here to disable, and a
+      disabled control is skipped by a screen reader that would otherwise read
+      the one thing this says. */
+    }
+    <p class="event__expired" hidden={!expired} data-calendar-expired>
       <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
         <g class="stroke" set:html={CALENDAR} />
       </svg>
-      Aggiungi al calendario
-      <svg
-        viewBox="0 0 20 20"
-        width="14"
-        height="14"
-        aria-hidden="true"
-        class="chevron"
-      >
-        <path class="stroke" d="m5 8 5 5 5-5"></path>
-      </svg>
-    </summary>
-
-    <ul class="event__menu">
-      {
-        DESTINATIONS.map((to) => (
-          <li>
-            <a
-              href={to.href}
-              download={'download' in to ? true : undefined}
-              target={'external' in to ? '_blank' : undefined}
-              rel={'external' in to ? 'noopener noreferrer' : undefined}
-            >
-              <span>{to.label}</span>
-              {'external' in to && <ExternalIcon size={13} />}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </details>
+      Evento concluso
+    </p>
+  </div>
 </section>
 
 <style>
@@ -302,6 +331,29 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
     position: relative;
   }
 
+  /*
+    Looks like the button it replaces, minus every affordance: no border
+    colour, no pointer, no hover. A reader should see at a glance that the row
+    is spent rather than that something is broken.
+  */
+  .event__expired {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /* `display` above would otherwise beat the UA's `[hidden]` rule. */
+  .event__expired[hidden],
+  .event__menu-root[hidden] {
+    display: none;
+  }
+
   summary {
     /* `.button` supplies the look; these two remove the disclosure marker. */
     cursor: pointer;
@@ -375,6 +427,20 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
     The listeners are never removed. Navigation is cross-document
     (`@view-transition { navigation: auto }`), so each page starts fresh.
   */
+  /*
+    Correct the build's guess about today. Cheap enough to be unconditional:
+    two element lookups and a date comparison, in a script this page already
+    inlines for the menu below.
+  */
+  const wrap = document.querySelector<HTMLElement>('[data-calendar-wrap]');
+  const expiry = wrap && Date.parse(wrap.dataset.ends ?? '');
+
+  if (wrap && expiry) {
+    const past = Date.now() >= expiry;
+    wrap.querySelector<HTMLElement>('[data-calendar]')!.hidden = past;
+    wrap.querySelector<HTMLElement>('[data-calendar-expired]')!.hidden = !past;
+  }
+
   const root = document.querySelector<HTMLDetailsElement>('[data-calendar]');
 
   if (root) {
