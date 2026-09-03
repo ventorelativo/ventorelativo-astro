@@ -1246,13 +1246,13 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(decided, not scheduled)_
+### Phase 7 — Beyond parity _(items 1, 2 and 4 done; 3 deferred on evidence; 5 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
 with the decision already taken, so none of it gets rediscovered as a "good idea" later.
 
-**1. Events on news posts, with `.ics`.** ✅ _Wanted._ Not a separate collection: a news
+**1. Events on news posts, with `.ics`.** ✅ _Done in Phase 2._ Not a separate collection: a news
 post _is_ the announcement, so it gains optional `event` fields — start date, optional end
 date, location — and is an event when they are filled in. That buys three things from one
 change: a "Aggiungi al calendario" `.ics` download, the **`Event` node in the schema.org
@@ -1261,29 +1261,55 @@ graph that §S7 deliberately left out** because the dates only existed in prose
 wanted. Touches the `news` schema in §2.1, `keystatic.config.ts` and the JSON-LD.
 Half a day. The biggest genuine capability gain on this list.
 
-**2. ESLint + Prettier.** ✅ _Wanted._ The project has neither; `astro check` catches types
+**2. ESLint + Prettier.** ✅ _Done in Phase 2_ (`npm run lint`, part of `npm run verify`). The project has neither; `astro check` catches types
 and nothing catches style. Development-only, so no cost to a visitor, and it matters more
 now that club members may point AI agents at this repository. An hour.
 
-**3. WebMCP — the site exposing callable tools to a visitor's AI assistant.** ✅ _Wanted,
-deliberately not yet._ The idea fits this site unusually well: fourteen flight sites with
-altitude, exposure and attributes is exactly the shape of "find me a beginner-friendly
-south-east site under 1500m", and Phase 4 adds coordinates to make it better still. Two
-reasons to wait rather than drop it: it ships JavaScript to **every** visitor for something
-almost no visitor's browser can yet use, which is precisely the trade the performance
-budget exists to refuse (`docs/performance.md`); and the proposal is young enough that
-building against it now risks building against a version that changes.
+**3. WebMCP — the site exposing callable tools to a visitor's AI assistant.** ⏸️
+_Checked again 2026-09-03; still deferred, and the reason has strengthened._ The idea still
+fits: fourteen flight sites with altitude, exposure and now coordinates is exactly the shape
+of "find me a beginner-friendly south-east site under 1500m".
 
-**Revisit when** browser or assistant support is real, and **after Phase 4**, so the tools
-can answer with coordinates and airspace rather than prose. Note that `/llms-full.txt`
-(S17) and the schema.org graph already give an assistant most of these answers today,
-without shipping a byte to anyone.
+What the check found:
 
-**4. View transitions.** ⏸️ _Deferred to the end, performance first._ Astro's
-`<ClientRouter />` gives cross-page animation, and the site is half-prepared already — the
-theme toggle, nav drawer and gallery scripts all re-bind on `astro:after-swap`. But it
-ships client JavaScript to every page, so it goes in only if it is measured against the
-budget and still looks worth it. Last, if at all.
+- It is a **Draft Community Group Report** of the W3C Web Machine Learning CG, not a
+  standard and not on the standards track.
+- **Chrome only** — an origin trial in Chrome 149. Firefox and Safari are in the
+  conversation with no announced timelines.
+- The API has already moved under our feet: `navigator.modelContext` was deprecated in
+  Chrome 150 in favour of `document.modelContext`, and `provideContext()` was removed in
+  March 2026 and reinstated later. That is exactly the "building against a version that
+  changes" this entry warned about six months ago, and it happened.
+
+So the trade is unchanged and worse: ship JavaScript to **every** visitor, for an API one
+browser has behind a trial, that is still being renamed.
+
+**What was done instead, because it needed no bet.** The half of this idea that does not
+depend on WebMCP: each flight site now emits a `SportsActivityLocation` node with its
+takeoffs' coordinates and its attributes (see `src/lib/schema.ts`, which had promised
+exactly this once Phase 4 supplied coordinates). Together with `/llms-full.txt` (S17), an
+assistant can already answer the beginner-friendly-south-east-site question today, from
+static files, without a byte reaching anyone's browser.
+
+**Revisit when** a second engine ships it and the API stops being renamed.
+
+**4. View transitions.** ✅ _Done 2026-09-03 — and not the way this entry assumed._
+
+Astro's `<ClientRouter />` was measured first, as required: **5.3 kB gzipped and two extra
+requests on every page**, taking `/` from 71.9 kB to 77.4 kB. It also broke the map,
+silently — `SiteMap`'s script binds once at module scope, so after a client-side swap the
+"Apri la mappa" button was still there and did nothing. Every module-scope script becomes a
+rebinding bug that looks like working code.
+
+The platform now does the same job: `@view-transition { navigation: auto; }` in
+`global.css`, **0.1 kB**, no JavaScript, navigations stay real so nothing has to re-bind.
+Verified with a `pagereveal` probe that a transition actually runs, and that the map still
+opens on the page it lands on. Chrome/Edge 126+ and Safari 18.2+ animate — about 85% of
+browsers; Firefox has not shipped it and gets the ordinary navigation it gets today. Off
+under `prefers-reduced-motion`.
+
+The lesson is worth keeping: the framework's answer and the platform's answer were not the
+same size.
 
 **5. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
 
