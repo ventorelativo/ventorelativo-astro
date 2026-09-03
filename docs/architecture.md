@@ -40,11 +40,11 @@ would leave the CDN for a cold start.
 
 Every file in `src/pages/` becomes a URL. No router to configure.
 
-| File                                      | URL                   |
-| ----------------------------------------- | --------------------- |
-| `src/pages/index.astro`                   | `/`                   |
-| `src/pages/styleguide.astro`              | `/styleguide/`        |
-| `src/pages/siti/[slug].astro` _(Phase 4)_ | `/siti/montoso/` etc. |
+| File                          | URL                   |
+| ----------------------------- | --------------------- |
+| `src/pages/index.astro`       | `/`                   |
+| `src/pages/styleguide.astro`  | `/styleguide/`        |
+| `src/pages/siti/[slug].astro` | `/siti/montoso/` etc. |
 
 `build.format: 'directory'` makes Astro write `styleguide/index.html` rather than
 `styleguide.html`, so the URL is `/styleguide/`. That exactly matches what the
@@ -194,10 +194,10 @@ stay inline and synchronous to work.
 
 ## 7. What is deliberately absent
 
-| Absent                     | Why                              | Arrives |
-| -------------------------- | -------------------------------- | ------- |
-| Maps, flight data          | Riskiest part, deliberately last | Phase 4 |
-| A UI framework on any page | Nothing here needs one           | if ever |
+| Absent                     | Why                              | Arrives    |
+| -------------------------- | -------------------------------- | ---------- |
+| Maps, flight data          | Riskiest part, deliberately last | Phase 4 ✅ |
+| A UI framework on any page | Nothing here needs one           | if ever    |
 
 React _is_ installed, but only because Keystatic's admin is a React app. It
 runs inside the serverless function; no page of the site ships a byte of it.
