@@ -11,6 +11,7 @@ import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
 import { forecastUrl, formatCoordinates, navigationUrl } from '../lib/coordinateLinks';
 import type { LatLon } from '../lib/geo';
+import ExternalIcon from './ExternalIcon.astro';
 
 interface Feature {
   name: string;
@@ -72,7 +73,9 @@ const sorted = [...features].sort(
                       popups — same destination, same decimal degrees, so a
                       pilot gets the same thing whichever they happen to be
                       looking at. Still selectable for copying into an
-                      instrument.
+                      instrument: the outward mark is an SVG, so it carries no
+                      text nodes and a selection of the cell yields the
+                      coordinates and nothing else.
                     */
                     <a
                       href={navigationUrl(feature.point)}
@@ -80,13 +83,16 @@ const sorted = [...features].sort(
                       rel="noopener noreferrer"
                       title={`Naviga verso ${feature.name}`}
                     >
-                      {formatCoordinates(feature.point)}
+                      <span class="coords__value">
+                        {formatCoordinates(feature.point)}
+                      </span>
+                      <ExternalIcon size={13} />
                     </a>
                   ) : (
                     <span class="none">—</span>
                   )}
                 </td>
-                <td>
+                <td class="forecast">
                   {/*
                     Takeoffs only, as in the map's popups: Meteo-Parapente
                     answers "can I fly from here", which is a question about the
@@ -100,7 +106,8 @@ const sorted = [...features].sort(
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Previsioni
+                      <span>Previsioni</span>
+                      <ExternalIcon size={13} />
                     </a>
                   )}
                 </td>
@@ -245,14 +252,33 @@ const sorted = [...features].sort(
     turn into stripes, and it firms up on hover.
   */
   .coords a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
     color: var(--color-accent);
+  }
+
+  /*
+    The underline is on the value, not on the anchor: on the anchor it also
+    ran under the outward glyph, which then read as part of the number.
+  */
+  .coords__value {
     text-decoration: underline;
     text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
   }
 
-  .coords a:hover,
-  .coords a:focus-visible {
+  .coords a:hover .coords__value,
+  .coords a:focus-visible .coords__value {
     text-decoration-color: currentColor;
+  }
+
+  /* Label and glyph on one line: wrapped, the icon fell under the word and
+     took the whole row with it. */
+  .forecast a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    white-space: nowrap;
   }
 
   .none {

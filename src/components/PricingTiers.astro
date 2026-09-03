@@ -19,6 +19,7 @@
  * what the club had and what every pricing table does, but as the header band
  * only: a whole card of solid blue would fight the page.
  */
+import ExternalIcon from './ExternalIcon.astro';
 interface Tier {
   name: string;
   price: number;
@@ -94,6 +95,7 @@ const MARK = {
             rel="noopener noreferrer"
           >
             {tier.payLabel}
+            <ExternalIcon size={14} />
           </a>
         </div>
       </li>

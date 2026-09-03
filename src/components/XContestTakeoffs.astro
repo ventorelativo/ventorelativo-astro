@@ -14,6 +14,7 @@
 import { takeoffSearchUrl } from '../lib/xcontest';
 import type { LatLon } from '../lib/geo';
 import type { FeatureType } from '../lib/featureTypes';
+import ExternalIcon from './ExternalIcon.astro';
 
 interface Feature {
   name: string;
@@ -46,6 +47,7 @@ const takeoffs = Astro.props.features.filter(
               rel="noopener noreferrer"
             >
               Ricerca voli da {takeoff.name}
+              <ExternalIcon size={14} />
             </a>
           </li>
         ))}

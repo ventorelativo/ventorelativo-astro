@@ -19,6 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
 import { getEntry } from 'astro:content';
+import ExternalIcon from '../components/ExternalIcon.astro';
 
 /*
   The homepage's editable parts, from the `home` entry in the pages collection.
@@ -99,6 +100,7 @@ const CTAS = home.data.ctas ?? [];
           Foto:{' '}
           <a href={HERO.credit.href} target="_blank" rel="noopener noreferrer">
             {HERO.credit.text}
+            <ExternalIcon size={12} />
           </a>
         </p>
       )

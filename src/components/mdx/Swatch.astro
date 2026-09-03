@@ -19,7 +19,8 @@ const { color, name } = Astro.props;
 ---
 
 <div class="swatch">
-  <span class="swatch__chip" style={`background-color:${color}`} aria-hidden="true"></span>
+  <span class="swatch__chip" style={`background-color:${color}`} aria-hidden="true"
+  ></span>
   <span class="swatch__text">
     <strong>{name}</strong>
     {/* `notranslate`: a hex code must survive the translator intact. */}
