@@ -220,6 +220,25 @@ const TIERS = [
         quello che rendono <code>/news</code> e <code>/siti</code>.
       </p>
 
+      <p class="note">
+        La superficie — bordo, raggio, sfondo, ombra e hover — è
+        <code>.card</code> in <code>global.css</code>. <code>.card--link</code>
+        aggiunge lo stato hover, e va solo dove la scheda intera è un link;
+        <code>.card__stretch</code> allarga quel link su tutta la scheda.
+      </p>
+
+      <h3>Superficie</h3>
+      <div class="cards">
+        <div class="card sg-card">
+          <strong>.card</strong>
+          <span class="note">Superficie e basta. Nessun hover: non è un link.</span>
+        </div>
+        <div class="card card--link sg-card">
+          <strong>.card .card--link</strong>
+          <span class="note">Passaci sopra: ombra, bordo e un pixel di stacco.</span>
+        </div>
+      </div>
+
       <h3>Notizia o evento</h3>
       <div class="cards">{post && <ArticleCard entry={post} priority />}</div>
 
@@ -319,6 +338,13 @@ const TIERS = [
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
     gap: var(--space-md);
     max-width: var(--content-width);
+  }
+
+  .sg-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    padding: var(--space-sm);
   }
 
   .fields {

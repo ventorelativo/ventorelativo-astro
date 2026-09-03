@@ -67,18 +67,20 @@ shot taken before 2026-09-03.
 
 ## The three gates in `npm run verify`
 
-Beyond types, lint and the build, `verify` runs three checks that exist because
+Beyond types, lint and the build, `verify` runs four checks that exist because
 each guards a promise the site makes and cannot keep by accident:
 
 | Gate                    | Fails when                                                        |
 | ----------------------- | ----------------------------------------------------------------- |
 | `npm run navdata:check` | the flight-computer files stop matching the archived Drupal build |
 | `npm run urls:check`    | a URL the old site served stops resolving                         |
+| `npm run sitemap:check` | a built page is missing from `/sitemap.xml`, or listed and absent |
 | `npm run privacy:check` | a page starts loading something third-party unasked               |
 
-All three read `dist/`, so they need a build first — `verify` does that for
-them. All three were proved by being broken on purpose: removing a built page,
-pointing a redirect at nothing, and dropping a Google Fonts link into a page.
+All four read `dist/`, so they need a build first — `verify` does that for them.
+All four were proved by being broken on purpose: removing a built page, pointing
+a redirect at nothing, deleting a sitemap entry, and dropping a Google Fonts link
+into a page.
 
 `urls:check` and `navdata:check` read `../ventorelativo-drupal`. That archive is
 the evidence, which is why Phase 5 archives it rather than deleting it.

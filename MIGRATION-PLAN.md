@@ -1267,7 +1267,7 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(items 1-5 done; 6 dropped)_
+### Phase 7 — Beyond parity _(items 1-6 done; 7 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
@@ -1353,7 +1353,33 @@ Still open, and listed in the report: the association's registered office is not
 notice (the email is), and whether Cloudflare's cookieless beacon should stay or be
 replaced by server-side analytics is the club's call.
 
-**6. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
+**6. Post-parity design and content work, 2026-09-03.** ✅ _Done at the club's
+request, after everything above._ Recorded here because several of these changed
+decisions the plan had made:
+
+- **A card primitive.** Six components draw one, so the surface lives once in
+  `global.css`. Unifying them found that both teasers claimed in a comment to be
+  fully clickable and neither was — the stretching pseudo-element had no
+  `z-index`, so the paragraph below the heading took the click.
+- **The contour texture** from the old theme, on the footer and the site cards,
+  arriving on the diagonal as it did there. 91.6 kB of path data rounded to
+  46.6 kB with no visible change (`scripts/optimise-svg.py`).
+- **`/stampa`** — the press kit: five logo variants, each generated as SVG and
+  PNG at build from one source drawing, plus brand guidelines the club can edit.
+- **`/privacy`** and the third-party gate, see item 5.
+- **`/sitemap.xml` is one file again.** `@astrojs/sitemap` always writes an index
+  plus numbered parts, so reaching the list took a 301 and two fetches. The
+  integration is gone; `npm run sitemap:check` guards the hand-written route
+  against a page nobody notices is missing. Amends S8, which assumed the
+  integration.
+- **Events look like events** (Phase 7 item 1 shipped the data; this shipped the
+  design), and **`/siti`, `/voli` and `/contatti` gained the words they never
+  had** — `/siti` in particular opened with a map and fourteen names and nothing
+  a search engine could read about the valleys.
+- **Two view transitions**: the news teaser's photograph into the article hero,
+  and the flight-site card's title into the site page's `h1`.
+
+**7. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
 
 **Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
 i18n routing (single locale — GTranslate covers the rest, G11), and anything requiring edge

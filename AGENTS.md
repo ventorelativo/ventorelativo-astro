@@ -74,9 +74,10 @@ npm run dev       # dev server on http://localhost:4321 (background-managed)
 npm run build     # static build into dist/
 npm run preview   # serve the built output
 npm run check     # astro check — types and template diagnostics
-npm run verify    # check + lint + build + three gates. Run before claiming done.
+npm run verify    # check + lint + build + four gates. Run before claiming done.
 npm run navdata:check  # flight files vs the archived Drupal build (needs a build first)
 npm run urls:check     # every URL the old site served still resolves
+npm run sitemap:check  # every built page is in the sitemap, or excluded on purpose
 npm run privacy:check  # no page loads a third party before a visitor asks
 npm run shot      # screenshot + measure a page in a real emulated viewport
 npm run weight    # transferred bytes by resource type (run against the build)
@@ -187,8 +188,11 @@ rule: [`docs/performance.md`](docs/performance.md).
   the traps behind them — match that. A comment that restates the code is noise;
   one that records why the obvious approach failed is why the file is readable.
 - **Component styles stay scoped** inside the `.astro` file. Only genuinely
-  global primitives (`.container`, `.prose`, `.button`, resets) live in
+  global primitives (`.container`, `.prose`, `.button`, `.card`, resets) live in
   `src/styles/global.css`.
+- **A card is `.card`**, plus `.card--link` when the whole card is clickable and
+  `.card__stretch` on the one anchor inside it. Six components draw one; the
+  surface is defined once.
 - **Class names are BEM-ish**: `.hero`, `.hero__content`, `.button--outline`.
 - **Prefer native elements over JavaScript.** The mobile menu is a `<dialog>`
   precisely so the browser supplies the focus trap, Escape handling and
