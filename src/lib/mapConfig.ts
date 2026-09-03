@@ -29,13 +29,18 @@ export const TRACESTRACK_KEY = import.meta.env.PUBLIC_TRACESTRACK_KEY ?? '';
 export const TERRAIN_SOURCE = 'terrain-rgb-v2';
 
 /**
- * Stronger than the old site's 1.2, and the tilt below is stronger than its 25.
- * Those numbers were faithful and produced something indistinguishable from the
- * flat hillshade at the scale a single site is framed at — the relief was there
- * and nobody could see it. These are the values at which a valley reads as a
- * valley.
+ * True scale: the mountain is the height the mountain is.
+ *
+ * It was 1.5 — chosen so a valley read as a valley at the scale one site is
+ * framed at, the old site's 1.2 having been almost invisible. Exaggerated
+ * relief also lifts the high markers further off the fitted rectangle, which is
+ * half of why some takeoffs ended up outside the frame, and on a map pilots
+ * read for terrain a stretched slope is the wrong kind of wrong.
+ *
+ * Zero would be flatter still, and would leave the terrain button with nothing
+ * to toggle.
  */
-export const TERRAIN_EXAGGERATION = 1.5;
+export const TERRAIN_EXAGGERATION = 1;
 
 /** See the note on exaggeration above. */
 export const PITCH = 55;

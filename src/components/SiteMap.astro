@@ -1026,6 +1026,56 @@ const typeNames = Object.fromEntries(
           // animating the tilt as well would re-frame from a pitch the bounds
           // were not solved for.
           terrain.rise();
+
+          /*
+            And then check the framing again, once the ground has actually
+            risen.
+
+            `fitBounds` solves for a flat world — it knows the rectangle, not
+            the altitudes inside it. So a takeoff a thousand metres above its
+            landing is projected further up the screen than the fit allowed
+            for, and on the steepest sites (Prali, Le Grange) it left the frame
+            entirely. Nothing was wrong with the fit; the ground moved after it.
+
+            The earlier attempt at this ran immediately and chased its own tail,
+            because `project` consults terrain that has not loaded and returns
+            positions the map will never paint. Waiting for `idle` is what makes
+            it honest: by then the DEM tiles are in and the projection is the
+            one on screen. Bounded to six steps of a quarter zoom level, so a
+            site that somehow cannot be framed gives up rather than zooming to
+            the whole Alps.
+          */
+          const points = coordinatesOf(data);
+
+          if (points.length > 0 && tilt > 0) {
+            const PADDING = 48;
+            const MAX_STEPS = 6;
+            let steps = 0;
+
+            const allInFrame = () => {
+              const box = map.getContainer();
+              const width = box.clientWidth;
+              const height = box.clientHeight;
+              return points.every((point) => {
+                const { x, y } = map.project(point);
+                return (
+                  x >= PADDING &&
+                  y >= PADDING &&
+                  x <= width - PADDING &&
+                  y <= height - PADDING
+                );
+              });
+            };
+
+            const check = () => {
+              if (steps >= MAX_STEPS || allInFrame()) return;
+              steps += 1;
+              map.easeTo({ zoom: map.getZoom() - 0.25, duration: 200 });
+              map.once('idle', check);
+            };
+
+            map.once('idle', check);
+          }
         }
 
         /*
@@ -1686,6 +1736,28 @@ const typeNames = Object.fromEntries(
   }
 
   /** [[w, s], [e, n]] over every coordinate, at any nesting depth. */
+  /**
+   * Every coordinate pair in the data, however deeply nested.
+   *
+   * The same walk `boundsOf` does, kept separate because the framing check
+   * needs the points themselves rather than the rectangle around them: a
+   * rectangle says nothing about where each corner ends up once terrain lifts
+   * it up the screen.
+   */
+  function coordinatesOf(data: GeoJsonLike): [number, number][] {
+    const found: [number, number][] = [];
+    const visit = (value: unknown) => {
+      if (!Array.isArray(value)) return;
+      if (typeof value[0] === 'number' && typeof value[1] === 'number') {
+        found.push(value as [number, number]);
+        return;
+      }
+      for (const item of value) visit(item);
+    };
+    for (const feature of data.features) visit(feature.geometry?.coordinates);
+    return found;
+  }
+
   function boundsOf(data: GeoJsonLike): [[number, number], [number, number]] {
     let west = 180;
     let south = 90;
