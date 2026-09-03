@@ -15,6 +15,7 @@
  * what the old site gave everyone; everyone else gets today. Either way there
  * is no reason left to rebuild this site on a schedule.
  */
+import ExternalIcon from './ExternalIcon.astro';
 import { searchUrl, datesFrom } from '../lib/xcontest';
 
 const today = datesFrom(new Date());
@@ -91,15 +92,7 @@ const LINKS: Link[] = [
             <span class="xc__hint">{hint}</span>
           </span>
           {/* Says the link leaves the site, without a word of copy. */}
-          <svg
-            class="xc__out"
-            viewBox="0 0 20 20"
-            width="16"
-            height="16"
-            aria-hidden="true"
-          >
-            <path d="M11 4h5v5M16 4l-7 7M15 12v3.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5H8" />
-          </svg>
+          <ExternalIcon class="xc__out" />
         </a>
       </li>
     ))
@@ -170,18 +163,19 @@ const LINKS: Link[] = [
     text-wrap: pretty;
   }
 
-  .xc__out {
-    flex: none;
+  /*
+    `:global`, because the icon is a component: Astro stamps its scope id on
+    the elements *it* writes, so a class passed into `<ExternalIcon>` lands on
+    an element carrying that component's id and never matches a rule scoped to
+    this file. The rule looked right and did nothing.
+  */
+  .xc__link :global(.xc__out) {
     margin-inline-start: auto;
-    fill: none;
-    stroke: var(--color-text-muted);
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    color: var(--color-text-muted);
   }
 
-  .xc__link:hover .xc__out {
-    stroke: var(--color-accent);
+  .xc__link:hover :global(.xc__out) {
+    color: var(--color-accent);
   }
 </style>
 
