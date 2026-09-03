@@ -1275,7 +1275,7 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(items 1-7 done; 8 dropped)_
+### Phase 7 — Beyond parity _(items 1-8 done; 9 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
@@ -1434,7 +1434,35 @@ wordmark (header, social card) while `/stampa` still tells readers to write
 "VentoRelativo" in prose. `SITE.name` stays mixed-case data and the uppercasing
 happens at render time, so either answer is a one-line change.
 
-**8. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
+**8. A third pass, 2026-09-03.** ✅ _Done at the club's request._ Small
+corrections, and one measurement that turned out to matter:
+
+- **A past event says so.** An announcement whose date has gone shows "Evento
+  concluso" in place of the calendar menu. A static page cannot know today's
+  date, so the build renders whichever state is right when it runs and three
+  lines in the script the page already inlines correct it for anyone arriving
+  later — without the second half a May event would still be offering
+  "aggiungi al calendario" in September. Not a disabled button: there is no
+  action to disable, and a disabled control is skipped by the screen reader
+  that would otherwise read the one thing it says.
+- **MapLibre stopped being downloaded twice.** The library and its worker both
+  import `maplibre-gl-shared.mjs`; `sync-vendor` already copied it into
+  `public/` for the worker, and the bundler was inlining it into the page's
+  chunk as well. Marking it external and pointing both at one URL took a map
+  from **326 kB brotli to 239**. The plan's stated figure of 970 kB was the
+  uncompressed chunk, which no visitor ever paid — `docs/performance.md` now
+  carries the transferred number and what else was tried.
+- **The footer is a grid**, `1fr auto 1fr` while the three groups fit and one
+  centred column below 46rem. `space-between` on a wrapping row never actually
+  centred the legal line and stranded the social icon on its own row.
+- **The header and footer cast into the page**, at a resting card's weight, so
+  the content reads as a sheet under the chrome.
+- **The homepage social card shows its mountains.** The veil runs heaviest over
+  the sky and fades at the foot; the words get a dark corner of their own,
+  because across the title row the photograph runs 0.22 to 0.72 luminance and
+  white on 0.72 is 1.37:1.
+
+**9. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
 
 **Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
 i18n routing (single locale — GTranslate covers the rest, G11), and anything requiring edge
