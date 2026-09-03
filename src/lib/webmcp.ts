@@ -70,13 +70,37 @@ export function modelContext(): ModelContext | undefined {
   return doc ?? nav;
 }
 
-let cached: Promise<Site[]> | undefined;
+interface Post {
+  slug: string;
+  title: string;
+  summary: string;
+  url: string;
+  category: string;
+  published: string;
+  event: {
+    start: string;
+    end: string | null;
+    takeoff: string;
+    landing: string | null;
+    calendar: string;
+  } | null;
+}
+
+let cachedSites: Promise<Site[]> | undefined;
+let cachedPosts: Promise<Post[]> | undefined;
 
 function sites(): Promise<Site[]> {
-  cached ??= fetch('/api/siti.json')
+  cachedSites ??= fetch('/api/siti.json')
     .then((response) => response.json())
     .then((data: { sites: Site[] }) => data.sites);
-  return cached;
+  return cachedSites;
+}
+
+function posts(): Promise<Post[]> {
+  cachedPosts ??= fetch('/api/news.json')
+    .then((response) => response.json())
+    .then((data: { posts: Post[] }) => data.posts);
+  return cachedPosts;
 }
 
 const text = (value: unknown) => ({
@@ -200,6 +224,52 @@ const TOOLS: Tool[] = [
         });
       }
       return text(found);
+    },
+  },
+  {
+    name: 'find_events',
+    description:
+      "The club's announcements. Posts that announce an event carry a date, a " +
+      'takeoff, sometimes a landing, and a link to an .ics calendar file; the rest ' +
+      'are articles and have `event: null`. Use `upcoming` to ask only about what ' +
+      'has not happened yet.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        upcoming: {
+          type: 'boolean',
+          description: 'Only events dated today or later. Excludes plain articles.',
+        },
+        eventsOnly: {
+          type: 'boolean',
+          description: 'Drop the posts that are articles rather than events.',
+        },
+        query: {
+          type: 'string',
+          description: 'Free text matched against the title and the summary.',
+        },
+      },
+    },
+    async execute(input) {
+      const all = await posts();
+      const today = new Date().toISOString().slice(0, 10);
+      const query = String(input.query ?? '')
+        .trim()
+        .toLowerCase();
+
+      const matches = all
+        .filter((post) => !input.eventsOnly || post.event)
+        .filter(
+          (post) =>
+            !input.upcoming ||
+            (post.event && (post.event.end ?? post.event.start) >= today),
+        )
+        .filter(
+          (post) =>
+            !query || `${post.title} ${post.summary}`.toLowerCase().includes(query),
+        );
+
+      return text({ count: matches.length, today, posts: matches });
     },
   },
   {
