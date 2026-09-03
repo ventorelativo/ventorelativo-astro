@@ -26,6 +26,12 @@ interface Props {
 const { entry, priority = false } = Astro.props;
 
 /*
+  Half of the morph into the article's hero (see global.css). The name has to
+  be unique in the document, so it carries the slug; the class is what the
+  stylesheet can target, since the name is not knowable there.
+*/
+
+/*
   Cropped at build time to the box it is displayed in, not resized to the
   card's width and cropped in the browser.
 
@@ -55,6 +61,7 @@ const href = `/news/${entry.id}/`;
     image && (
       <Image
         class="card__image"
+        style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
         src={image.src}
         alt={image.alt}
         {...CARD_IMAGE}

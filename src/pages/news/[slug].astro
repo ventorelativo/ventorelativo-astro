@@ -64,10 +64,12 @@ const { Content } = await render(entry);
   </p>
 
   {
+    /* The other half of the morph from the teaser card — see global.css. */
     image && (
       <Image
         slot="media"
         class="hero"
+        style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
         src={image.src}
         alt={image.alt}
         widths={[400, 700, 1400]}

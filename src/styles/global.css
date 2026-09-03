@@ -61,6 +61,35 @@ html {
   animation-duration: 180ms;
 }
 
+/*
+ * The teaser image morphing into the article's hero.
+ *
+ * Both carry `view-transition-name: post-<slug>` — unique per document, which
+ * is what the name has to be, and identical across the two documents, which is
+ * what makes the browser treat them as the same thing moving.
+ *
+ * The rules below exist because the two are not the same shape: the card is a
+ * 340x192 letterbox and the hero is the whole portrait poster. Left to the UA
+ * default, each snapshot keeps its own aspect ratio and is scaled to the
+ * group's width, so one of them overflows and the pair smears. Filling the
+ * group and cropping instead is the standard recipe, and it is what makes the
+ * crop look like it is opening out rather than stretching.
+ *
+ * `view-transition-class` because the stylesheet cannot know the slug.
+ * Supported wherever `@view-transition` is (Chrome 125+, Safari 18.2+,
+ * Firefox 144+ — slightly wider, in fact), so this never applies without the
+ * transition it belongs to.
+ */
+::view-transition-old(.post),
+::view-transition-new(.post) {
+  block-size: 100%;
+  object-fit: cover;
+}
+
+::view-transition-group(.post) {
+  animation-duration: 320ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   @view-transition {
     navigation: none;
