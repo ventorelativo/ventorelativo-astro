@@ -22,48 +22,84 @@ const today = datesFrom(new Date());
 interface Link {
   icon: string;
   label: string;
+  /** What the search actually returns, so nobody has to open five to find out. */
+  hint: string;
   href: string;
   /** Which date the script should refresh, if any. */
   scope?: 'day' | 'month' | 'year';
 }
 
+/*
+  The same five searches the Drupal block had, in the same order and with the
+  same emoji — the club chose them and pilots know them. What is new is a line
+  under each saying what it returns: the labels alone made you open all five to
+  learn the difference between "giornata" and "sempre".
+*/
 const LINKS: Link[] = [
-  { icon: '⏱️', label: 'Recenti', href: searchUrl({ sort: 'time_start' }) },
+  {
+    icon: '⏱️',
+    label: 'Recenti',
+    hint: 'Gli ultimi voli caricati, dal più nuovo',
+    href: searchUrl({ sort: 'time_start' }),
+  },
   {
     icon: '🐥',
-    label: 'Migliori giornata',
+    label: 'Migliori della giornata',
+    hint: 'Il punteggio più alto di oggi',
     href: searchUrl({ sort: 'pts', date: today.day }),
     scope: 'day',
   },
   {
     icon: '🐓',
-    label: 'Migliori mese',
+    label: 'Migliori del mese',
+    hint: 'Il mese in corso, per punteggio',
     href: searchUrl({ sort: 'pts', date: today.month }),
     scope: 'month',
   },
   {
     icon: '🦅',
-    label: 'Migliori anno',
+    label: 'Migliori dell’anno',
+    hint: 'La stagione in corso, per punteggio',
     href: searchUrl({ sort: 'pts', date: today.year }),
     scope: 'year',
   },
-  { icon: '🏆', label: 'Migliori sempre', href: searchUrl({ sort: 'pts' }) },
+  {
+    icon: '🏆',
+    label: 'Migliori di sempre',
+    hint: 'Tutto l’archivio, dai voli più lunghi',
+    href: searchUrl({ sort: 'pts' }),
+  },
 ];
 ---
 
 <ul class="xc">
   {
-    LINKS.map(({ icon, label, href, scope }) => (
-      <li>
+    LINKS.map(({ icon, label, hint, href, scope }) => (
+      <li class="xc__item">
         <a
-          class="button"
+          class="xc__link"
           href={href}
           data-xc-scope={scope}
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span aria-hidden="true">{icon}</span>
-          {label}
+          <span class="xc__icon" aria-hidden="true">
+            {icon}
+          </span>
+          <span class="xc__text">
+            <span class="xc__label">{label}</span>
+            <span class="xc__hint">{hint}</span>
+          </span>
+          {/* Says the link leaves the site, without a word of copy. */}
+          <svg
+            class="xc__out"
+            viewBox="0 0 20 20"
+            width="16"
+            height="16"
+            aria-hidden="true"
+          >
+            <path d="M11 4h5v5M16 4l-7 7M15 12v3.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5H8" />
+          </svg>
         </a>
       </li>
     ))
@@ -71,13 +107,83 @@ const LINKS: Link[] = [
 </ul>
 
 <style>
+  /*
+    Cards, not a row of identical buttons. Five blue pills reading "Migliori
+    giornata / mese / anno / sempre" gave the eye nothing to sort them by, and
+    the difference between them is the whole content of this page.
+  */
   .xc {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
     gap: var(--space-2xs);
     list-style: none;
     margin: 0;
     padding: 0;
+    max-width: var(--content-width);
+  }
+
+  .xc__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    height: 100%;
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-raised);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      border-color var(--transition),
+      background-color var(--transition);
+  }
+
+  .xc__link:hover {
+    border-color: var(--color-accent);
+    background-color: var(--color-bg-subtle);
+  }
+
+  .xc__link:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .xc__icon {
+    flex: none;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .xc__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1em;
+    min-width: 0;
+  }
+
+  .xc__label {
+    color: var(--color-text-strong);
+    font-weight: 500;
+  }
+
+  .xc__hint {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-wrap: pretty;
+  }
+
+  .xc__out {
+    flex: none;
+    margin-inline-start: auto;
+    fill: none;
+    stroke: var(--color-text-muted);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .xc__link:hover .xc__out {
+    stroke: var(--color-accent);
   }
 </style>
 
