@@ -10,6 +10,7 @@ For club members, developers, and AI agents working on the Ventorelativo site.
 | [performance.md](performance.md)             | Before adding any library, and whenever a page gets heavier. The site targets 100/100 in PageSpeed Insights.           |
 | [deploying.md](deploying.md)                 | You are setting up hosting or the CMS, or something about a deploy or a preview branch is not behaving.                |
 | [payments.md](payments.md)                   | You are wiring up membership payments — Stripe, the Make.com scenario, and the Google Sheet behind them.               |
+| [cutover.md](cutover.md)                     | You are about to move ventorelativo.it to this build, or want to know what is left before that can happen.             |
 | [../AGENTS.md](../AGENTS.md)                 | You are an AI agent, or you want to see the rules one is given.                                                        |
 | [../MIGRATION-PLAN.md](../MIGRATION-PLAN.md) | You want the full scope of the Drupal → Astro migration, the decisions behind it, and what each phase covers.          |
 

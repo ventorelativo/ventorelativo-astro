@@ -1225,12 +1225,27 @@ overview map + site grid; per-site maps with inlined GeoJSON; feature tables;
 desktop and mobile.
 **Covers:** M1–M13, A1–A5.
 
-### Phase 5 — Cutover
+### Phase 5 — Cutover _(next; runbook written, not executed)_
 
-Verify the preserved URLs and the two redirects (`/contact/contatti` → `/contatti`,
-`/home` → `/`). Point DNS / swap the Netlify site. Confirm the navdata files resolve at
-their exact old URLs. Archive the Drupal repo read-only — do not delete it; it stays the
-reference for anything found missing later.
+Point the domain at this build. The runbook is [`docs/cutover.md`](docs/cutover.md);
+what follows is what changed about this phase since it was written.
+
+**URL preservation is now a gate, not a review.** `scripts/check-urls.mjs` runs in
+`npm run verify` and fails unless every URL in the archived Drupal build is built,
+redirected, or listed as deliberately dropped with the decision that dropped it. On its
+first run it found `/contact` — a real page in the old build, with no redirect — which is
+now one (`/contact/contatti` had one; the bare path did not).
+
+**Two things must be set in Netlify before the move, and one is currently broken.**
+`PUBLIC_MAPTILER_KEY` is not set there, so the deployed map builds a style URL ending in a
+bare `?key=`, which returns 403: the map opens and draws nothing. `PUBLIC_CF_BEACON_TOKEN`
+is likewise unset, so there are no analytics. Both are environment variables, not code.
+
+**Test content has to come out first:** the `a-test-news` post written to prove Phase 3,
+and `/styleguide`.
+
+Archive the Drupal repo read-only — do not delete it. Two gates in `npm run verify` read
+it by path, and it stays the reference for anything found missing later.
 
 ### Phase 6 — Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
 
