@@ -453,10 +453,11 @@ hr {
  * the link's own colour — the two are one drawing in two forms, and an edit to
  * one belongs in the other.
  *
- * `:not(.button)` keeps it off the buttons in an `<ActionLinks>` block, which
- * draw the real component and would otherwise carry two marks.
+ * `:not(:has(.external))` keeps it off any link that already draws the real
+ * component — an `<ActionLinks>` button, a row of the calendar menu — which
+ * would otherwise carry the mark twice.
  */
-.prose a[href^='http']:not(.button)::after {
+.prose a[href^='http']:not(:has(.external))::after {
   content: '';
   display: inline-block;
   width: 0.72em;

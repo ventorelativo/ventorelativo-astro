@@ -22,7 +22,7 @@ import type { CollectionEntry } from 'astro:content';
 
 import ExternalIcon from './ExternalIcon.astro';
 import { FEATURE_SYMBOLS } from '../lib/featureIcons';
-import { googleCalendarUrl } from '../lib/ics';
+import { googleCalendarUrl, outlookCalendarUrl } from '../lib/ics';
 import { formatDate, isoDate } from '../utils/date';
 
 interface Props {
@@ -45,7 +45,7 @@ const slug = entry.id;
 const url = new URL(`/news/${slug}/`, Astro.site ?? 'https://www.ventorelativo.it')
   .href;
 
-const google = googleCalendarUrl({
+const calendarEvent = {
   uid: url,
   title: entry.data.title,
   description: entry.data.summary,
@@ -55,7 +55,26 @@ const google = googleCalendarUrl({
   start: event.start,
   end: event.end,
   url,
-});
+};
+
+/*
+  Only the two web calendars need a pre-filled URL of their own; Apple Calendar,
+  Outlook desktop and everything else read the `.ics`.
+
+  The last two rows are the same file and differ only in `download`, which is
+  the whole point of listing both. Without it the OS hands the file to whatever
+  app understands it — on an iPhone, Calendar opens with the event ready to
+  add. With it the browser saves it, which is what somebody who picked "scarica
+  il file" asked for.
+*/
+const ics = `/news/calendario/${slug}.ics`;
+
+const DESTINATIONS = [
+  { label: 'Google Calendar', href: googleCalendarUrl(calendarEvent), external: true },
+  { label: 'Outlook', href: outlookCalendarUrl(calendarEvent), external: true },
+  { label: 'Apple Calendar', href: ics },
+  { label: 'Scarica il file (.ics)', href: ics, download: true },
+] as const;
 
 const it = (options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat('it-IT', options);
@@ -116,33 +135,51 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
 
   {
     /*
-    Two plain links, no widget and no script.
+    A menu, not a row of four buttons: only one of them is ever the right one
+    for a given reader, and four side by side would be the loudest thing in the
+    panel. `<details>` supplies the open state, the button role and the
+    keyboard handling; the script below adds only the light-dismiss it lacks,
+    and reaches only the pages that announce an event.
 
-    The `.ics` downloads on a desktop and opens the calendar app on a phone,
-    which is where it will mostly be used — but it is a *file*, and on a laptop
-    signed into Google Calendar in a browser tab that is a download, a Finder
-    window and an import dialog. So the same event is offered a second way, as
-    a pre-filled Google link: one click, no file. Both are anchors built at
-    build time; nothing runs on the page to produce them.
+    Every destination is an anchor built at build time. Nothing is fetched from
+    Google or Microsoft until somebody picks one.
   */
   }
-  <p class="event__add">
-    <a class="button" href={`/news/calendario/${slug}.ics`} download>
+  <details class="event__add" data-calendar>
+    <summary class="button" data-calendar-summary>
       <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
         <g class="stroke" set:html={CALENDAR} />
       </svg>
       Aggiungi al calendario
-    </a>
-    <a
-      class="button button--outline"
-      href={google}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Google Calendar
-      <ExternalIcon size={14} />
-    </a>
-  </p>
+      <svg
+        viewBox="0 0 20 20"
+        width="14"
+        height="14"
+        aria-hidden="true"
+        class="chevron"
+      >
+        <path class="stroke" d="m5 8 5 5 5-5"></path>
+      </svg>
+    </summary>
+
+    <ul class="event__menu">
+      {
+        DESTINATIONS.map((to) => (
+          <li>
+            <a
+              href={to.href}
+              download={'download' in to ? true : undefined}
+              target={'external' in to ? '_blank' : undefined}
+              rel={'external' in to ? 'noopener noreferrer' : undefined}
+            >
+              <span>{to.label}</span>
+              {'external' in to && <ExternalIcon size={13} />}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </details>
 </section>
 
 <style>
@@ -262,13 +299,76 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
   }
 
   .event__add {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs);
+    position: relative;
+  }
+
+  summary {
+    /* `.button` supplies the look; these two remove the disclosure marker. */
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .chevron {
+    transition: transform var(--transition);
+  }
+
+  [open] .chevron {
+    transform: rotate(180deg);
+  }
+
+  /*
+    Opens downward: this panel sits at the top of an article, where an upward
+    menu would go behind the header.
+  */
+  .event__menu {
+    position: absolute;
+    z-index: 50;
+    inset-block-start: calc(100% + var(--space-3xs));
+    inset-inline-start: 0;
+    min-width: 100%;
+    width: max-content;
+    max-width: min(20rem, calc(100vw - 2 * var(--space-md)));
+    padding: var(--space-3xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-raised);
+    box-shadow: var(--shadow-md);
+    list-style: none;
     margin: 0;
   }
 
-  .event__add .stroke {
+  .event__menu a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition: background-color var(--transition);
+  }
+
+  .event__menu a:hover {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-accent);
+  }
+
+  summary .stroke {
     stroke: currentColor;
   }
 </style>
+
+<script>
+  import { dismissable } from '../lib/dropdown';
+
+  const root = document.querySelector<HTMLDetailsElement>('[data-calendar]');
+  if (root) {
+    dismissable(root, root.querySelector<HTMLElement>('[data-calendar-summary]'));
+  }
+</script>

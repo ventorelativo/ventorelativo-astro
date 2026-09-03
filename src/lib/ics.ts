@@ -37,6 +37,24 @@ function toDate(date: Date): string {
   return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}`;
 }
 
+/**
+ * The day after the last day.
+ *
+ * Every calendar here takes an *exclusive* end, so a one-day event ends the
+ * following morning. Get it wrong and the event shows across two days — the
+ * one bug in this file a reader will actually notice.
+ */
+function endOf(event: CalendarEvent): Date {
+  const day = new Date(event.end ?? event.start);
+  day.setUTCDate(day.getUTCDate() + 1);
+  return day;
+}
+
+/** `YYYY-MM-DD` — Outlook's date form. */
+function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
 function escape(value: string): string {
   return value
     .replace(/\\/g, '\\\\')
@@ -74,14 +92,10 @@ function fold(line: string): string {
  * one-day event ends the following day or Google shows it across two.
  */
 export function googleCalendarUrl(event: CalendarEvent): string {
-  const lastDay = event.end ?? event.start;
-  const dayAfter = new Date(lastDay);
-  dayAfter.setUTCDate(dayAfter.getUTCDate() + 1);
-
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: event.title,
-    dates: `${toDate(event.start)}/${toDate(dayAfter)}`,
+    dates: `${toDate(event.start)}/${toDate(endOf(event))}`,
     details: `${event.description}\n\n${event.url}`,
     location: event.location,
   });
@@ -89,12 +103,30 @@ export function googleCalendarUrl(event: CalendarEvent): string {
   return `https://calendar.google.com/calendar/render?${params}`;
 }
 
-export function toIcs(event: CalendarEvent, now = new Date()): string {
-  // DTEND is exclusive for all-day events: the day after the last day.
-  const lastDay = event.end ?? event.start;
-  const dayAfter = new Date(lastDay);
-  dayAfter.setUTCDate(dayAfter.getUTCDate() + 1);
+/**
+ * The "add to Outlook" link.
+ *
+ * The consumer (outlook.live.com) endpoint, not the work one: a paragliding
+ * club's members are on personal accounts, and a signed-in Microsoft 365 user
+ * is redirected to their own tenant anyway. `allday=true` with plain dates,
+ * and the same exclusive end as everywhere else here.
+ */
+export function outlookCalendarUrl(event: CalendarEvent): string {
+  const params = new URLSearchParams({
+    path: '/calendar/action/compose',
+    rru: 'addevent',
+    allday: 'true',
+    startdt: isoDay(event.start),
+    enddt: isoDay(endOf(event)),
+    subject: event.title,
+    body: `${event.description}\n\n${event.url}`,
+    location: event.location,
+  });
 
+  return `https://outlook.live.com/calendar/0/deeplink/compose?${params}`;
+}
+
+export function toIcs(event: CalendarEvent, now = new Date()): string {
   const stamp = `${toDate(now)}T${String(now.getUTCHours()).padStart(2, '0')}${String(
     now.getUTCMinutes(),
   ).padStart(2, '0')}00Z`;
@@ -110,7 +142,7 @@ export function toIcs(event: CalendarEvent, now = new Date()): string {
       `UID:${escape(event.uid)}`,
       `DTSTAMP:${stamp}`,
       `DTSTART;VALUE=DATE:${toDate(event.start)}`,
-      `DTEND;VALUE=DATE:${toDate(dayAfter)}`,
+      `DTEND;VALUE=DATE:${toDate(endOf(event))}`,
       `SUMMARY:${escape(event.title)}`,
       `DESCRIPTION:${escape(`${event.description}\n\n${event.url}`)}`,
       `LOCATION:${escape(event.location)}`,
