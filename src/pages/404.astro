@@ -13,7 +13,14 @@ import PageLayout from '../layouts/PageLayout.astro';
   <div class="prose">
     <p>La pagina che stai cercando non esiste.</p>
     <p>
-      Prova dai <a href="/siti/">siti di volo</a>, dalle
+      {
+        /*
+        `{' '}` because Astro's minifier eats the newline before an inline
+        element, and "dalle<a>news</a>" rendered as one word. It survives
+        Prettier rewrapping the line; a bare space does not.
+      */
+      }
+      Prova dai <a href="/siti/">siti di volo</a>, dalle{' '}
       <a href="/news/">news</a> o torna alla <a href="/">home</a>.
     </p>
   </div>
