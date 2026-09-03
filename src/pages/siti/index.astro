@@ -11,7 +11,7 @@
  * Sort: featured first, then alphabetical, as the Drupal view did (`sticky`
  * DESC, `title` ASC).
  */
-import { getCollection, getEntries } from 'astro:content';
+import { getCollection, getEntries, getEntry, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import SiteCard from '../../components/SiteCard.astro';
 import NavdataLinks from '../../components/NavdataLinks.astro';
@@ -32,6 +32,18 @@ const sites = (await getCollection('sites')).sort((a, b) => {
   three identical popups on one spot. The first site to claim it wins, which is
   the alphabetical one, and the others still list it in their own tables.
 */
+/*
+  The page's own words, above the map.
+
+  It had none: an h1, a map and a grid of names. That reads as a directory
+  rather than a place, and it gives a search engine nothing to index about the
+  area beyond fourteen site names — which is the one thing someone searching
+  "parapendio val chisone" would not type.
+*/
+const page = await getEntry('pages', 'siti');
+if (!page) throw new Error('Missing src/content/pages/siti.mdx');
+const { Content } = await render(page);
+
 const seen = new Set<string>();
 const overview = (
   await Promise.all(
@@ -54,6 +66,10 @@ const overview = (
   title="Siti di volo"
   description="I siti di volo del Parapendio Club Ventorelativo, tra Pinerolo, Val Chisone e Val Pellice."
 >
+  <div class="prose intro">
+    <Content />
+  </div>
+
   <FeatureIcons />
   <SiteMap features={overview} title="tutti i siti di volo" />
 
@@ -65,6 +81,10 @@ const overview = (
 </PageLayout>
 
 <style>
+  .intro {
+    margin-block-end: var(--space-lg);
+  }
+
   .site-grid {
     display: grid;
     /* 20rem is the largest minimum that still fits three columns in the 68rem

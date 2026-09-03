@@ -200,7 +200,7 @@ export default config({
     brand: { name: 'VentoRelativo', mark: BrandMark },
     navigation: {
       Contenuti: ['news', 'sites'],
-      Pagine: ['home', 'voli', 'iscrizioni', 'contatti', 'privacy', 'stampa'],
+      Pagine: ['home', 'siti', 'voli', 'iscrizioni', 'contatti', 'privacy', 'stampa'],
       Impostazioni: ['social', 'organizzazione'],
     },
   },
@@ -566,6 +566,21 @@ export default config({
           },
           { label: 'Bonifico bancario' },
         ),
+      },
+    }),
+
+    siti: singleton({
+      previewUrl: `${PREVIEW_BASE}/siti/`,
+      label: 'Pagina: Siti di volo',
+      path: 'src/content/pages/siti',
+      format: { contentField: 'content' },
+      schema: {
+        title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
+        description: fields.text({
+          label: 'Descrizione per Google',
+          multiline: true,
+        }),
+        content: fields.mdx({ label: 'Testo introduttivo' }),
       },
     }),
 

@@ -28,7 +28,8 @@ const href = `/siti/${entry.id}/`;
 ---
 
 <article class="card card--link">
-  <h2 class="card__title">
+  {/* The other half of the morph into the site page's h1 — see global.css. */}
+  <h2 class="card__title" style={`view-transition-name: site-${entry.id}`}>
     <a class="card__stretch" href={href}>{title}</a>
   </h2>
   <p class="card__summary">{summary}</p>

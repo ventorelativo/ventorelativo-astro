@@ -62,6 +62,7 @@ const takeoffs = features
   breadcrumbLabels={{ '/siti': 'Siti di volo' }}
   ogRoute={`siti/${entry.id}`}
   place={{ name: title, description: summary, takeoffs, tags }}
+  titleTransition={`site-${entry.id}`}
 >
   {
     tags.length > 0 && (
