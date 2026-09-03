@@ -36,6 +36,16 @@
   status = 301
   force = true
 
+# Drupal's own contact path, which served a real page ("Form Contatti") in the
+# archived build. It was never in that site's sitemap, so nothing indexed it —
+# but it is the default path for a Drupal contact form and someone may well
+# have bookmarked it. Found by scripts/check-urls.mjs, which is the point of it.
+[[redirects]]
+  from = "/contact"
+  to = "/contatti"
+  status = 301
+  force = true
+
 # /home and / served identical content in Drupal — duplicate content (S11).
 [[redirects]]
   from = "/home"
