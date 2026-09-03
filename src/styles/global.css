@@ -402,6 +402,49 @@ hr {
   z-index: 1;
 }
 
+/*
+ * Form fields.
+ *
+ * A primitive for the same reason `.card` is one: the styleguide has to be able
+ * to show a field that looks like the field the contact form renders, and it
+ * could not while these rules lived inside that component. A reference that
+ * shows an unstyled input is worse than one that shows nothing.
+ *
+ * Scoped through `.field` rather than as bare `input`/`textarea` selectors, so
+ * nothing here reaches into the CMS's own form controls.
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.field label {
+  color: var(--color-text-strong);
+  font-size: var(--text-sm);
+}
+
+.field input,
+.field textarea {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+  border-color: var(--color-accent);
+}
+
 /* A row of call-to-action links inside an article body (see mdx/ActionLink). */
 .actions {
   display: flex;

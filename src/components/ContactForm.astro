@@ -86,35 +86,5 @@
     margin-block-start: var(--space-md);
   }
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xs);
-  }
-
-  label {
-    color: var(--color-text-strong);
-    font-size: var(--text-sm);
-  }
-
-  input,
-  textarea {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    font: inherit;
-  }
-
-  textarea {
-    resize: vertical;
-  }
-
-  input:focus-visible,
-  textarea:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 1px;
-    border-color: var(--color-accent);
-  }
+  /* `.field` and its controls are a global primitive — see global.css. */
 </style>
