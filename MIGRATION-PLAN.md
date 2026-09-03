@@ -1275,7 +1275,7 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7: Beyond parity _(items 1-8 done; 9 dropped)_
+### Phase 7: Beyond parity _(items 1-8 and 10 done; 9 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
@@ -1463,6 +1463,30 @@ corrections, and one measurement that turned out to matter:
   white on 0.72 is 1.37:1.
 
 **9. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
+
+**10. A writing kit for editors using an AI.** ✅ _Built 2026-09-03, at the club's
+request._ Volunteers write the news, some would rather start from a draft than a blank box,
+and all of them already have a free ChatGPT or Gemini account. `/redazione` hands them one
+Italian document (`src/authoring/istruzioni.md`) covering every field, the club's voice, and
+the things a model must never invent: dates, prices, and above all coordinates, which are
+not editable through the CMS at all.
+
+**Asked as a WebMCP question, answered as a document.** WebMCP puts the agent inside the
+browser, needs an API Chrome has already renamed once, and needs an assistant that speaks
+it; a chat in another tab is not that agent and a free tier certainly is not. Nothing here
+needs executing either: what a volunteer needs is a briefing, and a document delivers it on
+every model and every tier. The version that would make sense one day is `/keystatic` itself
+registering tools so an in-browser agent fills the form; it needs a browser almost nobody has
+and Keystatic's form state to be drivable from outside, which it is not. Recorded so it is
+not rediscovered as new. A server-side MCP server or a model API behind a Netlify function
+was rejected separately: it costs money per use and needs a key the club would have to hold.
+
+The document is a fourth description of the same fields (rule 12), so
+`npm run authoring:check` compares it with the Zod schemas both ways, and
+`scripts/check-content.mjs` now fails the build on an em dash anywhere in the repository:
+it is the one house rule a language model breaks by reflex, and this invites model-written
+text in through a Keystatic branch nobody reviews line by line. Reasoning in
+[`docs/authoring-with-ai.md`](docs/authoring-with-ai.md).
 
 **Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
 i18n routing (single locale: GTranslate covers the rest, G11), and anything requiring edge
