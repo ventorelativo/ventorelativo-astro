@@ -193,6 +193,13 @@ function measureInPage(selectors, computedSelectors) {
       the warning, which is worse than not warning at all.
     */
     if (insideScroller(el)) continue;
+    /*
+      Nor does the inside of a closed <details>. Chrome hides it with
+      `content-visibility`, which still reports a box, so a drawer parked
+      off-screen until it opens looked like content escaping the viewport.
+    */
+    const closed = el.closest('details:not([open])');
+    if (closed && !el.closest('summary')) continue;
     if (r.right > vw + 0.5 || r.left < -0.5) {
       const cls = typeof el.className === 'string' ? el.className : '';
       overflow.push(
