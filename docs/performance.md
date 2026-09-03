@@ -37,6 +37,17 @@ Do it against the **build**, not the dev server: `astro dev` ships ~400 kB of
 Vite client and HMR machinery that never reaches production, which makes dev
 numbers meaningless.
 
+### Why Vite's chunk-size warning is turned down
+
+Two built chunks are far over Vite's 500 kB default: Keystatic's admin UI
+(~2.6 MB) and MapLibre (~970 kB). Both are deliberate, and neither is on the
+path of a visitor reading a page — the first is fetched at `/keystatic` by an
+editor, the second only when somebody opens a map. The warning has no way to
+tell a lazy chunk from an eager one, so it fired on every build and said
+nothing; `chunkSizeWarningLimit` in `astro.config.mjs` is set just above
+Keystatic, which leaves a genuinely new large chunk still reported. The table
+above, measured with `npm run weight`, is the real budget.
+
 ## Rules
 
 1. **Zero JavaScript is the default.** A page gets none unless something on it

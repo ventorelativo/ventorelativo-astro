@@ -168,6 +168,22 @@ export default defineConfig({
     */
     optimizeDeps: { include: ['bigger-picture', 'maplibre-gl'] },
 
+    build: {
+      /*
+        Two chunks are over Vite's 500 kB default, and both are meant to be:
+        Keystatic's admin UI (~2.6 MB, fetched only at /keystatic, by an
+        editor) and MapLibre (~970 kB, fetched only when somebody opens a map).
+        Neither is on the path of a visitor reading a page.
+
+        The warning cannot tell an eager chunk from a lazy one, so on this site
+        it fires every build and says nothing. What actually guards the budget
+        is `npm run weight`, which measures the bytes a real viewport fetches —
+        see docs/performance.md. The limit is set just above Keystatic so a
+        genuinely new large chunk would still be reported.
+      */
+      chunkSizeWarningLimit: 2800,
+    },
+
     server: {
       // Vite rejects requests whose Host header it doesn't recognise (DNS
       // rebinding protection), which is what makes a tunnelled dev server
