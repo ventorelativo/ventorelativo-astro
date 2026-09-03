@@ -36,8 +36,10 @@ and each entry carries a preview link to that branch's Netlify deploy (see
 against the Drupal archive; the **map**: MapLibre behind a facade, with 3D
 terrain, the KK7 thermal layers, the Tracestrack topo base, per-site and
 overview; the **XContest links** per takeoff; the **language switcher**, a
-facade over GTranslate; and `geo:export`/`geo:import` for round-tripping map
-features through GeoJSON.
+facade over GTranslate; `geo:export`/`geo:import` for round-tripping map
+features through GeoJSON; and the **writing kit** at `/redazione`, one Italian
+document a volunteer pastes into a free ChatGPT or Gemini account to get every
+field of a news post filled in ([`docs/authoring-with-ai.md`](docs/authoring-with-ai.md)).
 
 **Not built, and why:**
 
@@ -78,12 +80,13 @@ npm run dev       # dev server on http://localhost:4321 (background-managed)
 npm run build     # static build into dist/
 npm run preview   # serve the built output
 npm run check     # astro check: types and template diagnostics
-npm run verify    # check + lint + build + five gates. Run before claiming done.
+npm run verify    # check + lint + build + six gates. Run before claiming done.
 npm run navdata:check  # flight files vs the archived Drupal build (needs a build first)
 npm run urls:check     # every URL the old site served still resolves
 npm run sitemap:check  # every built page is in the sitemap, or excluded on purpose
 npm run privacy:check  # no page loads a third party before a visitor asks
 npm run headings:check # every h2 has an id, unique per page, so it can be linked to
+npm run authoring:check # src/authoring/istruzioni.md still matches the schemas
 npm run shot      # screenshot + measure a page in a real emulated viewport
 npm run weight    # transferred bytes by resource type (run against the build)
 ```
@@ -132,17 +135,25 @@ something real.
    `NavdataController.php`, and `src/lib/navdata.ts` records why each rule is
    what it is.
 10. **UI copy is Italian.** Code, comments and documentation are English. That
-    includes Keystatic's field labels, which volunteers read.
+    includes Keystatic's field labels, which volunteers read. One documented
+    exception: `src/authoring/istruzioni.md` is Italian, because its readers are
+    the volunteer who skims it and the model they paste it into, and an Italian
+    brief is what produces an Italian answer.
 11. **Never use an em dash.** Not in content, not in UI copy, not in comments,
     not in documentation, not in commit messages. The club does not want the
     punctuation anywhere in this project. Use a comma, a colon, a semicolon,
     parentheses or a full stop, whichever the sentence actually needs. An en
-    dash stays legal in a numeric range.
-12. **Three lists describe content, and they must agree.** A field added to a
+    dash stays legal in a numeric range. `scripts/check-content.mjs` enforces
+    this over the whole repository, from `prebuild` as well as `lint`, because
+    `/redazione` invites volunteers to draft posts with a model that breaks the
+    rule by reflex and Netlify never runs `lint` on a Keystatic branch.
+12. **Four lists describe content, and they must agree.** A field added to a
     collection needs updating in `src/content.config.ts` (what the build
-    accepts), `keystatic.config.ts` (what an editor can type) and, for body
-    components, `src/components/mdx/components.ts` (what renders). Zod is the
-    backstop: drift fails the build rather than the page.
+    accepts), `keystatic.config.ts` (what an editor can type), for body
+    components `src/components/mdx/components.ts` (what renders), and
+    `src/authoring/istruzioni.md` (what an editor's AI is told the fields are).
+    Zod is the backstop for the first two and `npm run authoring:check` for the
+    last: drift fails the build rather than the page.
 13. **Content files must not contain `import` statements.** Keystatic refuses
     to open an entry that has one. Body components are handed to `<Content
 components={MDX_COMPONENTS} />` instead.
@@ -290,6 +301,17 @@ visitor asks for it. Details and the reasoning behind each rule:
   Factoring ten lines of `<details>` dismissal out of two components cost 2.0 kB
   and three requests on _every_ page. Inside a client script, prefer duplication
   to a shared helper, and if you do import, measure `/` before and after.
+- **Keystatic draws a field's description only where it draws the field.**
+  Under `entryLayout: 'content'` the body field fills the page and its own
+  `description` is never rendered, so help text put there is invisible. The
+  first sidebar field's is drawn. And `ui.navigation` accepts collection and
+  singleton keys only, so there is no way to put an arbitrary link in the
+  admin's sidebar: a note on a field is the way to reach an editor.
+- **`.netlify/` is build output that eslint used to read.** The adapter writes
+  it on every build, so `npm run verify` run after a build reported 124 errors
+  in bundled code nobody here wrote. It is in the eslint ignores now; if a gate
+  suddenly reports errors in files you have never opened, check what generated
+  them before believing them.
 - **Two `getStaticPaths` entries can claim the same path.** Astro keeps one,
   warns, and carries on; the card the `/og/` route built for the homepage was
   wrong for weeks because the entry that won was not the one that looked
