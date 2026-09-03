@@ -140,6 +140,34 @@ export function prompt(site: URL, kind: Kind): string {
     '',
   ].join('\n');
 }
+
+/**
+ * The short prompt that travels in a `?q=` query string.
+ *
+ * The full one is 26,736 characters encoded and does not fit in a URL: Google
+ * answers 400 to a Gemini link somewhere between 8k and 20k. This one names
+ * `/redazione/istruzioni.txt` instead and fits anywhere.
+ *
+ * The last sentence is what makes it safe to send. `robots.txt` disallows every
+ * host that is not the live domain, so until the cutover a model cannot read
+ * that URL even when it can browse, and most free tiers never can. Told to say
+ * so, it asks; and the button has already put the full instructions on the
+ * clipboard, so the volunteer answers with one paste instead of hitting a wall.
+ */
+export function linkPrompt(site: URL, kind: Kind): string {
+  const what = {
+    news: 'una news o un evento',
+    siti: 'la scheda di un sito di volo',
+    pagine: 'una modifica a una pagina fissa o alle impostazioni',
+  }[kind];
+
+  return [
+    `Leggi le istruzioni del Parapendio Club VentoRelativo su ${new URL('/redazione/istruzioni.txt', site).href}`,
+    `e seguile alla lettera: devi prepararmi ${what} per il loro sito.`,
+    'Se non riesci ad aprire quella pagina dimmelo subito, ho il testo delle istruzioni negli appunti e te lo incollo io.',
+  ].join(' ');
+}
+
 /**
  * The document's tables, as data, for `/redazione/contenuti.json`.
  *

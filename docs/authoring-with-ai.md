@@ -93,12 +93,14 @@ staging host today, the branch's own URL in a Keystatic preview, and
 `ventorelativo.it` after the cutover. A hardcoded address would send a volunteer
 to the old Drupal site the day the domain moves.
 
-## Why the prompt carries the instructions rather than a link
+## Why the clipboard carries the instructions, not just a link
 
 `robots.txt` returns `Disallow: /` for every host that is not the live domain,
 and the assistant crawlers honour it, so until the cutover a model cannot read
 `/redazione/istruzioni.txt` even when it is able to browse. Most free tiers
-cannot browse at all. Pasting always works.
+cannot browse at all. Pasting always works, which is why the full text goes on
+the clipboard on every click, and the link in the `?q=` below is the optimistic
+path rather than the mechanism.
 
 ## The JSON, and why it is generated
 
@@ -118,29 +120,40 @@ The prose stays authoritative. The writing rules, the tone and the things a
 model must never invent do not survive being turned into a table, and a table is
 not what makes them followed.
 
-## Why the chat buttons open an empty chat
+## Why the button carries a link, not the prompt
 
-The obvious version of "open ChatGPT with the prompt already in it" does not
-exist at this size. The prompt encodes to **26,736 characters** as a query
-parameter. Google answers `400` to a `gemini.google.com/app?q=…` URL somewhere
-between 8,000 and 20,000 characters; ChatGPT and Claude sit behind bot
-protection that refuses a probe from curl at any length, so they give no signal
-either way, but a 26 kB query string is past what a CDN generally accepts and
-the parameter is undocumented on all three.
+"Open ChatGPT with the prompt already in it" does not exist at this size. The
+full prompt encodes to **26,736 characters** as a query parameter, and Google
+answers `400` to a `gemini.google.com/app?q=…` URL somewhere between 8,000 and
+20,000. ChatGPT and Claude sit behind bot protection that refuses a curl probe
+at any length, so they give no signal either way, but a 26 kB query string is
+past what a CDN generally accepts.
 
-So the ChatGPT, Claude and Gemini buttons put the prompt on the clipboard on
-their way out and open an empty chat, leaving one paste. They are `<a>`
-elements and do not call `preventDefault`, so the browser performs the
-navigation: the link still works with JavaScript off and with a middle click,
-and the clipboard write is started inside the gesture, before focus moves. If a
-browser rejects the write for the focus change, the box above is still there,
-which is why the copy button stays the primary control.
+So the `?q=` carries the **short** prompt instead: a few hundred characters
+naming `/redazione/istruzioni.txt`, which comes to 428 characters as a URL and
+fits anywhere. The same click copies the full text, and that is what makes an
+undocumented parameter safe to rely on: when `?q=` does nothing, the result is
+an empty chat and a full clipboard, which is the fallback either way.
 
-**After the cutover** a genuinely one-click version becomes possible for the
-models that can browse: a few hundred characters saying "read
-ventorelativo.it/redazione/istruzioni.txt and follow it" fits in a `?q=` easily.
-It is worth revisiting then, not before, and it will never cover the free tiers,
-which cannot browse at all.
+The short prompt ends by telling the model to say so if it cannot open the page.
+`robots.txt` disallows every host that is not the live domain, so until the
+cutover no model can read that URL even when it can browse, and no free tier
+ever can. Told to ask, it asks, and the volunteer answers with one paste rather
+than meeting a wall.
+
+## Why one choice at the top
+
+Which chat a volunteer uses is a fact about them, not about what they are
+writing, so it is asked once and remembered in `localStorage` under
+`redazione-ai`. After the first visit the page is one button per content type,
+labelled with where it will send them.
+
+That is the site's second stored key, and `/privacy` lists it beside `theme`.
+The notice claims nothing leaves the device and there is no banner because there
+is nothing to consent to; a preference added without saying so would make that
+claim false. Both the read and the write are wrapped in `try`/`catch`: a browser
+set to block site data throws on `getItem` too, and losing a preference must not
+break the button.
 
 ## Why today's date is added at copy time
 

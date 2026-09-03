@@ -23,36 +23,38 @@
  */
 import PageLayout from '../../layouts/PageLayout.astro';
 import H2 from '../../components/H2.astro';
-import { KINDS, prompt } from '../../lib/authoring';
+import { KINDS, linkPrompt, prompt } from '../../lib/authoring';
 
 const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 
-const blocks = KINDS.map((entry) => ({ ...entry, text: prompt(site, entry.kind) }));
+const blocks = KINDS.map((entry) => ({
+  ...entry,
+  text: prompt(site, entry.kind),
+  short: linkPrompt(site, entry.kind),
+}));
 const keystatic = new URL('/keystatic', site).href;
 const plainText = new URL('/redazione/istruzioni.txt', site).href;
 const asJson = new URL('/redazione/contenuti.json', site).href;
 
 /**
- * The chats a volunteer is likely to already have open, as plain links.
+ * Where the prompt can be sent, chosen once for the whole page.
  *
- * Not a prefilled `?q=`, which was the obvious idea and does not work: the
- * prompt encodes to 26,736 characters as a query parameter, and Google answers
- * 400 to a Gemini URL somewhere between 8k and 20k. ChatGPT and Claude sit
- * behind bot protection that refuses a probe either way, so the length cannot
- * be confirmed there, but a 26 kB query string is past what a CDN accepts and
- * the parameter is undocumented on all three.
+ * One choice at the top rather than a row of buttons per section: which chat a
+ * volunteer uses is a fact about them, not about what they are writing, and it
+ * is remembered, so after the first visit the page has one button.
  *
- * So the link copies the prompt on its way out and opens an empty chat, where
- * the volunteer pastes. One click less than doing both by hand, and nothing
- * silently breaks the day one of them renames a parameter.
- *
- * An `<a>` rather than a button so it still opens without JavaScript, works
- * with a middle click, and shows its destination on hover.
+ * The `?q=` carries the **short** prompt, the one naming `istruzioni.txt`: the
+ * full text is 26,736 characters encoded and Google answers 400 to a Gemini URL
+ * somewhere between 8k and 20k. The button also copies the full text, so a
+ * model that cannot open the link (every free tier, and everything at all until
+ * the cutover lifts `Disallow: /`) is one paste from having it. That is why an
+ * undocumented parameter is safe to rely on here: when it does nothing, the
+ * result is an empty chat and a full clipboard, which is the fallback anyway.
  */
 const CHATS = [
-  { name: 'ChatGPT', href: 'https://chatgpt.com/' },
-  { name: 'Claude', href: 'https://claude.ai/new' },
-  { name: 'Gemini', href: 'https://gemini.google.com/app' },
+  { id: 'chatgpt', name: 'ChatGPT', href: 'https://chatgpt.com/?q=' },
+  { id: 'claude', name: 'Claude', href: 'https://claude.ai/new?q=' },
+  { id: 'gemini', name: 'Gemini', href: 'https://gemini.google.com/app?q=' },
 ];
 ---
 
@@ -66,11 +68,11 @@ const CHATS = [
     <H2>Come funziona</H2>
 
     <ol>
-      <li>Scegli qui sotto cosa devi scrivere e copia il prompt.</li>
+      <li>Dì qui sotto quale intelligenza artificiale usi. Il sito se lo ricorda.</li>
       <li>
-        Incollalo nell'intelligenza artificiale che usi. I pulsanti ChatGPT, Claude e
-        Gemini fanno le due cose insieme: copiano il prompt e aprono il sito, a te resta
-        da incollarlo nella casella del messaggio.
+        Scegli cosa devi scrivere e premi il pulsante: copia il prompt e apre la chat.
+        Se l'intelligenza artificiale non riesce ad aprire da sola le istruzioni, te lo
+        dice: a quel punto incolla, ce le hai già negli appunti.
       </li>
       <li>
         Nella stessa finestra, sotto, scrivi le informazioni che hai: appunti, il
@@ -92,8 +94,26 @@ const CHATS = [
     </p>
   </div>
 
+  <div class="picker field">
+    <label for="ai">Quale intelligenza artificiale usi?</label>
+    <select id="ai">
+      <option value="copia">Nessuna, copio soltanto</option>
+      {
+        CHATS.map((chat) => (
+          <option value={chat.id} data-url={chat.href}>
+            {chat.name}
+          </option>
+        ))
+      }
+    </select>
+    <noscript>
+      Senza JavaScript i pulsanti non funzionano: seleziona il testo nella casella e
+      copialo a mano.
+    </noscript>
+  </div>
+
   {
-    blocks.map(({ kind, label, hint, text }) => (
+    blocks.map(({ kind, label, hint, text, short }) => (
       <section class="kit">
         <H2 id={`prompt-${kind}`}>{label}</H2>
         <p class="kit__hint">{hint}</p>
@@ -114,24 +134,14 @@ const CHATS = [
         </div>
 
         <p class="kit__actions">
-          <button class="button" type="button" data-copy={`testo-${kind}`}>
+          <button
+            class="button"
+            type="button"
+            data-copy={`testo-${kind}`}
+            data-short={short}
+          >
             Copia il prompt
           </button>
-        </p>
-
-        <p class="kit__open">
-          <span>Oppure copialo e apri direttamente:</span>
-          {CHATS.map((chat) => (
-            <a
-              class="button button--outline kit__chat"
-              href={chat.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-copy={`testo-${kind}`}
-            >
-              {chat.name}
-            </a>
-          ))}
         </p>
       </section>
     ))
@@ -150,7 +160,7 @@ const CHATS = [
 
 <script>
   /*
-    Copy, plus today's date.
+    One remembered choice, one button per prompt.
 
     The date is prepended here rather than baked into the page because the page
     is built once and read for months: a model told the wrong date will happily
@@ -160,47 +170,80 @@ const CHATS = [
     No import, so Astro keeps this inline: on a page nobody but an editor opens
     it would still be an extra request. See AGENTS.md, known traps.
   */
+  const KEY = 'redazione-ai';
+
   const today = new Intl.DateTimeFormat('it-IT', { dateStyle: 'full' }).format(
     new Date(),
   );
 
-  const promptOf = (control: HTMLElement) => {
-    const box = document.getElementById(control.dataset.copy!) as HTMLTextAreaElement;
-    return { box, text: `Oggi è ${today}.\n\n${box.value}` };
+  const select = document.getElementById('ai') as HTMLSelectElement;
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-copy]')];
+
+  const chosen = () => select.options[select.selectedIndex];
+
+  /* Both directions wrapped: a browser set to block site data throws on read
+     as well as on write, and losing a preference must not break the button. */
+  const remember = (value: string) => {
+    try {
+      localStorage.setItem(KEY, value);
+    } catch {
+      /* Private mode, or site data blocked. The choice lasts this visit. */
+    }
   };
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>(
-    'button[data-copy]',
-  )) {
-    button.addEventListener('click', async () => {
-      const { box, text } = promptOf(button);
-      const said = button.textContent;
+  const label = () => {
+    const chat = chosen();
+    const text =
+      chat.value === 'copia' ? 'Copia il prompt' : `Copia e apri ${chat.text}`;
+    for (const button of buttons) button.textContent = text;
+  };
 
-      try {
-        await navigator.clipboard.writeText(text);
-        button.textContent = 'Copiato';
-        setTimeout(() => (button.textContent = said), 2000);
-      } catch {
-        /* No clipboard permission: leave the text selected so Ctrl+C works. */
-        box.focus();
-        box.select();
-        button.textContent = 'Premi Ctrl+C';
-      }
-    });
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved && [...select.options].some((option) => option.value === saved)) {
+      select.value = saved;
+    }
+  } catch {
+    /* Nothing saved, or nothing readable. The default option stands. */
   }
 
-  /*
-    The chat links copy on their way out.
+  label();
 
-    `preventDefault` is deliberately not called: the anchor opens the tab
-    itself, which keeps the link working with no JavaScript and with a middle
-    click. The write is started inside the gesture and before focus moves; if a
-    browser rejects it for the focus change the volunteer still has the box
-    above, which is why the copy button stays the primary control.
-  */
-  for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-copy]')) {
-    link.addEventListener('click', () => {
-      navigator.clipboard.writeText(promptOf(link).text).catch(() => {});
+  select.addEventListener('change', () => {
+    remember(select.value);
+    label();
+  });
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const box = document.getElementById(button.dataset.copy!) as HTMLTextAreaElement;
+      const chat = chosen();
+
+      /*
+        Order matters. The clipboard write is started first, inside the gesture
+        and while the document still has focus; `window.open` follows in the
+        same turn, so the popup blocker sees a real click. Awaiting the write
+        before opening would lose the gesture and the tab with it.
+      */
+      const copied = navigator.clipboard.writeText(`Oggi è ${today}.\n\n${box.value}`);
+
+      if (chat.value !== 'copia') {
+        const url = chat.dataset.url + encodeURIComponent(button.dataset.short!);
+        window.open(url, '_blank', 'noopener');
+      }
+
+      copied
+        .then(() => {
+          button.textContent = 'Copiato';
+          setTimeout(label, 2000);
+        })
+        .catch(() => {
+          /* Refused, usually because the new tab took the focus. Leave the
+             text selected so one keystroke still gets it. */
+          box.focus();
+          box.select();
+          button.textContent = 'Premi Ctrl+C';
+        });
     });
   }
 </script>
@@ -232,26 +275,34 @@ const CHATS = [
     margin-block-start: var(--space-sm);
   }
 
-  .kit__open {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2xs);
-    margin-block-start: var(--space-sm);
+  .picker {
+    max-width: var(--prose-width);
+    margin-block: var(--space-lg);
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-subtle);
+  }
+
+  .picker select {
+    /* `.field` styles inputs and textareas; a select is not one of them, and
+       adding it there would reach into the CMS's own controls. */
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  .picker select:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+    border-color: var(--color-accent);
+  }
+
+  .picker noscript {
     color: var(--color-text-muted);
-    font-size: var(--text-sm);
-  }
-
-  /* The label takes its own line at every width. Left inline it fits one
-     button beside it on a phone and strands that one above the other two. */
-  .kit__open span {
-    flex-basis: 100%;
-  }
-
-  /* Smaller than a `.button`, scoped rather than a new global modifier: these
-     are a shortcut beside the real control, not three more calls to action. */
-  .kit__chat {
-    padding: 0.3rem 0.7rem;
     font-size: var(--text-sm);
   }
 </style>
