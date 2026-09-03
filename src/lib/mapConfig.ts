@@ -22,6 +22,9 @@ export const STYLE_ID = '3d203d09-e79b-4c16-a28d-b9564619b3a7';
  */
 export const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY ?? '';
 
+/** Tracestrack's raster topographic base. See RASTER_BASE below. */
+export const TRACESTRACK_KEY = import.meta.env.PUBLIC_TRACESTRACK_KEY ?? '';
+
 /** Elevation tiles, the thing that makes the terrain three-dimensional. */
 export const TERRAIN_SOURCE = 'terrain-rgb-v2';
 
@@ -68,10 +71,14 @@ export const MAX_BOUNDS: [[number, number], [number, number]] = [
  * A plain raster basemap, as an alternative to the club's vector style.
  *
  * Tracestrack Topo is what the old site offered in its style switcher, with
- * the same key — recovered from `leaflet_more_maps.settings.yml`. The key is
- * restricted by referrer rather than kept secret, which is why it can sit in a
- * public repository: it answers for ventorelativo.it and the Netlify hosts and
- * 403s everywhere else.
+ * the same key, recovered from `leaflet_more_maps.settings.yml`.
+ *
+ * The key is protected by a referrer allowlist rather than by secrecy — it has
+ * to travel in a tile URL the browser makes, so it cannot be hidden. It is
+ * still read from the environment rather than written here. Referrer
+ * restrictions are a control the provider enforces and can lose; a key sitting
+ * in a public repository is one an automated scraper finds in minutes, and it
+ * is the club's account behind it. Same treatment as PUBLIC_MAPTILER_KEY.
  *
  * `.webp` rather than `.png`, as the old module requested: the same tile at
  * roughly half the bytes, and every browser that can run MapLibre can decode
@@ -79,8 +86,7 @@ export const MAX_BOUNDS: [[number, number], [number, number]] = [
  */
 export const RASTER_BASE = {
   label: 'Topografica (raster)',
-  tiles:
-    'https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=b9c2fabd9b0774eb89ea495c32bb7c91',
+  tiles: `https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=${TRACESTRACK_KEY}`,
   attribution: 'Tiles © <a href="https://tracestrack.com">Tracestrack</a>',
   maxzoom: 19,
 };

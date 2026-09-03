@@ -43,11 +43,16 @@ const site =
 */
 const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), 'PUBLIC_');
 
-if (!env.PUBLIC_MAPTILER_KEY) {
-  console.warn(
-    '\n  ⚠ PUBLIC_MAPTILER_KEY is not set. The maps will build, load, and draw' +
-      '\n    nothing at all. Set it in .env locally, or in Netlify for a deploy.\n',
-  );
+for (const [name, effect] of [
+  ['PUBLIC_MAPTILER_KEY', 'the maps will build, load, and draw nothing at all'],
+  ['PUBLIC_TRACESTRACK_KEY', "the map's topographic base layer will stay blank"],
+]) {
+  if (!env[name]) {
+    console.warn(
+      `\n  ⚠ ${name} is not set — ${effect}.` +
+        '\n    Set it in .env locally, or in Netlify for a deploy.\n',
+    );
+  }
 }
 
 export default defineConfig({
