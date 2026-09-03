@@ -77,6 +77,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
         backgroundPath:
           entry.id === 'home' ? assetPath({ src: entry.data.hero?.src }) : undefined,
         washed: entry.id === 'home',
+        /* Its title is the club's name, and the name is set uppercase. */
+        wordmark: entry.id === 'home',
       } satisfies CardOptions,
     })),
   ];

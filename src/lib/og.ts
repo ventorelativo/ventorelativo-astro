@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 10;
+const TEMPLATE_VERSION = 11;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -88,6 +88,14 @@ export interface CardOptions {
   title: string;
   /** Shown small above the title — "Siti di volo", "News", … */
   kind?: string;
+  /**
+   * Set the title as a wordmark: uppercase, with the header's tracking.
+   *
+   * For the one card whose title is the club's name rather than a page's. The
+   * name is written uppercase (see /stampa), which the header does in CSS and
+   * satori will not do for us.
+   */
+  wordmark?: boolean;
   /** Absolute path to a background photograph. Falls back to the brand card. */
   backgroundPath?: string;
   /**
@@ -109,6 +117,7 @@ function card(
   kind: string | undefined,
   background: string | null,
   washed = false,
+  wordmark = false,
 ) {
   return {
     type: 'div',
@@ -201,7 +210,10 @@ function card(
                   style: {
                     fontSize: title.length > 48 ? 58 : 76,
                     lineHeight: 1.1,
-                    letterSpacing: -1,
+                    // Uppercase closes letters up; the header opens the same
+                    // wordmark back out with its own tracking.
+                    letterSpacing: wordmark ? 2 : -1,
+                    textTransform: wordmark ? 'uppercase' : 'none',
                     color: '#ffffff',
                     // satori has no `text-wrap`, so long titles simply wrap.
                     display: 'flex',
@@ -223,6 +235,7 @@ export async function renderCard({
   kind,
   backgroundPath,
   washed = false,
+  wordmark = false,
 }: CardOptions): Promise<Buffer> {
   const background = backgroundPath ? await readFile(backgroundPath) : null;
 
@@ -232,6 +245,7 @@ export async function renderCard({
     .update(kind ?? '')
     .update(background ?? 'no-photo')
     .update(washed ? 'washed' : 'full')
+    .update(wordmark ? 'wordmark' : 'plain')
     .digest('hex')
     .slice(0, 16);
 
@@ -264,6 +278,7 @@ export async function renderCard({
       kind,
       fitted ? `data:image/jpeg;base64,${fitted.toString('base64')}` : null,
       washed,
+      wordmark,
     ) as never,
     {
       width: WIDTH,
