@@ -21,9 +21,12 @@ const { label } = Astro.props;
     The old `.badge`: 0.825rem/700 at line-height 1, a 6px radius, and a 10%
     wash of the link blue behind it — sentence case, not uppercase.
 
-    The wash and the text both follow `--color-accent` rather than being pinned
-    to the light-mode blue as the original was; at 10% opacity on a dark
-    background that pairing was close to unreadable.
+    The wash follows `--color-accent` rather than being pinned to the light-mode
+    blue as the original was; at 10% opacity on a dark background that pairing
+    was close to unreadable.
+
+    The text does not: it needs to be a step brighter than the accent in dark
+    mode to clear 4.5:1 against its own wash. See `--color-badge-text`.
   */
   .badge {
     display: inline-block;
@@ -31,7 +34,7 @@ const { label } = Astro.props;
     border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
     border-radius: var(--radius-md);
     background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
-    color: var(--color-accent);
+    color: var(--color-badge-text);
     font-size: 0.825rem;
     font-weight: 700;
     line-height: 1;

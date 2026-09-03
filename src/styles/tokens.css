@@ -89,6 +89,21 @@
   --color-accent-contrast: light-dark(#ffffff, #0f1214);
   --color-accent-subtle: light-dark(#eaf0fa, #1b2740);
 
+  /*
+    The category badge's text.
+
+    `--color-accent` is tuned to sit on the page background. The badge puts it
+    on a 10% wash of itself, which lifts the background under it — and in dark
+    mode that took the contrast to 4.43:1, just under the 4.5 the text's size
+    requires. A step brighter restores it to 5.7:1. Light mode was never close
+    to the line, so it keeps the brand blue.
+
+    The dark value is `--color-accent-hover`'s: one definition, referenced. A
+    `light-dark()` inside a `light-dark()` resolves to the same scheme, so the
+    inner pair picks its dark half here.
+  */
+  --color-badge-text: light-dark(var(--brand-blue), var(--color-accent-hover));
+
   /* ------------------------------------------------------------------ map */
   /*
     One colour per feature type, ported from the archived
