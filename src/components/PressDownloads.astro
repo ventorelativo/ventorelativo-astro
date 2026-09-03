@@ -71,7 +71,7 @@ const rasters = PRESS_ASSETS.map((asset) => ({
 </svg>
 
 <ul class="press">
-  <li class="press__item">
+  <li class="press__item card">
     <span class="press__preview press__preview--check">
       <svg
         class="press__logo"
@@ -92,7 +92,7 @@ const rasters = PRESS_ASSETS.map((asset) => ({
 
   {
     rasters.map((asset) => (
-      <li class="press__item">
+      <li class="press__item card">
         <span
           class:list={[
             'press__preview',
@@ -134,14 +134,13 @@ const rasters = PRESS_ASSETS.map((asset) => ({
     max-width: var(--content-width);
   }
 
+  /* Surface from the `.card` primitive. No hover: the card is not the link,
+     the button inside it is. */
   .press__item {
     display: flex;
     flex-direction: column;
     gap: var(--space-2xs);
     padding: var(--space-sm);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-bg-raised);
   }
 
   .press__symbols {

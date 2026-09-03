@@ -77,7 +77,7 @@ const LINKS: Link[] = [
     LINKS.map(({ icon, label, hint, href, scope }) => (
       <li class="xc__item">
         <a
-          class="xc__link"
+          class="xc__link card card--link"
           href={href}
           data-xc-scope={scope}
           target="_blank"
@@ -122,25 +122,23 @@ const LINKS: Link[] = [
     max-width: var(--content-width);
   }
 
+  .xc__item {
+    display: flex;
+  }
+
+  /*
+    The anchor is the card, rather than a stretched link inside one: there is
+    nothing else in it, so wrapping adds an element and a `::after` for
+    nothing. Surface and hover come from the `.card` primitive.
+  */
   .xc__link {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    height: 100%;
+    width: 100%;
     padding: var(--space-xs) var(--space-sm);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-bg-raised);
     color: inherit;
     text-decoration: none;
-    transition:
-      border-color var(--transition),
-      background-color var(--transition);
-  }
-
-  .xc__link:hover {
-    border-color: var(--color-accent);
-    background-color: var(--color-bg-subtle);
   }
 
   .xc__link:focus-visible {
