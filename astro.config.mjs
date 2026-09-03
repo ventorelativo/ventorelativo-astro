@@ -5,6 +5,8 @@ import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 
+import { loadEnv } from 'vite';
+
 import sitemap from '@astrojs/sitemap';
 import netlify from '@astrojs/netlify';
 
@@ -26,6 +28,27 @@ const site =
   process.env.CONTEXT === 'production'
     ? (process.env.URL ?? FALLBACK_SITE)
     : (process.env.DEPLOY_PRIME_URL ?? process.env.URL ?? FALLBACK_SITE);
+
+/*
+  Say so when the map is going to be built without a key.
+
+  `mapConfig.ts` falls back to an empty string, which produces a style URL
+  ending in `?key=` — a map that loads, draws nothing, and reports no error.
+  That is precisely what was deployed: the built bundle on Netlify had the bare
+  `?key=` while every local build had the key, and nothing anywhere said so.
+
+  A warning rather than a failed build: a fork, or a contributor without the
+  club's key, should still be able to build the site. It is loud enough to see
+  in a Netlify deploy log, which is where it was needed.
+*/
+const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), 'PUBLIC_');
+
+if (!env.PUBLIC_MAPTILER_KEY) {
+  console.warn(
+    '\n  ⚠ PUBLIC_MAPTILER_KEY is not set. The maps will build, load, and draw' +
+      '\n    nothing at all. Set it in .env locally, or in Netlify for a deploy.\n',
+  );
+}
 
 export default defineConfig({
   site,
