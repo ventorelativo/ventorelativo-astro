@@ -14,6 +14,7 @@
 import { getEntry, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import PressDownloads from '../../components/PressDownloads.astro';
+import { MDX_COMPONENTS } from '../../components/mdx/components';
 
 const page = await getEntry('pages', 'stampa');
 if (!page) throw new Error('Missing src/content/pages/stampa.mdx');
@@ -29,7 +30,7 @@ const { Content } = await render(page);
   <PressDownloads />
 
   <div class="prose guidelines">
-    <Content />
+    <Content components={MDX_COMPONENTS} />
   </div>
 </PageLayout>
 

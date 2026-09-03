@@ -1,0 +1,63 @@
+---
+/**
+ * A brand colour, with the colour itself beside its code.
+ *
+ * On a page whose job is to stop people guessing the colours, a hex string on
+ * its own asks the reader to imagine it. The square is the point.
+ *
+ * The colour is a literal here rather than a token: this block documents the
+ * brand, and the brand does not follow the site's colour scheme — `#FABD14`
+ * has to look like `#FABD14` in dark mode too, or the swatch is lying.
+ */
+interface Props {
+  /** Hex, as it should be written down. */
+  color: string;
+  name: string;
+}
+
+const { color, name } = Astro.props;
+---
+
+<div class="swatch">
+  <span class="swatch__chip" style={`background-color:${color}`} aria-hidden="true"></span>
+  <span class="swatch__text">
+    <strong>{name}</strong>
+    {/* `notranslate`: a hex code must survive the translator intact. */}
+    <code class="swatch__code notranslate">{color.toUpperCase()}</code>
+    <span class="swatch__note"><slot /></span>
+  </span>
+</div>
+
+<style>
+  .swatch {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin-block: var(--space-sm);
+  }
+
+  .swatch__chip {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .swatch__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  .swatch__code {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .swatch__note {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+</style>

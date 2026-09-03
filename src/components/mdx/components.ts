@@ -14,5 +14,6 @@
  */
 import ActionLinks from './ActionLinks.astro';
 import Facts from './Facts.astro';
+import Swatch from './Swatch.astro';
 
-export const MDX_COMPONENTS = { ActionLinks, Facts };
+export const MDX_COMPONENTS = { ActionLinks, Facts, Swatch };

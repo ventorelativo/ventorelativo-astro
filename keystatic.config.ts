@@ -67,6 +67,20 @@ const contentComponents = {
     },
   }),
 
+  Swatch: block({
+    label: 'Colore del marchio',
+    description: 'Un quadrato con il colore, il nome e il codice. Solo nel kit stampa.',
+    schema: {
+      color: fields.text({
+        label: 'Codice esadecimale',
+        description: 'Per esempio #1F52A6.',
+        validation: { isRequired: true },
+      }),
+      name: fields.text({ label: 'Nome', validation: { isRequired: true } }),
+    },
+    ContentView: (props) => props.value.name,
+  }),
+
   Facts: block({
     label: 'Scheda dati',
     description:
