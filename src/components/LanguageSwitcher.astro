@@ -248,8 +248,6 @@ const CHECK_ATTRS = {
 </style>
 
 <script>
-  import { dismissable } from '../lib/dropdown';
-
   /** The language the pages are actually written in. */
   const SOURCE = 'it';
 
@@ -396,7 +394,17 @@ const CHECK_ATTRS = {
     const active = activeLang();
     reflect(active);
 
-    dismissable(root, summary);
+    // <details> has no light-dismiss of its own.
+    document.addEventListener('click', (event) => {
+      if (root.open && !root.contains(event.target as Node)) root.open = false;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && root.open) {
+        root.open = false;
+        summary?.focus();
+      }
+    });
 
     if (active !== SOURCE) {
       // A returning visitor who chose a language. Google's element reads the

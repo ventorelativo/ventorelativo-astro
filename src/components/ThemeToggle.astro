@@ -197,8 +197,6 @@ const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
 </style>
 
 <script>
-  import { dismissable } from '../lib/dropdown';
-
   const STORAGE_KEY = 'theme';
   type Theme = 'light' | 'dark' | 'auto';
 
@@ -267,7 +265,17 @@ const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
       });
     }
 
-    dismissable(root, summary);
+    // <details> has no light-dismiss of its own.
+    document.addEventListener('click', (event) => {
+      if (root.open && !root.contains(event.target as Node)) root.open = false;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && root.open) {
+        root.open = false;
+        root.querySelector<HTMLElement>('[data-theme-summary]')?.focus();
+      }
+    });
   }
 
   init();
