@@ -3,9 +3,14 @@
  * Cloudflare Web Analytics (S16).
  *
  * The old site had no analytics at all — this is new. Cloudflare's beacon was
- * chosen because it sets no cookies and stores no personal data, so the site
- * needs no consent banner: a banner would be a bigger imposition on visitors
- * than the measurement is worth.
+ * chosen because it stores nothing on the visitor's device, which is what the
+ * consent rules turn on: no cookie, no localStorage, no identifier, therefore
+ * no banner. A banner would be a bigger imposition than the measurement is
+ * worth, and there would be nothing for a visitor to decide.
+ *
+ * `/privacy` states, as fact, that this runs. Do not leave the token unset on
+ * production without editing that page: a privacy notice describing something
+ * the site does not do is as wrong as one omitting something it does.
  *
  * It is the one third-party request on the site, ~7 kB, `defer`red so it never
  * blocks rendering and never runs before the page is usable. That is a real

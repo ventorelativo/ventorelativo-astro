@@ -23,12 +23,22 @@ nothing and reported no error.
 fail on finding them in the output, where Astro deliberately put them. A build
 without the MapTiler key says so in the deploy log.
 
-### 2. Set `PUBLIC_CF_BEACON_TOKEN`, or decide not to
+### 2. Set `PUBLIC_CF_BEACON_TOKEN`
 
-Also absent, so there are no analytics on the deployed site. That is a decision
-either way — the beacon is the site's only third-party request. If the numbers
-are never going to be read, leaving it unset is the cheaper answer and
-`Analytics.astro` renders nothing.
+Decided 2026-09-03: analytics is on. Netlify → **Site configuration →
+Environment variables** → `PUBLIC_CF_BEACON_TOKEN`, from the Cloudflare Web
+Analytics dashboard. Without it `Analytics.astro` renders nothing, which is what
+happens locally and on previews.
+
+**This one is coupled to a legal page.** `/privacy` now states as fact that the
+beacon runs, names Cloudflare as a US recipient, and gives legitimate interest
+as the basis. Leaving the token unset in production makes that notice describe
+something the site does not do. If the club changes its mind, the "Statistiche
+di visita" section and the sentence about it in "In breve" come out together,
+and so does the entry in `check-third-party.mjs`'s allowlist.
+
+No cookie banner is needed and none should be added: nothing is stored on the
+visitor's device, so there is nothing to consent to.
 
 ### 3. Add the branch previews to the Tracestrack referrer list
 

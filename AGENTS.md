@@ -50,11 +50,13 @@ features through GeoJSON.
   what the site already has before inventing something new. It is `noindex` and
   excluded from the sitemap, so it is not part of the public site.
 - RSS: dropped by decision, not oversight (MIGRATION-PLAN.md S9).
-- A cookie banner. There is nothing to consent to: opening a page fetches
-  nothing third-party and stores no cookie, and `npm run privacy:check` fails
-  if that stops being true. The map, the translator and their tile providers
-  load only on interaction. `/privacy` says exactly this — keep the two in
-  step, and the gate's allowlist with them.
+- A cookie banner. There is nothing to consent to: **nothing is ever stored on
+  the visitor's device**, which is what the consent rules are about, so no
+  banner is required. Exactly one third-party request fires unasked — the
+  cookieless analytics beacon — and `npm run privacy:check` fails if a second
+  one appears. The map, the translator and their tile providers load only on
+  interaction. `/privacy` says exactly this — keep the three in step: the
+  notice, the gate's allowlist, and what the pages actually do.
 - `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it —
   the maps inline their data.
 - Membership payments (Phase 6) wait on the committee (D10). `/iscrizioni`
