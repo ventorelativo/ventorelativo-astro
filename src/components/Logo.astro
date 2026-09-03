@@ -16,14 +16,16 @@ interface Props {
   /** Rendered height. Width follows the 708:292 aspect ratio. */
   height?: string;
   class?: string;
+  /** Merged after the height, so a caller can add a `view-transition-name`. */
+  style?: string;
 }
 
-const { height = '2.75rem', class: className } = Astro.props;
+const { height = '2.75rem', class: className, style } = Astro.props;
 ---
 
 <svg
   class:list={['logo', className]}
-  style={`height:${height}`}
+  style={[`height:${height}`, style].filter(Boolean).join(';')}
   viewBox="0 0 708 292"
   fill="none"
   role="img"

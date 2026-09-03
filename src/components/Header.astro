@@ -29,7 +29,17 @@ const { transparent = false } = Astro.props;
     */
     }
     <a href="/" class="header__brand" rel="home">
-      {!transparent && <Logo />}
+      {
+        /*
+          Named for the view transition, and only ever rendered here when the
+          homepage is not the page being shown — so the name is unique in the
+          document, which it has to be. Coming from the homepage the browser
+          matches this against the hero's big centred mark and flies one into
+          the other; between two interior pages it holds still, which is also
+          correct.
+        */
+      }
+      {!transparent && <Logo style="view-transition-name: brand-mark" />}
       <span class="header__names">
         <span class="header__name">{SITE.name}</span>
         <span class="header__slogan">{SITE.slogan}</span>

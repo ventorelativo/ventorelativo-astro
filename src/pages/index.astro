@@ -60,7 +60,8 @@ const CTAS = home.data.ctas ?? [];
     />
 
     <div class="hero__content container">
-      <Logo height="8rem" />
+      {/* Morphs into the header's mark on every other page — see Header. */}
+      <Logo height="8rem" style="view-transition-name: brand-mark" />
 
       {
         /*
