@@ -30,6 +30,29 @@ const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 const blocks = KINDS.map((entry) => ({ ...entry, text: prompt(site, entry.kind) }));
 const keystatic = new URL('/keystatic', site).href;
 const plainText = new URL('/redazione/istruzioni.txt', site).href;
+
+/**
+ * The chats a volunteer is likely to already have open, as plain links.
+ *
+ * Not a prefilled `?q=`, which was the obvious idea and does not work: the
+ * prompt encodes to 26,736 characters as a query parameter, and Google answers
+ * 400 to a Gemini URL somewhere between 8k and 20k. ChatGPT and Claude sit
+ * behind bot protection that refuses a probe either way, so the length cannot
+ * be confirmed there, but a 26 kB query string is past what a CDN accepts and
+ * the parameter is undocumented on all three.
+ *
+ * So the link copies the prompt on its way out and opens an empty chat, where
+ * the volunteer pastes. One click less than doing both by hand, and nothing
+ * silently breaks the day one of them renames a parameter.
+ *
+ * An `<a>` rather than a button so it still opens without JavaScript, works
+ * with a middle click, and shows its destination on hover.
+ */
+const CHATS = [
+  { name: 'ChatGPT', href: 'https://chatgpt.com/' },
+  { name: 'Claude', href: 'https://claude.ai/new' },
+  { name: 'Gemini', href: 'https://gemini.google.com/app' },
+];
 ---
 
 <PageLayout
@@ -43,7 +66,11 @@ const plainText = new URL('/redazione/istruzioni.txt', site).href;
 
     <ol>
       <li>Scegli qui sotto cosa devi scrivere e copia il prompt.</li>
-      <li>Incollalo nell'intelligenza artificiale che usi.</li>
+      <li>
+        Incollalo nell'intelligenza artificiale che usi. I pulsanti ChatGPT, Claude e
+        Gemini fanno le due cose insieme: copiano il prompt e aprono il sito, a te resta
+        da incollarlo nella casella del messaggio.
+      </li>
       <li>
         Nella stessa finestra, sotto, scrivi le informazioni che hai: appunti, il
         messaggio che ti è arrivato, quello che c'è sulla locandina. Anche disordinate,
@@ -90,6 +117,21 @@ const plainText = new URL('/redazione/istruzioni.txt', site).href;
             Copia il prompt
           </button>
         </p>
+
+        <p class="kit__open">
+          <span>Oppure copialo e apri direttamente:</span>
+          {CHATS.map((chat) => (
+            <a
+              class="button button--outline kit__chat"
+              href={chat.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-copy={`testo-${kind}`}
+            >
+              {chat.name}
+            </a>
+          ))}
+        </p>
       </section>
     ))
   }
@@ -119,10 +161,16 @@ const plainText = new URL('/redazione/istruzioni.txt', site).href;
     new Date(),
   );
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+  const promptOf = (control: HTMLElement) => {
+    const box = document.getElementById(control.dataset.copy!) as HTMLTextAreaElement;
+    return { box, text: `Oggi è ${today}.\n\n${box.value}` };
+  };
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>(
+    'button[data-copy]',
+  )) {
     button.addEventListener('click', async () => {
-      const box = document.getElementById(button.dataset.copy!) as HTMLTextAreaElement;
-      const text = `Oggi è ${today}.\n\n${box.value}`;
+      const { box, text } = promptOf(button);
       const said = button.textContent;
 
       try {
@@ -135,6 +183,21 @@ const plainText = new URL('/redazione/istruzioni.txt', site).href;
         box.select();
         button.textContent = 'Premi Ctrl+C';
       }
+    });
+  }
+
+  /*
+    The chat links copy on their way out.
+
+    `preventDefault` is deliberately not called: the anchor opens the tab
+    itself, which keeps the link working with no JavaScript and with a middle
+    click. The write is started inside the gesture and before focus moves; if a
+    browser rejects it for the focus change the volunteer still has the box
+    above, which is why the copy button stays the primary control.
+  */
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-copy]')) {
+    link.addEventListener('click', () => {
+      navigator.clipboard.writeText(promptOf(link).text).catch(() => {});
     });
   }
 </script>
@@ -164,5 +227,28 @@ const plainText = new URL('/redazione/istruzioni.txt', site).href;
 
   .kit__actions {
     margin-block-start: var(--space-sm);
+  }
+
+  .kit__open {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /* The label takes its own line at every width. Left inline it fits one
+     button beside it on a phone and strands that one above the other two. */
+  .kit__open span {
+    flex-basis: 100%;
+  }
+
+  /* Smaller than a `.button`, scoped rather than a new global modifier: these
+     are a shortcut beside the real control, not three more calls to action. */
+  .kit__chat {
+    padding: 0.3rem 0.7rem;
+    font-size: var(--text-sm);
   }
 </style>

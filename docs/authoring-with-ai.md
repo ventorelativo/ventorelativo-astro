@@ -79,10 +79,29 @@ and the assistant crawlers honour it, so until the cutover a model cannot read
 `/redazione/istruzioni.txt` even when it is able to browse. Most free tiers
 cannot browse at all. Pasting always works.
 
-**After the cutover** a short link-only prompt becomes possible for the models
-that can browse, which would fit in a `chatgpt.com/?q=…` deep link and turn the
-flow into one click. It is worth revisiting then, not before: today it would
-fail silently, which is the worst way for a tool aimed at volunteers to fail.
+## Why the chat buttons open an empty chat
+
+The obvious version of "open ChatGPT with the prompt already in it" does not
+exist at this size. The prompt encodes to **26,736 characters** as a query
+parameter. Google answers `400` to a `gemini.google.com/app?q=…` URL somewhere
+between 8,000 and 20,000 characters; ChatGPT and Claude sit behind bot
+protection that refuses a probe from curl at any length, so they give no signal
+either way, but a 26 kB query string is past what a CDN generally accepts and
+the parameter is undocumented on all three.
+
+So the ChatGPT, Claude and Gemini buttons put the prompt on the clipboard on
+their way out and open an empty chat, leaving one paste. They are `<a>`
+elements and do not call `preventDefault`, so the browser performs the
+navigation: the link still works with JavaScript off and with a middle click,
+and the clipboard write is started inside the gesture, before focus moves. If a
+browser rejects the write for the focus change, the box above is still there,
+which is why the copy button stays the primary control.
+
+**After the cutover** a genuinely one-click version becomes possible for the
+models that can browse: a few hundred characters saying "read
+ventorelativo.it/redazione/istruzioni.txt and follow it" fits in a `?q=` easily.
+It is worth revisiting then, not before, and it will never cover the free tiers,
+which cannot browse at all.
 
 ## Why today's date is added at copy time
 
