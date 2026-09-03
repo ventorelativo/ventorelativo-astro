@@ -7,7 +7,6 @@ import keystatic from '@keystatic/astro';
 
 import { loadEnv } from 'vite';
 
-import sitemap from '@astrojs/sitemap';
 import netlify from '@astrojs/netlify';
 
 /**
@@ -145,30 +144,6 @@ export default defineConfig({
   // and Keystatic's content field writes .mdx.
   integrations: [
     mdx(),
-    /*
-      S8. The Drupal `simple_sitemap` gave everything 0.5 and set one custom
-      priority: `/` at 1.0. `/contatti` was listed as a custom link but also at
-      0.5, so it needs nothing special here despite what the plan says.
-
-      /styleguide is excluded: it is a development reference, deleted at the end
-      of Phase 2, and has no business in search results meanwhile.
-
-      The two post-action pages are excluded for a different reason: they carry
-      `noindex` (see BaseLayout), and a page that is in the sitemap while asking
-      not to be indexed is a contradiction Google resolves in its own favour.
-      Both lists have to agree.
-    */
-    sitemap({
-      filter: (page) =>
-        !['/styleguide', '/contatti/messaggio-inviato', '/iscrizioni/grazie'].some(
-          (excluded) => page.includes(excluded),
-        ),
-      serialize(item) {
-        const path = new URL(item.url).pathname;
-        item.priority = path === '/' ? 1.0 : 0.5;
-        return item;
-      },
-    }),
     /*
       The CMS, now part of the deployed site.
 

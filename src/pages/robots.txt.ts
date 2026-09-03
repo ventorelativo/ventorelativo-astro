@@ -29,7 +29,7 @@ Allow: /
 Disallow: /keystatic
 Disallow: /api/keystatic
 
-Sitemap: ${new URL('sitemap-index.xml', site)}
+Sitemap: ${new URL('sitemap.xml', site)}
 
 # For language models: an index of the site's content, and the full text.
 # ${new URL('llms.txt', site)}
