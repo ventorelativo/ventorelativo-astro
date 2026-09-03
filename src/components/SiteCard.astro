@@ -10,8 +10,10 @@
  * title, 8px between the lines. The title takes the heading blue rather than
  * the old card's body grey, so it matches every other heading on the site.
  *
- * Only the title is an anchor, stretched over the card by a pseudo-element, so
+ * Only the title is an anchor, stretched over the card by `.card__stretch`, so
  * the whole card is clickable without the summary being read out as link text.
+ * The comment said that before the rule existed — the stretch was never
+ * written, and fourteen cards had a clickable heading and a dead body.
  */
 import type { CollectionEntry } from 'astro:content';
 import Badge from './Badge.astro';
@@ -25,9 +27,9 @@ const { title, summary, tags } = entry.data;
 const href = `/siti/${entry.id}/`;
 ---
 
-<article class="card">
+<article class="card card--link">
   <h2 class="card__title">
-    <a href={href}>{title}</a>
+    <a class="card__stretch" href={href}>{title}</a>
   </h2>
   <p class="card__summary">{summary}</p>
 
@@ -43,18 +45,25 @@ const href = `/siti/${entry.id}/`;
 </article>
 
 <style>
+  /* Surface, shadow and hover come from the `.card` primitive in global.css. */
   .card {
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-2xs);
     padding: var(--space-sm);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg-raised);
     /* Clips the contour texture to the rounded corners. */
     overflow: hidden;
-    transition: border-color var(--transition);
+    /*
+      Makes the card a stacking context, which is what lets the texture below
+      sit at `z-index: -1` — above the card's own background, beneath every
+      child — without escaping to an ancestor.
+
+      The alternative, positioning each child to lift it over the texture, is
+      what was here before, and it silently broke the stretched link: a
+      positioned `<h2>` becomes the containing block for the anchor's
+      `::after`, so `inset: 0` covered the heading instead of the card.
+    */
+    isolation: isolate;
   }
 
   /*
@@ -71,8 +80,22 @@ const href = `/siti/${entry.id}/`;
     position: absolute;
     inset: 0;
     background-color: var(--color-topo);
-    mask-image: url('/topo.svg');
-    mask-size: 600px;
+    /*
+      Two masks, intersected: the contour drawing, and a diagonal fade so the
+      pattern arrives gradually out of the bottom-right corner instead of
+      filling the card evenly.
+
+      The old theme did it the other way round — it painted a
+      `linear-gradient(315deg, transparent 0%, var(--bs-card-bg) 70%)` *over*
+      the pattern, which needs the card's own background colour repeated in the
+      gradient. Masking needs no colour at all, so it keeps working when the
+      card's ground changes.
+    */
+    mask-image: url('/topo.svg'), linear-gradient(315deg, #000 0%, transparent 70%);
+    z-index: -1;
+    mask-composite: intersect;
+    mask-repeat: repeat, no-repeat;
+    mask-size: 600px, cover;
     pointer-events: none;
   }
 
@@ -87,11 +110,6 @@ const href = `/siti/${entry.id}/`;
   }
   .card:nth-child(4n)::before {
     mask-position: 70% 60%;
-  }
-
-  /* Above the texture. */
-  .card > * {
-    position: relative;
   }
 
   .card:hover {

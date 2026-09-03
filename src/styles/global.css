@@ -335,6 +335,73 @@ hr {
   --button-outline-color: var(--brand-success);
 }
 
+/*
+ * Cards.
+ *
+ * A global primitive because five components now draw one — news teasers,
+ * flight sites, the XContest searches, the press downloads and the navdata
+ * files — and five copies of "border, radius, raised background" is five
+ * places for them to drift apart. Each component keeps its own layout and its
+ * own contents; this is only the surface they sit on.
+ *
+ * The shadow is deliberately almost invisible at rest. It is there to lift the
+ * card off the page by a hair, not to announce itself; the hover state is what
+ * says "this responds to you".
+ */
+.card {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-raised);
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
+}
+
+/*
+ * `--card-interactive` is set by the components whose whole card is a link.
+ * A card that does nothing when clicked should not grow a hover state — it
+ * promises an interaction it does not have.
+ */
+.card--link:hover,
+.card--link:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card--link:hover,
+  .card--link:focus-within {
+    transform: none;
+  }
+}
+
+/*
+ * The whole card is clickable, but only one link inside it is the link: the
+ * pseudo-element stretches that anchor over the card. Wrapping everything in
+ * an <a> instead would make a screen reader announce the date, the badge and
+ * the summary as part of the link text, and would nest links illegally.
+ */
+.card__stretch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /*
+    Above the card's own contents, or the paragraph that follows the heading in
+    the DOM paints over it and the click lands on the text. Both cards had this
+    rule without the z-index and both had a clickable heading in a dead card —
+    which is the failure mode of this pattern: it looks implemented.
+
+    The cost is that text inside the card cannot be selected. That is the same
+    trade Bootstrap's `.stretched-link` makes, and on a teaser whose whole job
+    is to be clicked it is the right way round.
+  */
+  z-index: 1;
+}
+
 /* A row of call-to-action links inside an article body (see mdx/ActionLink). */
 .actions {
   display: flex;
