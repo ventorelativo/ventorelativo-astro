@@ -22,7 +22,7 @@ const articles = (await getCollection('news', ({ data }) => !data.draft)).sort(
 <PageLayout
   ogRoute="news"
   title="News"
-  description="Eventi, gare e novità dal Parapendio Club Ventorelativo."
+  description="Eventi, gare e novità dal parapendio club tra Pinerolo, la Val Chisone e la Val Pellice."
 >
   {
     articles.length === 0 ? (
