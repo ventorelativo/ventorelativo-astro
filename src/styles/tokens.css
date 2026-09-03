@@ -104,6 +104,25 @@
   */
   --color-badge-text: light-dark(var(--brand-blue), var(--color-accent-hover));
 
+  /*
+    A tick, a confirmation — green that reads on either ground.
+
+    Not `--brand-success` directly: that is Bootstrap's `$success`, tuned as a
+    button fill under white text, and at 3.37:1 on a dark card it is the dimmest
+    thing on the page. The dark half is lifted to 4.9:1. The button keeps the
+    brand value, because there the green is the background.
+  */
+  --color-success: light-dark(var(--brand-success), #2ea56c);
+
+  /*
+    What sits on a solid brand-blue surface. White in both schemes, for the
+    reason `.button` records: the primary button keeps `--brand-blue` in dark
+    mode rather than following `--color-accent`, and white on it is legible
+    either way. Anything that has to read as the same object — the highlighted
+    pricing card's header band — uses this pair rather than inventing one.
+  */
+  --color-on-brand: #ffffff;
+
   /* ------------------------------------------------------------------ map */
   /*
     One colour per feature type, ported from the archived

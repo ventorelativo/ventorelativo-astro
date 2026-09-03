@@ -232,9 +232,31 @@ const pages = defineCollection({
             name: z.string(),
             /** Euros. A number so a future Stripe integration can use it. */
             price: z.number(),
+            /**
+             * What the price is per, if anything — "all'anno". Left empty by
+             * default rather than assumed: the old site printed a bare figure
+             * and nothing in the export says the quota renews.
+             */
+            period: z.string().optional(),
+            /** One line on who this tier is for. Sits under the name. */
+            tagline: z.string().optional(),
             benefits: z.array(z.string()),
+            /**
+             * What this tier does *not* get. The reason the page needs them:
+             * a Sostenitore is not a member, and a list of benefits alone
+             * cannot say so — it reads as a smaller version of the same thing.
+             */
+            limits: z.array(z.string()).default([]),
+            /** A word on the highlighted card — "Consigliata". */
+            badge: z.string().optional(),
             /** Satispay today, a Stripe Payment Link if D10 goes that way. */
             payUrl: z.url(), // z.string().url() is deprecated in Zod 4
+            /**
+             * The button's words. A field, not a constant, because the rail
+             * changes (D10) and "Paga con Satispay" would then be a lie
+             * shipped in code rather than a line an editor can fix.
+             */
+            payLabel: z.string().default('Paga con Satispay'),
             highlight: z.boolean().default(false),
           }),
         )

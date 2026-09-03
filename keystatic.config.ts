@@ -455,13 +455,35 @@ export default config({
               label: 'Prezzo in euro',
               validation: { isRequired: true },
             }),
+            period: fields.text({
+              label: 'Periodo',
+              description: "Per esempio «all'anno». Lascia vuoto per non indicarlo.",
+            }),
+            tagline: fields.text({
+              label: 'A chi è rivolta',
+              description: 'Una riga sotto il nome.',
+            }),
             benefits: fields.array(fields.text({ label: 'Vantaggio' }), {
-              label: 'Vantaggi',
+              label: 'Cosa comprende',
               itemLabel: (props) => props.value,
+            }),
+            limits: fields.array(fields.text({ label: 'Limite' }), {
+              label: 'Cosa non comprende',
+              description:
+                'Serve a dire chiaramente la differenza tra Sostenitore e Socio.',
+              itemLabel: (props) => props.value,
+            }),
+            badge: fields.text({
+              label: 'Etichetta',
+              description: 'Per esempio «Consigliata». Solo sulla quota in evidenza.',
             }),
             payUrl: fields.url({
               label: 'Link di pagamento',
               validation: { isRequired: true },
+            }),
+            payLabel: fields.text({
+              label: 'Testo del pulsante',
+              defaultValue: 'Paga con Satispay',
             }),
             highlight: fields.checkbox({
               label: 'In evidenza',

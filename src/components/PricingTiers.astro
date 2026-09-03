@@ -5,14 +5,30 @@
  * Was hand-written Bootstrap in the page body — `.card.rounded-3.shadow-sm`,
  * `.text-bg-primary`, a `w-100 btn btn-primary stretched-link`. The data is
  * structured now, so switching payment rail (D10, Satispay → Stripe) is a URL
- * change in one field rather than an edit to markup an editor should not have
- * been holding.
+ * and a label in two fields rather than an edit to markup an editor should not
+ * have been holding.
+ *
+ * ## Why it shows what a tier does *not* include
+ *
+ * The two tiers are not two sizes of the same thing. A Sostenitore supports
+ * the club; a Socio is a member of it, with a vote. A list of benefits alone
+ * cannot say that — read down two columns of ticks, the cheaper one just looks
+ * like less. The missing rows are the point of the page, so they are on it.
+ *
+ * The old card's filled header comes back for the highlighted tier, which is
+ * what the club had and what every pricing table does, but as the header band
+ * only: a whole card of solid blue would fight the page.
  */
 interface Tier {
   name: string;
   price: number;
+  period?: string;
+  tagline?: string;
   benefits: string[];
+  limits: string[];
+  badge?: string;
   payUrl: string;
+  payLabel: string;
   highlight: boolean;
 }
 
@@ -21,34 +37,65 @@ interface Props {
 }
 
 const { tiers } = Astro.props;
+
 const euro = new Intl.NumberFormat('it-IT', {
   style: 'currency',
   currency: 'EUR',
   maximumFractionDigits: 0,
 });
+
+/* 16x16 to match the footer's icons, stroked to match the theme toggle's. */
+const MARK = {
+  yes: 'm3.5 8.5 3 3 6-7',
+  no: 'm4.5 4.5 7 7m0-7-7 7',
+} as const;
 ---
 
 <ul class="tiers">
   {
     tiers.map((tier) => (
       <li class:list={['tier', tier.highlight && 'tier--highlight']}>
-        <h3 class="tier__name">{tier.name}</h3>
-        <p class="tier__price">{euro.format(tier.price)}</p>
+        <div class="tier__head">
+          <h3 class="tier__name">{tier.name}</h3>
+          {tier.badge && <p class="tier__badge">{tier.badge}</p>}
+        </div>
 
-        <ul class="tier__benefits">
-          {tier.benefits.map((benefit) => (
-            <li>{benefit}</li>
-          ))}
-        </ul>
+        <div class="tier__body">
+          <p class="tier__price">
+            {euro.format(tier.price)}
+            {tier.period && <span class="tier__period">{tier.period}</span>}
+          </p>
 
-        <a
-          class="button tier__pay"
-          href={tier.payUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Paga con Satispay
-        </a>
+          {tier.tagline && <p class="tier__tagline">{tier.tagline}</p>}
+
+          <ul class="tier__list">
+            {tier.benefits.map((benefit) => (
+              <li>
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                  <path class="mark mark--yes" d={MARK.yes} />
+                </svg>
+                <span>{benefit}</span>
+              </li>
+            ))}
+            {tier.limits.map((limit) => (
+              <li class="tier__limit">
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                  <path class="mark mark--no" d={MARK.no} />
+                </svg>
+                <span>{limit}</span>
+              </li>
+            ))}
+          </ul>
+
+          <a
+            class:list={['button', 'tier__pay', !tier.highlight && 'button--outline']}
+            href={tier.payUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {tier.payLabel}
+          </a>
+        </div>
       </li>
     ))
   }
@@ -57,38 +104,88 @@ const euro = new Intl.NumberFormat('it-IT', {
 <style>
   .tiers {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
     gap: var(--space-md);
     /* Stretch, not start: with `margin-block-start: auto` on the button below,
        equal-height cards put the two pay buttons on the same line. */
     align-items: stretch;
     list-style: none;
-    margin: 0;
+    /* Clear of the paragraph that introduces them. */
+    margin: var(--space-lg) 0 0;
     padding: 0;
-    max-width: 44rem;
+    /*
+      The prose width, so the cards' edges line up with the text above rather
+      than overhanging it by a few centimetres on a wide screen.
+    */
+    max-width: var(--prose-width);
   }
 
   .tier {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2xs);
-    padding: var(--space-md);
+    /* The header band runs to the card's edge, so the padding lives inside. */
+    overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background-color: var(--color-bg-raised);
-    text-align: center;
   }
 
-  /* The old card marked the recommended tier with a full primary-coloured
-     header. A border does the same job without a block of solid blue. */
   .tier--highlight {
     border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+  }
+
+  .tier__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-2xs);
+    padding: var(--space-sm) var(--space-md);
+    border-block-end: 1px solid var(--color-border);
+    background-color: var(--color-bg-subtle);
+  }
+
+  /*
+    The old card's `text-bg-primary` header, kept to the band.
+
+    `--brand-blue`, not `--color-accent`, so the header and the pay button
+    below it are the same blue in both schemes — the button deliberately does
+    not follow the accent into dark mode, and a card whose head and foot
+    disagreed read as two pieces.
+  */
+  .tier--highlight .tier__head {
+    border-color: var(--brand-blue);
+    background-color: var(--brand-blue);
+    color: var(--color-on-brand);
   }
 
   .tier__name {
     font-size: var(--text-lg);
     font-weight: 500;
-    color: var(--color-text);
+    color: inherit;
+  }
+
+  .tier__badge {
+    padding: 0.2em 0.6em;
+    border-radius: var(--radius-pill);
+    /*
+      15%, not more. At 22% the pill lightened the blue under it to #5078ba and
+      white on that is 4.43:1 — under the line for 13px text, and invisible to
+      anyone reading the design rather than measuring it.
+    */
+    background-color: color-mix(in srgb, var(--color-on-brand) 15%, transparent);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .tier__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--space-md);
   }
 
   .tier__price {
@@ -96,21 +193,70 @@ const euro = new Intl.NumberFormat('it-IT', {
     font-size: var(--text-3xl);
     font-weight: 300;
     line-height: 1.1;
+    text-align: center;
   }
 
-  .tier__benefits {
+  .tier__period {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .tier__tagline {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /*
+    Left-aligned, unlike the name and price above it. A centred list of ticks
+    has a ragged left edge exactly where the eye wants to run down it.
+  */
+  .tier__list {
     display: flex;
     flex-direction: column;
     gap: var(--space-3xs);
-    margin-block: var(--space-2xs) var(--space-sm);
+    margin-block: var(--space-xs) var(--space-sm);
     padding: 0;
     list-style: none;
-    color: var(--color-text-muted);
     font-size: var(--text-sm);
   }
 
+  .tier__list li {
+    display: flex;
+    align-items: start;
+    gap: var(--space-2xs);
+    color: var(--color-text);
+  }
+
+  .tier__limit {
+    color: var(--color-text-muted);
+  }
+
+  /* `flex: none` so a two-line row does not squash the mark beside it. */
+  .tier__list svg {
+    flex: none;
+    margin-block-start: 0.15em;
+  }
+
+  .mark {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mark--yes {
+    stroke: var(--color-success);
+  }
+
+  .mark--no {
+    stroke: var(--color-text-muted);
+  }
+
   /* Pushes the button to the bottom so buttons line up across tiers of
-     different benefit counts. */
+     different list lengths. */
   .tier__pay {
     margin-block-start: auto;
   }
