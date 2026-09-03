@@ -26,6 +26,25 @@ const { entry } = Astro.props;
 const { title, summary, images, tags, guideUrl } = entry.data;
 
 /*
+  Who to thank for the windgram.
+
+  Keyed on the host rather than written into the card, because `guideUrl` is a
+  content field an editor can repoint: hardcoding the name meant a URL sent
+  somewhere else would still have credited this one, and a credit that can
+  become a false attribution is worse than a label that can. An unknown host
+  falls back to itself, which is at least true.
+
+  Paragliding Kubernetes is one person's work, and he flies with the club.
+*/
+const WINDGRAM_PROVIDERS: Record<string, string> = {
+  'paragliding-kubernetes.web-forge.info': 'Paragliding Kubernetes',
+};
+
+const provider = guideUrl
+  ? (WINDGRAM_PROVIDERS[new URL(guideUrl).hostname] ?? new URL(guideUrl).hostname)
+  : undefined;
+
+/*
   `mapFeatures` holds references, not data: Zod's `reference()` stores the id
   and checks at build that the target exists, so a typo fails the build rather
   than rendering an empty table. `getEntries` resolves them, in the order the
@@ -103,7 +122,9 @@ const takeoffs = features
           </span>
           <span class="guide__text">
             <span class="guide__label">Windgram e previsioni dettagliate</span>
-            <span class="guide__source">Paragliding Kubernetes</span>
+            <span class="guide__source">
+              Grazie a <span class="guide__partner">{provider}</span>
+            </span>
           </span>
           <ExternalIcon class="guide__out" />
         </a>
@@ -140,6 +161,11 @@ const takeoffs = features
     padding: var(--space-xs) var(--space-sm);
     color: inherit;
     text-decoration: none;
+  }
+
+  /* The name reads as a name, not as more of the sentence around it. */
+  .guide__partner {
+    color: var(--color-text-strong);
   }
 
   .guide__icon {
