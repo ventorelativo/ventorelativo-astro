@@ -54,12 +54,30 @@
     <textarea id="contact-message" name="message" rows="6" required></textarea>
   </p>
 
+  {
+    /*
+      The Art. 13 notice, at the point of collection. A line and a link, not a
+      checkbox: the lawful basis for answering a message someone chose to send
+      is the message, not consent, and a tick box would ask for permission the
+      club does not need while implying the opposite.
+    */
+  }
+  <p class="form__notice">
+    I dati che invii servono solo a risponderti. Vedi{' '}
+    <a href="/privacy">l'informativa privacy</a>.
+  </p>
+
   <p>
     <button class="button" type="submit">Invia</button>
   </p>
 </form>
 
 <style>
+  .form__notice {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
   .form {
     display: flex;
     flex-direction: column;

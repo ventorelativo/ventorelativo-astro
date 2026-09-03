@@ -76,6 +76,14 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
       }
     </ul>
 
+    {
+      /* Required to be reachable from every page, which is why it is here
+        rather than in the nav. */
+    }
+    <p class="footer__legal">
+      <a href="/privacy">Privacy</a>
+    </p>
+
     <div class="footer__controls">
       <LanguageSwitcher />
       <ThemeToggle />
@@ -116,6 +124,19 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
   }
 
   .footer__social a:hover {
+    color: var(--color-accent);
+  }
+
+  /*
+    Body colour, not muted: `--color-text-muted` on the footer's own
+    `--color-bg-subtle` measures 4.29:1, under the line for 15px text. It is
+    also a link, and one that has to be findable.
+  */
+  .footer__legal a {
+    color: var(--color-text);
+  }
+
+  .footer__legal a:hover {
     color: var(--color-accent);
   }
 
