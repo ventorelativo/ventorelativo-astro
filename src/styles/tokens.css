@@ -212,6 +212,17 @@
   --shadow-md: 0 4px 16px light-dark(#0f172a14, #00000059);
 
   /*
+    The header and the footer cast into the content between them, so the page
+    reads as a sheet under the chrome rather than three panels butted together.
+    Same weight as a resting card — this is a seam, not a floating element.
+
+    Two tokens because the direction differs and a `box-shadow` cannot be
+    flipped by the consumer; the colour and blur stay in one place.
+  */
+  --shadow-chrome-down: 0 2px 6px light-dark(#0f172a14, #0000004d);
+  --shadow-chrome-up: 0 -2px 6px light-dark(#0f172a14, #0000004d);
+
+  /*
     The veil at the edge of a box that has more content out of sight — the
     scroll hint on a wide table, drawn as a gradient rather than a `box-shadow`.
 
