@@ -39,6 +39,14 @@ Sitemap: ${new URL('sitemap.xml', site)}
 # This deploy is a copy of ${INDEXABLE_HOST}, not the site itself.
 User-agent: *
 Disallow: /
+
+# Except the writing kit's two machine-readable files. They exist only on this
+# build, so they cannot compete with the live site for anything, and an
+# assistant has to be able to fetch them: it is the whole point of /redazione
+# that a volunteer sends a link instead of pasting fifteen kilobytes. Longest
+# match wins, so these two survive the Disallow above.
+Allow: /redazione/istruzioni.txt
+Allow: /redazione/contenuti.json
 `;
 
   return new Response(body, {
