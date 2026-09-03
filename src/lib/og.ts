@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 8;
+const TEMPLATE_VERSION = 9;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -46,6 +46,24 @@ const CACHE_DIR = '.astro/og-cache';
 const BRAND_BLUE = '#1f52a6';
 
 const font = await readFile('src/assets/fonts/Metropolis-Bold.ttf');
+
+/**
+ * The brand-blue veil laid over a washed photograph.
+ *
+ * 0.82 by measurement, not by eye: below about 0.75 the mountains carry enough
+ * contrast of their own to compete with the title, and above 0.9 the picture
+ * is gone and the card may as well be flat.
+ */
+const WASH = await sharp({
+  create: {
+    width: WIDTH,
+    height: HEIGHT,
+    channels: 4,
+    background: { r: 0x1f, g: 0x52, b: 0xa6, alpha: 0.82 },
+  },
+})
+  .png()
+  .toBuffer();
 
 /*
   The branding on every card is one asset: `src/assets/og-logo.svg`, the mark on
@@ -64,6 +82,12 @@ export interface CardOptions {
   kind?: string;
   /** Absolute path to a background photograph. Falls back to the brand card. */
   backgroundPath?: string;
+  /**
+   * Ghost the photograph into the brand blue instead of filling the card with
+   * it. For the homepage: the card is the club's, not one photograph's, but a
+   * flat blue rectangle says nothing about where the club flies.
+   */
+  washed?: boolean;
 }
 
 /**
@@ -72,7 +96,12 @@ export interface CardOptions {
  * Written as plain objects rather than JSX so this file stays a `.ts` and needs
  * no JSX pragma for a template that is never a component.
  */
-function card(title: string, kind: string | undefined, background: string | null) {
+function card(
+  title: string,
+  kind: string | undefined,
+  background: string | null,
+  washed = false,
+) {
   return {
     type: 'div',
     props: {
@@ -108,9 +137,16 @@ function card(title: string, kind: string | undefined, background: string | null
               left: 0,
               width: WIDTH,
               height: HEIGHT,
-              backgroundImage: background
-                ? 'linear-gradient(to bottom, rgba(9,14,22,0.15) 0%, rgba(9,14,22,0.55) 55%, rgba(9,14,22,0.88) 100%)'
-                : 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(9,14,22,0.35) 100%)',
+              backgroundImage:
+                background && !washed
+                  ? 'linear-gradient(to bottom, rgba(9,14,22,0.15) 0%, rgba(9,14,22,0.55) 55%, rgba(9,14,22,0.88) 100%)'
+                  : /*
+                      A washed background is already most of the way to the
+                      brand blue, so it takes the same light diagonal a card
+                      with no photograph gets — the heavy foot scrim on top of
+                      it read as a smudge rather than as depth.
+                    */
+                    'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(9,14,22,0.35) 100%)',
             },
           },
         },
@@ -175,6 +211,7 @@ export async function renderCard({
   title,
   kind,
   backgroundPath,
+  washed = false,
 }: CardOptions): Promise<Buffer> {
   const background = backgroundPath ? await readFile(backgroundPath) : null;
 
@@ -183,6 +220,7 @@ export async function renderCard({
     .update(title)
     .update(kind ?? '')
     .update(background ?? 'no-photo')
+    .update(washed ? 'washed' : 'full')
     .digest('hex')
     .slice(0, 16);
 
@@ -194,6 +232,17 @@ export async function renderCard({
   const fitted = background
     ? await sharp(background)
         .resize(WIDTH, HEIGHT, { fit: 'cover', position: 'centre' })
+        /*
+          Washing is done here rather than with an opacity in the template:
+          satori's support for it is partial, and this way the result is one
+          flat image whose contrast can be measured off the file.
+
+          Desaturate first, then lay the brand blue over it. Doing only the
+          blue leaves the photograph's own colours fighting through it; doing
+          only the desaturation leaves a grey card that is not the club's.
+        */
+        .modulate(washed ? { saturation: 0.15, brightness: 1.04 } : {})
+        .composite(washed ? [{ input: WASH, blend: 'over' }] : [])
         .jpeg({ quality: 82 })
         .toBuffer()
     : null;
@@ -203,6 +252,7 @@ export async function renderCard({
       title,
       kind,
       fitted ? `data:image/jpeg;base64,${fitted.toString('base64')}` : null,
+      washed,
     ) as never,
     {
       width: WIDTH,

@@ -14,8 +14,10 @@ import { renderCard, type CardOptions } from '../../lib/og';
 import { SITE } from '../../consts';
 
 /** Where a collection entry's own photograph lives on disk, if it has one. */
-function assetPath(image: { src: ImageMetadata } | undefined): string | undefined {
-  if (!image) return undefined;
+function assetPath(
+  image: { src: ImageMetadata | undefined } | undefined,
+): string | undefined {
+  if (!image?.src) return undefined;
   // ImageMetadata.src is the resolved URL; fsPath is the file it came from.
   const path = (image.src as ImageMetadata & { fsPath?: string }).fsPath;
   return path;
@@ -63,9 +65,17 @@ export const getStaticPaths: GetStaticPaths = async () => {
           The homepage's card says what the club *is*. Its page title is the
           club's name, which is already on the card as `kind` — printed twice
           it read as a mistake.
+
+          It also carries the page's own hero photograph, washed into the brand
+          blue: the homepage is the link that gets shared, and the valley it
+          shows is the answer to "where is this club". Only this page — the
+          other fixed pages have no picture that is about them.
         */
         title: entry.id === 'home' ? SITE.slogan : entry.data.title,
         kind: SITE.name,
+        backgroundPath:
+          entry.id === 'home' ? assetPath({ src: entry.data.hero?.src }) : undefined,
+        washed: entry.id === 'home',
       } satisfies CardOptions,
     })),
   ];
