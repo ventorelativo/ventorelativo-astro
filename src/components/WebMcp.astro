@@ -1,0 +1,34 @@
+---
+/**
+ * WebMCP — the tools a visitor's AI assistant can call on this site.
+ *
+ * The whole of this component, for a browser that does not have the API, is
+ * the feature check below: one `in` test, and nothing is fetched. That is the
+ * condition MIGRATION-PLAN.md §7 item 3 set for building it at all — the
+ * objection was never the idea, it was shipping JavaScript to everyone for an
+ * API almost nobody's browser could use.
+ *
+ * The tools themselves are in `src/lib/webmcp.ts`, behind a dynamic import, so
+ * they are a separate chunk that only a supporting browser downloads.
+ *
+ * `is:inline` and a hand-written URL, deliberately. A bundled script would
+ * have to reach the module through a hashed path, which only a module can
+ * resolve — and that costs every visitor either 1.5 kB and two extra requests
+ * (Vite's dynamic-import helper) or 1.44 kB inlined. Both were measured. A
+ * file in `public/vendor/` has a stable URL, so the guard is these three lines
+ * and nothing is fetched at all unless the browser has the API.
+ *
+ * `scripts/build-webmcp.mjs` compiles `src/lib/webmcp.ts` into that file
+ * before every dev and build, so the source stays type-checked.
+ */
+---
+
+<script is:inline>
+  if ('modelContext' in document || 'modelContext' in navigator) {
+    import('/vendor/webmcp.js')
+      .then((module) => module.register())
+      .catch(() => {
+        /* The assistant simply gets no tools. Every page still works. */
+      });
+  }
+</script>

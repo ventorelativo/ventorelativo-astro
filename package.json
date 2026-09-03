@@ -16,8 +16,8 @@
     "weight": "node scripts/shot.mjs --no-shot --weight",
     "navdata:check": "node scripts/check-navdata.mjs",
     "urls:check": "node scripts/check-urls.mjs",
-    "predev": "node scripts/sync-vendor.mjs",
-    "prebuild": "node scripts/sync-vendor.mjs",
+    "predev": "node scripts/sync-vendor.mjs && node scripts/build-webmcp.mjs",
+    "prebuild": "node scripts/sync-vendor.mjs && node scripts/build-webmcp.mjs",
     "geo:export": "node scripts/geo.mjs export",
     "geo:import": "node scripts/geo.mjs import"
   },
