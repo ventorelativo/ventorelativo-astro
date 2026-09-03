@@ -1,0 +1,168 @@
+---
+/**
+ * /redazione: the kit a volunteer hands to an AI before writing a post.
+ *
+ * The whole feature is a document and a copy button. WebMCP, an MCP server and
+ * an API key were all considered and all rejected: what a volunteer needs is a
+ * briefing they can paste into whatever chat window they already have, on a
+ * free tier, with no browser support and nothing to install.
+ *
+ * ## Why a textarea and not a code block
+ *
+ * It is the no-JavaScript path. Without the script a volunteer can still tap
+ * into the box, select all and copy, which a `<pre>` on a phone makes
+ * miserable; and the box scrolls internally, so a thousand-word prompt does not
+ * turn the page into a corridor. What you read in it is exactly what the model
+ * receives, which is the point: no hidden system prompt, no surprises.
+ *
+ * ## Why it is noindex and out of the sitemap
+ *
+ * Same reason as /styleguide: it is a tool for the people who run the site, not
+ * a page of the site. Keeping it on the real domain rather than in the repo is
+ * deliberate, a volunteer with a phone and a locandina can reach a URL.
+ */
+import PageLayout from '../../layouts/PageLayout.astro';
+import H2 from '../../components/H2.astro';
+import { KINDS, prompt } from '../../lib/authoring';
+
+const site = Astro.site ?? new URL('https://www.ventorelativo.it');
+
+const blocks = KINDS.map((entry) => ({ ...entry, text: prompt(site, entry.kind) }));
+const keystatic = new URL('/keystatic', site).href;
+const plainText = new URL('/redazione/istruzioni.txt', site).href;
+---
+
+<PageLayout
+  title="Redazione"
+  description="Come preparare una news o la scheda di un sito con l'aiuto di un'intelligenza artificiale, rispettando le regole del sito."
+  intro="Le regole della casa in un blocco di testo da incollare in ChatGPT, Gemini, Claude o quello che usi. Funziona anche con gli account gratuiti."
+  noindex
+>
+  <div class="prose">
+    <H2>Come funziona</H2>
+
+    <ol>
+      <li>Scegli qui sotto cosa devi scrivere e copia il prompt.</li>
+      <li>Incollalo nell'intelligenza artificiale che usi.</li>
+      <li>
+        Nella stessa finestra, sotto, scrivi le informazioni che hai: appunti, il
+        messaggio che ti è arrivato, quello che c'è sulla locandina. Anche disordinate,
+        non importa.
+      </li>
+      <li>
+        Ricevi il valore di ogni campo, il testo da incollare e l'elenco di quello che
+        manca. Poi apri <a href={keystatic}>il gestore dei contenuti</a> e riempi i campi.
+      </li>
+    </ol>
+
+    <p>
+      <strong>Rileggi sempre prima di pubblicare.</strong> Un'intelligenza artificiale sbaglia
+      le date e si inventa i dettagli con la faccia di chi li sa. Le istruzioni le dicono
+      di lasciare vuoto quello che non sa e di elencartelo, ma l'ultima parola è tua: controlla
+      date, luoghi e quote contro i tuoi appunti. Niente va online prima che tu unisca le
+      modifiche.
+    </p>
+  </div>
+
+  {
+    blocks.map(({ kind, label, hint, text }) => (
+      <section class="kit">
+        <H2 id={`prompt-${kind}`}>{label}</H2>
+        <p class="kit__hint">{hint}</p>
+
+        <div class="field">
+          <label class="visually-hidden" for={`testo-${kind}`}>
+            Il prompt da copiare
+          </label>
+          {/* `set:text` rather than a child: an expression inside the tag would
+              put the JSX indentation into the value the volunteer copies. */}
+          <textarea
+            class="kit__text"
+            readonly
+            rows="10"
+            id={`testo-${kind}`}
+            set:text={text}
+          />
+        </div>
+
+        <p class="kit__actions">
+          <button class="button" type="button" data-copy={`testo-${kind}`}>
+            Copia il prompt
+          </button>
+        </p>
+      </section>
+    ))
+  }
+
+  <div class="prose">
+    <H2>Le istruzioni da sole</H2>
+    <p>
+      Il prompt qui sopra contiene già tutto. Se ti serve leggere le regole senza il
+      resto, o passarle a qualcuno, sono qui: <a href={plainText}>istruzioni.txt</a>.
+    </p>
+  </div>
+</PageLayout>
+
+<script>
+  /*
+    Copy, plus today's date.
+
+    The date is prepended here rather than baked into the page because the page
+    is built once and read for months: a model told the wrong date will happily
+    decide next Saturday's event already happened. `Intl` gives the Italian
+    spelling for free.
+
+    No import, so Astro keeps this inline: on a page nobody but an editor opens
+    it would still be an extra request. See AGENTS.md, known traps.
+  */
+  const today = new Intl.DateTimeFormat('it-IT', { dateStyle: 'full' }).format(
+    new Date(),
+  );
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    button.addEventListener('click', async () => {
+      const box = document.getElementById(button.dataset.copy!) as HTMLTextAreaElement;
+      const text = `Oggi è ${today}.\n\n${box.value}`;
+      const said = button.textContent;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copiato';
+        setTimeout(() => (button.textContent = said), 2000);
+      } catch {
+        /* No clipboard permission: leave the text selected so Ctrl+C works. */
+        box.focus();
+        box.select();
+        button.textContent = 'Premi Ctrl+C';
+      }
+    });
+  }
+</script>
+
+<style>
+  .kit {
+    max-width: var(--prose-width);
+    margin-block: var(--space-lg);
+  }
+
+  .kit__hint {
+    margin-block: var(--space-2xs) var(--space-sm);
+    color: var(--color-text-muted);
+  }
+
+  .kit__text {
+    /* Monospace so a stray character in a field value is visible, and small:
+       this is a block to be copied, not to be read closely. */
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    resize: vertical;
+    /* Wrap rather than scroll sideways: a soft wrap does not alter `value`,
+       so what is copied is still the text as written. */
+    white-space: pre-wrap;
+  }
+
+  .kit__actions {
+    margin-block-start: var(--space-sm);
+  }
+</style>

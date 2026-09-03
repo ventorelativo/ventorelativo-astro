@@ -23,6 +23,7 @@ import { getCollection } from 'astro:content';
 export const EXCLUDED = [
   '/404', // an error page, not a destination
   '/styleguide/', // a design reference, not a page of the site (also noindex)
+  '/redazione/', // the editors' AI kit, a tool for the club (also noindex)
   '/contatti/messaggio-inviato/', // post-action page, noindex
   '/iscrizioni/grazie/', // post-action page, noindex
   '/keystatic', // the CMS

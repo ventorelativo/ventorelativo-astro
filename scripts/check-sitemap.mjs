@@ -17,6 +17,7 @@ const BUILD = 'dist';
 const EXCLUDED = [
   '/404',
   '/styleguide/',
+  '/redazione/',
   '/contatti/messaggio-inviato/',
   '/iscrizioni/grazie/',
   '/keystatic',
