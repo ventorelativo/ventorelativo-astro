@@ -64,17 +64,24 @@ const full = await Promise.all(
     {
       images.map((img, i) => (
         <figure>
+          {/*
+            The link is named, the image inside it is not.
+
+            `alt=""` on the thumbnail is deliberate — the caption below carries
+            the same words and a screen reader would otherwise announce them
+            twice. But an empty alt inside an anchor leaves the anchor with no
+            accessible name at all, which is what Lighthouse caught here: three
+            links announced as "link, link, link". The label goes on the link
+            and says what following it does, which the caption cannot.
+          */}
           <a
             href={full[i].src}
+            aria-label={`Ingrandisci: ${img.alt}`}
             data-img={full[i].src}
             data-alt={img.alt}
             data-width={full[i].width}
             data-height={full[i].height}
           >
-            {/*
-              alt="" deliberately: the caption below carries the same words, and
-              a screen reader would otherwise announce them twice.
-            */}
             {/*
               The thumbnail is a 4:3 crop shown at ~20rem, so 640px covers a
               2x screen. quality 70 is indistinguishable at this size and cuts
