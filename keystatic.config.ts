@@ -200,7 +200,7 @@ export default config({
     brand: { name: 'VentoRelativo', mark: BrandMark },
     navigation: {
       Contenuti: ['news', 'sites'],
-      Pagine: ['home', 'voli', 'iscrizioni', 'contatti', 'privacy'],
+      Pagine: ['home', 'voli', 'iscrizioni', 'contatti', 'privacy', 'stampa'],
       Impostazioni: ['social', 'organizzazione'],
     },
   },
@@ -561,6 +561,21 @@ export default config({
           },
           { label: 'Bonifico bancario' },
         ),
+      },
+    }),
+
+    stampa: singleton({
+      previewUrl: `${PREVIEW_BASE}/stampa/`,
+      label: 'Pagina: Kit stampa',
+      path: 'src/content/pages/stampa',
+      format: { contentField: 'content' },
+      schema: {
+        title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
+        description: fields.text({
+          label: 'Descrizione per Google',
+          multiline: true,
+        }),
+        content: fields.mdx({ label: 'Linee guida' }),
       },
     }),
 

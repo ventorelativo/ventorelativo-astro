@@ -1,0 +1,199 @@
+---
+/**
+ * The press kit's download grid.
+ *
+ * Each tile previews the artwork by drawing the real logo component on the
+ * ground the file has, rather than by loading the file: the PNGs are 1-2 MB of
+ * 2000px artwork between them, and nobody should download all six to look at a
+ * page. `<Logo>` paints its blue from `--color-accent`, so a reversed tile only
+ * has to override that one property.
+ *
+ * The list itself is `src/lib/press.ts`, which is also what generates the
+ * files — one definition, so a tile cannot advertise something the build did
+ * not write.
+ */
+import { readFile } from 'node:fs/promises';
+
+import { PRESS_ASSETS } from '../lib/press';
+
+/*
+  The logo once, as a <symbol>, referenced by every tile.
+
+  `<Logo>` inlines the whole drawing, and seven copies made a 119 kB HTML page
+  — gzip flattened it to 13 kB, so the wire cost was fine and the parse cost was
+  not. This is what the Drupal theme did too, for the same reason.
+
+  The classes become presentation attributes because CSS selectors do not reach
+  inside a `<use>` shadow tree, while custom properties inherit into it — so a
+  tile can still turn the blue white by setting `--color-accent`.
+*/
+const logo = (await readFile('src/assets/logo-card.svg', 'utf8'))
+  .replace(/^[\s\S]*?<svg[^>]*>/, '')
+  .replace(/<\/svg>\s*$/, '')
+  .replaceAll('class="p"', 'fill="var(--color-accent)"')
+  .replaceAll('class="a"', 'fill="var(--brand-yellow)"');
+
+const VECTOR = {
+  href: '/stampa/ventorelativo-logo.svg',
+  label: 'Logo vettoriale (SVG)',
+  use: 'Per la stampa e per qualsiasi ridimensionamento. È il file sorgente.',
+  meta: 'SVG · scalabile',
+};
+
+const rasters = PRESS_ASSETS.map((asset) => ({
+  href: `/stampa/${asset.slug}.png`,
+  label: asset.label,
+  use: asset.use,
+  meta: `PNG · ${asset.width}×${asset.height ?? Math.round((asset.width * 292) / 708)} px`,
+  background: asset.background,
+  reversed: asset.reversed ?? false,
+}));
+---
+
+{/* Hidden, and defined once: the geometry every tile below points at. */}
+<svg class="press__symbols" aria-hidden="true" focusable="false">
+  <symbol id="vr-press-logo" viewBox="0 0 708 292" set:html={logo} />
+</svg>
+
+<ul class="press">
+  <li class="press__item">
+    <span class="press__preview press__preview--check">
+      <svg
+        class="press__logo"
+        viewBox="0 0 708 292"
+        role="img"
+        aria-label="Ventorelativo"
+      >
+        <use href="#vr-press-logo"></use>
+      </svg>
+    </span>
+    <span class="press__body">
+      <strong>{VECTOR.label}</strong>
+      <span class="press__use">{VECTOR.use}</span>
+      <span class="press__meta">{VECTOR.meta}</span>
+    </span>
+    <a class="button button--outline press__get" href={VECTOR.href} download>Scarica</a>
+  </li>
+
+  {
+    rasters.map((asset) => (
+      <li class="press__item">
+        <span
+          class:list={[
+            'press__preview',
+            !asset.background && 'press__preview--check',
+            asset.reversed && 'press__preview--reversed',
+          ]}
+          style={asset.background ? `background-color:${asset.background}` : undefined}
+        >
+          <svg
+            class="press__logo"
+            viewBox="0 0 708 292"
+            role="img"
+            aria-label="Ventorelativo"
+          >
+            <use href="#vr-press-logo" />
+          </svg>
+        </span>
+        <span class="press__body">
+          <strong>{asset.label}</strong>
+          <span class="press__use">{asset.use}</span>
+          <span class="press__meta">{asset.meta}</span>
+        </span>
+        <a class="button button--outline press__get" href={asset.href} download>
+          Scarica
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .press {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: var(--space-sm);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: var(--content-width);
+  }
+
+  .press__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-raised);
+  }
+
+  .press__symbols {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  .press__logo {
+    height: 2.4rem;
+    width: auto;
+  }
+
+  .press__preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  /*
+    A checkerboard for the files with a transparent ground — the only way to
+    show "transparent" that does not look like "white".
+  */
+  .press__preview--check {
+    background-color: #ffffff;
+    background-image:
+      linear-gradient(45deg, #e6e8ec 25%, transparent 25%),
+      linear-gradient(-45deg, #e6e8ec 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #e6e8ec 75%),
+      linear-gradient(-45deg, transparent 75%, #e6e8ec 75%);
+    background-size: 16px 16px;
+    background-position:
+      0 0,
+      0 8px,
+      8px -8px,
+      -8px 0;
+  }
+
+  /* `<Logo>` paints its blue from the accent; the reversed files paint white. */
+  .press__preview--reversed {
+    --color-accent: #ffffff;
+  }
+
+  .press__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+
+  .press__use {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-wrap: pretty;
+  }
+
+  .press__meta {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .press__get {
+    margin-block-start: auto;
+    align-self: start;
+  }
+</style>

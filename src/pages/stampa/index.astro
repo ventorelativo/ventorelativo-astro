@@ -1,0 +1,44 @@
+---
+/**
+ * /stampa — the press kit.
+ *
+ * Downloads first, guidelines after: someone lands here because they need a
+ * logo in the next five minutes, and making them read the rules first is how a
+ * press kit ends up with the wrong file used anyway.
+ *
+ * The artwork is generated at build from the same SVG the header inlines
+ * (`src/lib/press.ts`), so there is no folder of exported PNGs to keep in step
+ * with the logo. The guidelines are ordinary editable content — they are the
+ * club's rules, not the site's.
+ */
+import { getEntry, render } from 'astro:content';
+import PageLayout from '../../layouts/PageLayout.astro';
+import PressDownloads from '../../components/PressDownloads.astro';
+
+const page = await getEntry('pages', 'stampa');
+if (!page) throw new Error('Missing src/content/pages/stampa.mdx');
+const { Content } = await render(page);
+---
+
+<PageLayout
+  title={page.data.title}
+  description={page.data.description}
+  intro="Loghi da scaricare e come usarli. Se scrivi di noi, qui c'è tutto quello che serve."
+>
+  <h2 class="downloads__title">File</h2>
+  <PressDownloads />
+
+  <div class="prose guidelines">
+    <Content />
+  </div>
+</PageLayout>
+
+<style>
+  .downloads__title {
+    margin-block-end: var(--space-sm);
+  }
+
+  .guidelines {
+    margin-block-start: var(--space-xl);
+  }
+</style>
