@@ -1,4 +1,4 @@
-# Ventorelativo — Astro build.
+# Ventorelativo, Astro build.
 # Cache rules ported from the Drupal repo's netlify.toml; see MIGRATION-PLAN.md §1.2 (S14).
 
 [build]
@@ -13,18 +13,18 @@
   # value is compiled into pages and sent to every visitor, so finding it in the
   # output is the point, not a leak.
   #
-  #  - PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is the GitHub App's URL name — the same
+  #  - PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is the GitHub App's URL name, the same
   #    string as this repository, and readable at github.com/apps/<slug>.
   #  - PUBLIC_CF_BEACON_TOKEN identifies the site to Cloudflare's analytics; it
   #    is written into a script tag on every page.
   #  - PUBLIC_MAPTILER_KEY and PUBLIC_TRACESTRACK_KEY sign every tile request
   #    the map makes from the browser, so they cannot be anything but public.
-  #    They are protected by each provider's referrer allowlist instead — see
+  #    They are protected by each provider's referrer allowlist instead: see
   #    src/lib/mapConfig.ts.
   #
   # Listed by name rather than disabling the scan, so a real secret added later
-  # is still caught. The genuine ones — KEYSTATIC_GITHUB_CLIENT_SECRET and
-  # KEYSTATIC_SECRET — carry no prefix and stay scanned.
+  # is still caught. The genuine ones (KEYSTATIC_GITHUB_CLIENT_SECRET and
+  # KEYSTATIC_SECRET) carry no prefix and stay scanned.
   SECRETS_SCAN_OMIT_KEYS = "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG,PUBLIC_CF_BEACON_TOKEN,PUBLIC_MAPTILER_KEY,PUBLIC_TRACESTRACK_KEY"
 
 # Redirects (MIGRATION-PLAN.md S10, S11).
@@ -41,16 +41,16 @@
   force = true
 
 
-# /home and / served identical content in Drupal — duplicate content (S11).
+# /home and / served identical content in Drupal: duplicate content (S11).
 [[redirects]]
   from = "/home"
   to = "/"
   status = 301
   force = true
 
-# A memorable way in to the CMS. Keystatic hardcodes its own path — the UI
+# A memorable way in to the CMS. Keystatic hardcodes its own path, the UI
 # derives its base path from the route it is mounted at, and its client calls
-# /api/keystatic directly — so the app stays where the library puts it and this
+# /api/keystatic directly, so the app stays where the library puts it and this
 # is a doorway to it, not a move. Starts working in Phase 3, when the admin is
 # part of the deployed site; until then both sides of this 404.
 [[redirects]]
@@ -69,8 +69,8 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# The contour pattern behind the footer and the site cards. Not hashed — it is
-# served from public/ so the CSS can name it — so it is versioned by hand:
+# The contour pattern behind the footer and the site cards. Not hashed, it is
+# served from public/ so the CSS can name it, so it is versioned by hand:
 # change the drawing, change the filename.
 [[headers]]
   for = "/topo.svg"

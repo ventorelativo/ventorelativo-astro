@@ -1,5 +1,5 @@
 /**
- * ESLint — the checks `astro check` does not do.
+ * ESLint: the checks `astro check` does not do.
  *
  * `astro check` covers types and template diagnostics; this covers the rest:
  * unused variables, unreachable code, the small mistakes that survive a build
@@ -18,7 +18,7 @@ import prettier from 'eslint-config-prettier';
 export default [
   /*
     Content is not linted here. MDX needs its own parser, and the one rule worth
-    enforcing on it — no `import` statements — is checked by
+    enforcing on it (no `import` statements) is checked by
     scripts/check-content.mjs instead, which needs no dependency and can explain
     itself when it fails.
   */
@@ -26,7 +26,7 @@ export default [
     /*
       `public/vendor/` is MapLibre's own build output, copied in by
       scripts/sync-vendor.mjs so the worker can be served from a stable URL.
-      It is third-party minified code — linting it reports a thousand things
+      It is third-party minified code: linting it reports a thousand things
       nobody here can act on, and drowns the gate.
     */
     ignores: [
@@ -55,7 +55,7 @@ export default [
       ],
       /*
         TypeScript already resolves every identifier, and it knows about types
-        and ambient globals — `ImageMetadata`, `Astro` — that this rule does
+        and ambient globals (`ImageMetadata`, `Astro`) that this rule does
         not. Left on, it reports them as undefined, which is noise.
       */
       'no-undef': 'off',

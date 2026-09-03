@@ -19,7 +19,7 @@
     "sitemap:check": "node scripts/check-sitemap.mjs",
     "privacy:check": "node scripts/check-third-party.mjs",
     "predev": "node scripts/sync-vendor.mjs && node scripts/build-webmcp.mjs",
-    "prebuild": "node scripts/sync-vendor.mjs && node scripts/build-webmcp.mjs",
+    "prebuild": "node scripts/sync-vendor.mjs && node scripts/build-webmcp.mjs && node scripts/check-content.mjs",
     "geo:export": "node scripts/geo.mjs export",
     "geo:import": "node scripts/geo.mjs import",
     "headings:check": "node scripts/check-heading-ids.mjs"
