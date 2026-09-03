@@ -175,8 +175,11 @@ There is no CSS framework. Bootstrap was removed on purpose.
 
 - [`tokens.css`](../src/styles/tokens.css) — every colour, space, size, radius and
   duration, as custom properties.
-- [`global.css`](../src/styles/global.css) — reset, base element styles, and four
-  primitives: `.container`, `.prose`, `.button`, `.visually-hidden`.
+- [`global.css`](../src/styles/global.css) — reset, base element styles, and the
+  primitives: `.container`, `.prose`, `.button`, `.card`, `.field`,
+  `.visually-hidden`. A rule earns a place here when a second component needs
+  it, or when `/styleguide` has to be able to show the same thing the site
+  renders — `.field` moved out of `ContactForm.astro` for exactly that reason.
 - Everything else is scoped to its component.
 
 **Dark mode is one line of thinking.** Each colour is a `light-dark(a, b)` pair,
