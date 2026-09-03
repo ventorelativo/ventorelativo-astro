@@ -66,6 +66,17 @@ const { transparent = false } = Astro.props;
   .header--transparent {
     border-bottom-color: transparent;
     background-color: transparent;
+    /*
+      No shadow over the photograph. Everywhere else the header casts onto a
+      content sheet and reads as depth; here it sits on the picture, where the
+      same shadow reads as a seam across it.
+
+      It lives here rather than on the homepage because a page's `:global()`
+      rule cannot override a component's own scoped one: Astro compiles this
+      file's `.header` to `.header[data-astro-cid-…]`, one specificity point
+      above the bare `.header` a `:global()` produces.
+    */
+    box-shadow: none;
     backdrop-filter: none;
 
     /*

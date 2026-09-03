@@ -269,6 +269,12 @@ visitor asks for it. Details and the reasoning behind each rule:
   `netlify.toml`; never disable the scan, which still has real secrets to catch.
 - **`<Picture>` and `<Image>` put your `class` on the inner `<img>`**, not on the
   `<picture>` wrapper. Positioning the wrapper needs `:global(picture)`.
+- **A page's `:global()` cannot override a component's own scoped rule.** Astro
+  compiles the component's `.header` to `.header[data-astro-cid-…]`, one
+  specificity point above the bare `.header` that `:global(.header)` emits — so
+  the page's rule loses silently and the style looks like it was ignored. Put
+  the exception in the component, next to whatever else already varies by the
+  same prop.
 - **An import inside a component's client `<script>` stops Astro inlining it.**
   The script becomes an external module and drags a shared chunk along with it.
   Factoring ten lines of `<details>` dismissal out of two components cost 2.0 kB
