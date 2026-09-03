@@ -65,6 +65,27 @@ dark appearance every file named `…-light.png` held a dark screenshot, with
 nothing to say so. Both directions are now set explicitly. Distrust any light
 shot taken before 2026-09-03.
 
+## Lighthouse, for the things a screenshot cannot show
+
+`npm run shot` answers "does it fit and read". It says nothing about whether a
+control has a name, whether the headings step in order, or whether text clears
+its background. Chrome's own audit does, and it is worth running against the
+**build** whenever markup changes.
+
+Through the chrome-devtools MCP server: navigate a page, then run the audit at
+`device: mobile`. It covers accessibility, best practices, SEO and agentic
+browsing — not performance, which `npm run weight` and a throttled trace cover
+better.
+
+All seven page types scored **100 in every category** on 2026-09-03. Getting
+there took three fixes, and all three are the kind that look fine on screen:
+
+- the gallery's links had no accessible name, because the thumbnail inside them
+  carries `alt=""` on purpose and nothing else named the link;
+- the category badge sat at 4.43:1 against its own 10% wash in dark mode, under
+  the 4.5:1 its size needs;
+- `/iscrizioni` opened its body with an `h3` under the page's `h1`.
+
 ## Checklist for a visual change
 
 - [ ] `npm run verify` clean
@@ -75,6 +96,7 @@ shot taken before 2026-09-03.
 - [ ] Interactive controls reachable by keyboard, with a visible focus ring
 - [ ] Every control has an accessible name (visible text, or visually-hidden text
       beside an `aria-hidden` icon)
+- [ ] Lighthouse still 100 on the page you changed, if you touched its markup
 
 ## Traps
 
