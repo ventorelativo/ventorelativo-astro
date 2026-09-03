@@ -486,7 +486,7 @@ const typeNames = Object.fromEntries(
     itself is behind the dynamic import at the bottom, so nothing here pulls it
     into the page bundle.
   */
-  import { TILE_ORIGIN } from '../lib/mapConfig';
+  import { TILE_ORIGIN } from '../lib/tileOrigin';
 
   function setup(root: HTMLElement) {
     const button = root.querySelector<HTMLButtonElement>('[data-map-open]');

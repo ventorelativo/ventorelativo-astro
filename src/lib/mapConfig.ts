@@ -53,8 +53,11 @@ export function terrainUrl(): string {
   return `https://api.maptiler.com/tiles/${TERRAIN_SOURCE}/tiles.json?key=${MAPTILER_KEY}`;
 }
 
-/** Where tiles come from, for the preconnect fired on hover. */
-export const TILE_ORIGIN = 'https://api.maptiler.com';
+/*
+  Where tiles come from. Defined in its own module because the facade needs it
+  eagerly and must not pull this file in to get it — see tileOrigin.ts.
+*/
+export { TILE_ORIGIN } from './tileOrigin';
 
 /**
  * How far a visitor may pan, as [[west, south], [east, north]].
