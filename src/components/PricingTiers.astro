@@ -107,10 +107,18 @@ const MARK = {
   .tiers {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-    gap: var(--space-md);
-    /* Stretch, not start: with `margin-block-start: auto` on the button below,
-       equal-height cards put the two pay buttons on the same line. */
+    /*
+      Two rows, head and body, and each card is a subgrid spanning both.
+
+      Equal-height cards alone were not enough: the highlighted tier's header
+      carries a badge, which made its band taller, and the two prices below
+      started at different heights. A subgrid puts both headers in one row, so
+      the taller of the two sets the height of both — and the bodies then start
+      and end together, which is what puts the pay buttons on one line.
+    */
+    grid-template-rows: auto 1fr;
     align-items: stretch;
+    gap: var(--space-md);
     list-style: none;
     /* Clear of the paragraph that introduces them. */
     margin: var(--space-lg) 0 0;
@@ -123,8 +131,9 @@ const MARK = {
   }
 
   .tier {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
     /* The header band runs to the card's edge, so the padding lives inside. */
     overflow: hidden;
     border: 1px solid var(--color-border);
@@ -188,6 +197,11 @@ const MARK = {
     flex-direction: column;
     gap: var(--space-2xs);
     padding: var(--space-md);
+  }
+
+  /* The badge sits on the name's line; wrapped it made the band taller still. */
+  .tier__head {
+    align-content: center;
   }
 
   .tier__price {
@@ -259,7 +273,14 @@ const MARK = {
 
   /* Pushes the button to the bottom so buttons line up across tiers of
      different list lengths. */
+  /*
+    Flush to the bottom of the card. `auto` works here only because the body is
+    a subgrid row that stretches to the tallest card — as a plain flex column
+    sized to its own content it had nothing to push against.
+  */
   .tier__pay {
     margin-block-start: auto;
+    /* Clear of the last list item, whichever card is the short one. */
+    padding-block-start: var(--space-2xs);
   }
 </style>
