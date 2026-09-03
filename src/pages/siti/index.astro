@@ -61,11 +61,7 @@ const overview = (
   .filter((feature) => !seen.has(feature.id) && seen.add(feature.id));
 ---
 
-<PageLayout
-  ogRoute="siti"
-  title="Siti di volo"
-  description="I siti di volo del Parapendio Club Ventorelativo, tra Pinerolo, Val Chisone e Val Pellice."
->
+<PageLayout ogRoute="siti" title={page.data.title} description={page.data.description}>
   <div class="prose intro">
     <Content />
   </div>
