@@ -132,8 +132,8 @@ export default defineConfig({
     */
     sitemap({
       filter: (page) =>
-        !['/styleguide', '/contatti/messaggio-inviato'].some((excluded) =>
-          page.includes(excluded),
+        !['/styleguide', '/contatti/messaggio-inviato', '/iscrizioni/grazie'].some(
+          (excluded) => page.includes(excluded),
         ),
       serialize(item) {
         const path = new URL(item.url).pathname;

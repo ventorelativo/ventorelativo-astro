@@ -1,0 +1,35 @@
+---
+/**
+ * /iscrizioni/grazie — where a completed membership payment lands.
+ *
+ * Stripe can show its own confirmation, but a member who has just paid should
+ * come back to the club's site rather than end on a payment processor's page.
+ * Set this URL as the Payment Link's "after payment" redirect — the runbook is
+ * docs/payments.md.
+ *
+ * It says nothing about *which* tier was bought and reads no query string on
+ * purpose: `?session_id=` is a Stripe identifier, and nothing here should be
+ * built on a value a visitor can edit in the address bar. The receipt is the
+ * email Stripe sends; the record is the Sheet.
+ */
+import PageLayout from '../../layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="Grazie!"
+  description="Il pagamento è stato ricevuto dal Parapendio Club Ventorelativo."
+  breadcrumbLabels={{ '/iscrizioni': 'Iscrizioni' }}
+  noindex
+>
+  <div class="prose">
+    <p>
+      Il pagamento è stato ricevuto e la ricevuta ti arriverà per email. Il direttivo
+      registra le nuove iscrizioni a mano, quindi possono passare qualche giorno prima
+      della conferma.
+    </p>
+    <p>
+      Se qualcosa non torna, <a href="/contatti">scrivici</a>.
+    </p>
+    <p><a href="/">Torna alla home</a></p>
+  </div>
+</PageLayout>

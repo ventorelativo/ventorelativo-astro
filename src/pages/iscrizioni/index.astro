@@ -6,8 +6,8 @@
  * route, and the one that works when a payment provider is between contracts.
  */
 import { getEntry, render } from 'astro:content';
-import PageLayout from '../layouts/PageLayout.astro';
-import PricingTiers from '../components/PricingTiers.astro';
+import PageLayout from '../../layouts/PageLayout.astro';
+import PricingTiers from '../../components/PricingTiers.astro';
 
 const page = await getEntry('pages', 'iscrizioni');
 if (!page) throw new Error('Missing src/content/pages/iscrizioni.mdx');
