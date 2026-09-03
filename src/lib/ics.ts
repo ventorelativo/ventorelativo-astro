@@ -63,6 +63,32 @@ function fold(line: string): string {
   return parts.join('\r\n ');
 }
 
+/**
+ * The "add to Google Calendar" link.
+ *
+ * Google takes a pre-filled event as query parameters, so the button is an
+ * anchor and nothing has to run on the page — no widget, no script, no
+ * account lookup. The same event, expressed twice: this and the `.ics`.
+ *
+ * `dates` follows the same rule as `DTEND` above — the end is exclusive, so a
+ * one-day event ends the following day or Google shows it across two.
+ */
+export function googleCalendarUrl(event: CalendarEvent): string {
+  const lastDay = event.end ?? event.start;
+  const dayAfter = new Date(lastDay);
+  dayAfter.setUTCDate(dayAfter.getUTCDate() + 1);
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates: `${toDate(event.start)}/${toDate(dayAfter)}`,
+    details: `${event.description}\n\n${event.url}`,
+    location: event.location,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params}`;
+}
+
 export function toIcs(event: CalendarEvent, now = new Date()): string {
   // DTEND is exclusive for all-day events: the day after the last day.
   const lastDay = event.end ?? event.start;

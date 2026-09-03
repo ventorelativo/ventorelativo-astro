@@ -88,7 +88,7 @@ const { Content } = await render(entry);
     See src/components/mdx/components.ts.
   */
   }
-  {event && <EventDetails event={event} slug={entry.id} />}
+  {event && <EventDetails event={event} entry={entry} />}
 
   <Content components={MDX_COMPONENTS} />
 </EntryLayout>

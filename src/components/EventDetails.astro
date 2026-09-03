@@ -18,7 +18,11 @@
  * A post with no `event` renders none of this and reads as a plain article,
  * which is the point of keeping events inside `news` rather than beside it.
  */
+import type { CollectionEntry } from 'astro:content';
+
+import ExternalIcon from './ExternalIcon.astro';
 import { FEATURE_SYMBOLS } from '../lib/featureIcons';
+import { googleCalendarUrl } from '../lib/ics';
 import { formatDate, isoDate } from '../utils/date';
 
 interface Props {
@@ -28,11 +32,30 @@ interface Props {
     location: string;
     landing?: string;
   };
-  /** Route of this post's calendar file. */
-  slug: string;
+  entry: CollectionEntry<'news'>;
 }
 
-const { event, slug } = Astro.props;
+const { event, entry } = Astro.props;
+const slug = entry.id;
+
+/*
+  Absolute, because it is going into somebody's calendar: a relative link in an
+  event's description is a dead link the moment it leaves this page.
+*/
+const url = new URL(`/news/${slug}/`, Astro.site ?? 'https://www.ventorelativo.it')
+  .href;
+
+const google = googleCalendarUrl({
+  uid: url,
+  title: entry.data.title,
+  description: entry.data.summary,
+  location: [event.location, event.landing && `atterraggio: ${event.landing}`]
+    .filter(Boolean)
+    .join(' — '),
+  start: event.start,
+  end: event.end,
+  url,
+});
 
 const it = (options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat('it-IT', options);
@@ -93,8 +116,14 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
 
   {
     /*
-    A plain link to a static file, not a script. It downloads on desktop and
-    opens the calendar app on a phone, which is where it will mostly be used.
+    Two plain links, no widget and no script.
+
+    The `.ics` downloads on a desktop and opens the calendar app on a phone,
+    which is where it will mostly be used — but it is a *file*, and on a laptop
+    signed into Google Calendar in a browser tab that is a download, a Finder
+    window and an import dialog. So the same event is offered a second way, as
+    a pre-filled Google link: one click, no file. Both are anchors built at
+    build time; nothing runs on the page to produce them.
   */
   }
   <p class="event__add">
@@ -103,6 +132,15 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
         <g class="stroke" set:html={CALENDAR} />
       </svg>
       Aggiungi al calendario
+    </a>
+    <a
+      class="button button--outline"
+      href={google}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Google Calendar
+      <ExternalIcon size={14} />
     </a>
   </p>
 </section>
@@ -224,6 +262,9 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
   }
 
   .event__add {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
     margin: 0;
   }
 
