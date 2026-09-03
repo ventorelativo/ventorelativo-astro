@@ -21,7 +21,28 @@ import { readFile } from 'node:fs/promises';
 import sharp from 'sharp';
 
 /** The blue the logo is drawn in; the ground the reversed versions sit on. */
-const BRAND_BLUE = '#1F52A6';
+export const BRAND_BLUE = '#1F52A6';
+
+/**
+ * Repaint the logo's blue.
+ *
+ * A string replace on the literal, which is safe here because the artwork is a
+ * flat export with two hard-coded fills and no gradients, `style` blocks or
+ * `currentColor`. It throws rather than returning the input unchanged, because
+ * a silent no-op here produces a "reversed" file that is not reversed — which
+ * is exactly what happened when this was first written against the class names
+ * `<Logo>` uses rather than the attributes the file actually has.
+ */
+export function repaintBlue(svg: string, colour: string): string {
+  const out = svg.replaceAll(BRAND_BLUE, colour);
+  if (out === svg) {
+    throw new Error(
+      `press: no ${BRAND_BLUE} in the logo, so repainting it did nothing. ` +
+        'Has src/assets/logo-card.svg changed?',
+    );
+  }
+  return out;
+}
 
 export interface PressAsset {
   /** File name without extension; also the route. */
@@ -117,14 +138,7 @@ export function logoSource(): Promise<Buffer> {
  */
 export async function reversedLogo(): Promise<Buffer> {
   const svg = (await logoSource()).toString('utf8');
-  const swapped = svg.replaceAll(BRAND_BLUE, '#FFFFFF');
-  if (swapped === svg) {
-    throw new Error(
-      `press: no ${BRAND_BLUE} found in the logo, so the reversed variants ` +
-        'would be identical to the normal ones. Has the artwork changed?',
-    );
-  }
-  return Buffer.from(swapped, 'utf8');
+  return Buffer.from(repaintBlue(svg, '#FFFFFF'), 'utf8');
 }
 
 /**

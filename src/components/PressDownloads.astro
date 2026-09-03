@@ -5,8 +5,7 @@
  * Each tile previews the artwork by drawing the real logo component on the
  * ground the file has, rather than by loading the file: the PNGs are 1-2 MB of
  * 2000px artwork between them, and nobody should download all six to look at a
- * page. `<Logo>` paints its blue from `--color-accent`, so a reversed tile only
- * has to override that one property.
+ * page.
  *
  * The list itself is `src/lib/press.ts`, which is also what generates the
  * files — one definition, so a tile cannot advertise something the build did
@@ -14,7 +13,7 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { PRESS_ASSETS } from '../lib/press';
+import { PRESS_ASSETS, repaintBlue } from '../lib/press';
 
 /*
   The logo once, as a <symbol>, referenced by every tile.
@@ -27,11 +26,26 @@ import { PRESS_ASSETS } from '../lib/press';
   inside a `<use>` shadow tree, while custom properties inherit into it — so a
   tile can still turn the blue white by setting `--color-accent`.
 */
-const logo = (await readFile('src/assets/logo-card.svg', 'utf8'))
+const raw = (await readFile('src/assets/logo-card.svg', 'utf8'))
   .replace(/^[\s\S]*?<svg[^>]*>/, '')
-  .replace(/<\/svg>\s*$/, '')
-  .replaceAll('class="p"', 'fill="var(--color-accent)"')
-  .replaceAll('class="a"', 'fill="var(--brand-yellow)"');
+  .replace(/<\/svg>\s*$/, '');
+
+/*
+  Two symbols, with the colours baked in, rather than one recoloured by a
+  custom property. Custom properties are supposed to inherit into a `<use>`
+  shadow tree and `getComputedStyle` said they did, while the reversed tile
+  went on drawing itself blue. Baking it is also what the downloadable files
+  do, so the preview and the file cannot disagree. A second copy of the
+  geometry costs nothing on the wire: it differs by one hex value and gzip
+  eats it.
+
+  `repaintBlue` throws if the fill it expects is not in the artwork — the first
+  version of this replaced the class names `<Logo>` uses rather than the `fill`
+  attributes the file actually has, produced two identical symbols, and said
+  nothing.
+*/
+const logo = raw;
+const logoReversed = repaintBlue(raw, '#FFFFFF');
 
 const VECTOR = {
   href: '/stampa/ventorelativo-logo.svg',
@@ -53,6 +67,7 @@ const rasters = PRESS_ASSETS.map((asset) => ({
 {/* Hidden, and defined once: the geometry every tile below points at. */}
 <svg class="press__symbols" aria-hidden="true" focusable="false">
   <symbol id="vr-press-logo" viewBox="0 0 708 292" set:html={logo} />
+  <symbol id="vr-press-logo-neg" viewBox="0 0 708 292" set:html={logoReversed} />
 </svg>
 
 <ul class="press">
@@ -92,7 +107,7 @@ const rasters = PRESS_ASSETS.map((asset) => ({
             role="img"
             aria-label="Ventorelativo"
           >
-            <use href="#vr-press-logo" />
+            <use href={asset.reversed ? '#vr-press-logo-neg' : '#vr-press-logo'} />
           </svg>
         </span>
         <span class="press__body">
@@ -168,9 +183,19 @@ const rasters = PRESS_ASSETS.map((asset) => ({
       -8px 0;
   }
 
-  /* `<Logo>` paints its blue from the accent; the reversed files paint white. */
-  .press__preview--reversed {
-    --color-accent: #ffffff;
+  /*
+    A dark checkerboard for the reversed file with a transparent ground. On the
+    light one it was a white logo on a near-white square — the preview showed
+    an empty box, which is exactly the wrong thing to say about a file whose
+    whole point is that it is white.
+  */
+  .press__preview--check.press__preview--reversed {
+    background-color: #2a2f36;
+    background-image:
+      linear-gradient(45deg, #3a4149 25%, transparent 25%),
+      linear-gradient(-45deg, #3a4149 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #3a4149 75%),
+      linear-gradient(-45deg, transparent 75%, #3a4149 75%);
   }
 
   .press__body {
