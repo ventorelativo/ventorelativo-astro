@@ -1261,7 +1261,7 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(items 1, 2 and 4 done; 3 deferred on evidence; 5 dropped)_
+### Phase 7 — Beyond parity _(items 1-4 done; 5 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
@@ -1280,33 +1280,37 @@ Half a day. The biggest genuine capability gain on this list.
 and nothing catches style. Development-only, so no cost to a visitor, and it matters more
 now that club members may point AI agents at this repository. An hour.
 
-**3. WebMCP — the site exposing callable tools to a visitor's AI assistant.** ⏸️
-_Checked again 2026-09-03; still deferred, and the reason has strengthened._ The idea still
-fits: fourteen flight sites with altitude, exposure and now coordinates is exactly the shape
-of "find me a beginner-friendly south-east site under 1500m".
+**3. WebMCP — the site exposing callable tools to a visitor's AI assistant.** ✅ _Built
+2026-09-03, at the club's request, once the cost could be made small enough._
 
-What the check found:
+Three tools in `src/lib/webmcp.ts`: `find_flight_sites` (by attribute, free text, or
+distance from a coordinate), `get_flight_site`, and `get_navigation_data`. They answer from
+`/api/siti.json`, which the build writes from the same collections the pages render, so
+there is one source for the data and none of it is duplicated into a bundle.
 
-- It is a **Draft Community Group Report** of the W3C Web Machine Learning CG, not a
-  standard and not on the standards track.
-- **Chrome only** — an origin trial in Chrome 149. Firefox and Safari are in the
-  conversation with no announced timelines.
-- The API has already moved under our feet: `navigator.modelContext` was deprecated in
-  Chrome 150 in favour of `document.modelContext`, and `provideContext()` was removed in
-  March 2026 and reinstated later. That is exactly the "building against a version that
-  changes" this entry warned about six months ago, and it happened.
+**The objection was never the idea, it was who pays.** An API one browser has behind an
+origin trial, downloaded by every visitor, is exactly the trade the performance budget
+exists to refuse. Three shapes were measured:
 
-So the trade is unchanged and worse: ship JavaScript to **every** visitor, for an API one
-browser has behind a trial, that is still being renamed.
+| Shape                                 | Cost to a browser without the API |
+| ------------------------------------- | --------------------------------- |
+| Bundled script with a dynamic import  | 1.5 kB gz + 2 requests            |
+| Tools inlined into every page         | 1.44 kB gz                        |
+| **Inline guard, module in `public/`** | **0.13 kB gz, no request**        |
 
-**What was done instead, because it needed no bet.** The half of this idea that does not
-depend on WebMCP: each flight site now emits a `SportsActivityLocation` node with its
-takeoffs' coordinates and its attributes (see `src/lib/schema.ts`, which had promised
-exactly this once Phase 4 supplied coordinates). Together with `/llms-full.txt` (S17), an
-assistant can already answer the beginner-friendly-south-east-site question today, from
-static files, without a byte reaching anyone's browser.
+The third is what shipped, and it is the same trick as the MapLibre files beside it: a file
+in `public/vendor/` has a stable URL, so the guard can name it in three inline lines and
+nothing is fetched unless `modelContext` exists. `scripts/build-webmcp.mjs` compiles the
+TypeScript into it before each build, so the source stays type-checked.
 
-**Revisit when** a second engine ships it and the API stops being renamed.
+**The API is still moving** — Chrome shipped it under `navigator.modelContext` and
+deprecated that for `document.modelContext` in Chrome 150; it remains a W3C Community Group
+draft, not a standard. Both spellings are accepted. When it changes again, that file is
+where to look.
+
+Note what did _not_ need building: `/llms-full.txt` (S17) and the schema.org graph already
+answered most of these questions for an assistant, and each flight site now emits a
+`SportsActivityLocation` with its coordinates.
 
 **4. View transitions.** ✅ _Done 2026-09-03 — and not the way this entry assumed._
 
