@@ -23,11 +23,20 @@ else about it is the same.)
 Locally, `npm run dev` then <http://localhost:4321/keystatic> gives the same
 editor writing to the files in your working copy, with no login.
 
-**Batching edits.** Keystatic works on a _branch_: it starts one named
-`modifiche-…` for you, and you can make as many changes as you like before
-merging. Each entry carries a preview link to that branch's own deploy, so you
-can look at the result before anyone else sees it. Merging once means one
-rebuild for the whole session rather than one per save.
+**A save publishes, unless you make a branch first.** Keystatic commits to
+whichever branch the picker at the top left is showing, and that is `main` by
+default: press Save there and the site rebuilds and goes live, with no preview
+and nothing to approve. It only forces a branch when GitHub refuses the commit,
+which needs a branch-protection rule on `main` that this repository does not
+have.
+
+So for anything you want to look at first, press **New branch...** on the
+dashboard before you start. Keystatic names it `modifiche-…`, each entry then
+carries a preview link to that branch's own deploy, and you merge once at the
+end: one rebuild for the session rather than one per save.
+
+Nothing is lost either way. A commit straight to `main` can be reverted in
+GitHub.
 
 Full runbook: [`deploying.md`](deploying.md).
 

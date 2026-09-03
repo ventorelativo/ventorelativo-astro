@@ -118,10 +118,18 @@ branch URL only ever serves the preview of a page.
 
 `keystatic.config.ts` picks its storage from `import.meta.env.DEV`:
 
-|               | Storage  | Login  | A save is                         |
-| ------------- | -------- | ------ | --------------------------------- |
-| `npm run dev` | `local`  | none   | a file change in your checkout    |
-| deployed      | `github` | GitHub | a commit on a `modifiche-` branch |
+|               | Storage  | Login  | A save is                               |
+| ------------- | -------- | ------ | --------------------------------------- |
+| `npm run dev` | `local`  | none   | a file change in your checkout          |
+| deployed      | `github` | GitHub | a commit on the branch the picker shows |
+
+**That branch is `main` unless the editor changes it.** `branchPrefix` only
+names the branches Keystatic creates; it does not put anyone on one. Keystatic
+commits to the current branch and offers to make a new one only when GitHub
+answers `BRANCH_PROTECTION_RULE_VIOLATION`, so a protection rule on `main`
+requiring a pull request is what would make the branch-and-preview flow
+automatic. There is none today, by decision: the club would rather publish
+directly and revert a bad commit than teach volunteers about branches.
 
 Vite replaces `import.meta.env.DEV` with a literal `false` when building, so the
 deployed admin cannot take the local branch, which matters, because a
