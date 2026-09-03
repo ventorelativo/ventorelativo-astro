@@ -344,6 +344,33 @@ export default config({
       free-text name because the icon is an SVG path in Footer.astro — one that
       is not in that list would render a hole, so the schema refuses it.
     */
+    organizzazione: singleton({
+      label: "Dati dell'associazione",
+      path: 'src/content/settings/organization',
+      format: 'yaml',
+      schema: {
+        legalName: fields.text({
+          label: 'Denominazione',
+          description: 'Il nome per esteso, come sullo statuto.',
+        }),
+        taxCode: fields.text({ label: 'Codice fiscale' }),
+        vatNumber: fields.text({
+          label: 'Partita IVA',
+          description: 'Se ne avete una.',
+        }),
+        registeredOffice: fields.text({
+          label: 'Sede legale',
+          description:
+            'Lascia vuoto se è un indirizzo privato: non è obbligatorio pubblicarlo, e la mail basta come recapito.',
+        }),
+        pec: fields.text({ label: 'PEC' }),
+        affiliation: fields.text({
+          label: 'Affiliazione',
+          description: 'Per esempio «Affiliata FIVL n. 1234».',
+        }),
+      },
+    }),
+
     social: singleton({
       label: 'Social',
       path: 'src/content/settings/social',

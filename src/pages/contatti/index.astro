@@ -6,6 +6,7 @@ import { getEntry, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import ContactButtons from '../../components/ContactButtons.astro';
 import ContactForm from '../../components/ContactForm.astro';
+import OrganizationDetails from '../../components/OrganizationDetails.astro';
 
 const page = await getEntry('pages', 'contatti');
 if (!page) throw new Error('Missing src/content/pages/contatti.mdx');
@@ -27,4 +28,6 @@ const { contacts } = page.data;
   <p>Alternativamente, potete utilizzare il modulo sottostante.</p>
 
   <ContactForm />
+
+  <OrganizationDetails />
 </PageLayout>

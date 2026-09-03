@@ -53,6 +53,18 @@ const ICONS: Record<string, { label: string; path: string }> = {
 };
 
 const settings = await getEntry('settings', 'social');
+const org = (await getEntry('settings', 'organization'))?.data;
+
+/*
+  The legal line. Only what is filled in appears — an ASD's registry data is
+  not something this repository can know, and a placeholder on a legal notice
+  is worse than a short one.
+*/
+const legal = [
+  org?.legalName,
+  org?.taxCode && `C.F. ${org.taxCode}`,
+  org?.vatNumber && `P.IVA ${org.vatNumber}`,
+].filter(Boolean);
 const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
   href,
   ...ICONS[network],
@@ -80,7 +92,13 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
       /* Required to be reachable from every page, which is why it is here
         rather than in the nav. */
     }
+    {
+      /* Reachable from every page, which is why it is here and not in the
+        nav. `notranslate` on the identifiers: a codice fiscale has to survive
+        the translator untouched. */
+    }
     <p class="footer__legal">
+      {legal.length > 0 && <span class="notranslate">{legal.join(' · ')}</span>}
       <a href="/privacy">Privacy</a>
     </p>
 
@@ -159,6 +177,16 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
     `--color-bg-subtle` measures 4.29:1, under the line for 15px text. It is
     also a link, and one that has to be findable.
   */
+  .footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-2xs) var(--space-sm);
+    color: var(--color-text);
+    text-align: center;
+  }
+
   .footer__legal a {
     color: var(--color-text);
   }

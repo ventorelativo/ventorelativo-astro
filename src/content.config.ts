@@ -338,6 +338,24 @@ const coordinateList = z.string().transform((value, ctx) => {
 const settings = defineCollection({
   loader: glob({ base: './src/content/settings', pattern: '**/*.yaml' }),
   schema: z.object({
+    /*
+      The association's legal identity, for the footer and /contatti.
+
+      Every field is optional and everything renders only when filled. None of
+      it is in the repository's history or anywhere else it could be copied
+      from: an ASD's registry data is not published, and inventing a codice
+      fiscale to fill a template would put a false statement on a legal notice.
+      The club fills these in Keystatic.
+    */
+    legalName: z.string().optional(),
+    taxCode: z.string().optional(),
+    vatNumber: z.string().optional(),
+    /** Omit if it is a private address — see docs; the email is enough. */
+    registeredOffice: z.string().optional(),
+    pec: z.string().optional(),
+    /** e.g. "Affiliata FIVL n. 1234". */
+    affiliation: z.string().optional(),
+
     links: z
       .array(
         z.object({

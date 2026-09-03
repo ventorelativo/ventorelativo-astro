@@ -1,0 +1,78 @@
+---
+/**
+ * The association's legal identity, as a definition list.
+ *
+ * Every row is optional and renders only when the club has filled it in
+ * (Keystatic → "Dati dell'associazione"). Nothing here is invented: an ASD's
+ * registry data is not published anywhere this repository could read it from,
+ * and a placeholder codice fiscale on a legal notice is a false statement, not
+ * a to-do.
+ *
+ * `registeredOffice` is deliberately allowed to stay empty. For many small
+ * associations the registered office is someone's home, publishing it is not
+ * required, and an email is a sufficient recapito.
+ */
+import { getEntry } from 'astro:content';
+
+const org = (await getEntry('settings', 'organization'))?.data;
+
+const rows = [
+  { label: 'Denominazione', value: org?.legalName },
+  { label: 'Sede legale', value: org?.registeredOffice },
+  { label: 'Codice fiscale', value: org?.taxCode },
+  { label: 'Partita IVA', value: org?.vatNumber },
+  { label: 'PEC', value: org?.pec },
+  { label: 'Affiliazione', value: org?.affiliation },
+].filter((row) => row.value);
+---
+
+{
+  rows.length > 0 && (
+    <section class="org">
+      <h2>Dati dell'associazione</h2>
+      {/* `notranslate`: a codice fiscale must survive the translator intact. */}
+      <dl class="org__list notranslate">
+        {rows.map(({ label, value }) => (
+          <div class="org__row">
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
+<style>
+  .org {
+    margin-block-start: var(--space-xl);
+    max-width: var(--prose-width);
+  }
+
+  .org__list {
+    display: grid;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-sm);
+  }
+
+  .org__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-sm);
+    padding-block-end: var(--space-2xs);
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  dt {
+    min-width: 9rem;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text-strong);
+    /* An identifier is read a character at a time when copied by hand. */
+    font-variant-numeric: tabular-nums;
+  }
+</style>

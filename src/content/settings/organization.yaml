@@ -1,0 +1,12 @@
+# The association's legal identity, shown in the footer and on /contatti.
+#
+# Deliberately incomplete: none of this is published anywhere it could be read
+# off, and a codice fiscale invented to fill a template would be a false
+# statement on a legal notice. The committee fills these in Keystatic
+# ("Dati dell'associazione"); each one appears only once it has a value.
+legalName: Associazione Sportiva Vento Relativo
+taxCode: ''
+vatNumber: ''
+registeredOffice: ''
+pec: ''
+affiliation: ''
