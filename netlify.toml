@@ -17,11 +17,14 @@
   #    string as this repository, and readable at github.com/apps/<slug>.
   #  - PUBLIC_CF_BEACON_TOKEN identifies the site to Cloudflare's analytics; it
   #    is written into a script tag on every page.
+  #  - PUBLIC_MAPTILER_KEY signs every tile request the map makes from the
+  #    browser, so it cannot be anything but public. It is protected by
+  #    MapTiler's referrer allowlist instead — see src/lib/mapConfig.ts.
   #
   # Listed by name rather than disabling the scan, so a real secret added later
   # is still caught. The genuine ones — KEYSTATIC_GITHUB_CLIENT_SECRET and
   # KEYSTATIC_SECRET — carry no prefix and stay scanned.
-  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG,PUBLIC_CF_BEACON_TOKEN"
+  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG,PUBLIC_CF_BEACON_TOKEN,PUBLIC_MAPTILER_KEY"
 
 # Redirects (MIGRATION-PLAN.md S10, S11).
 #
