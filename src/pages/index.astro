@@ -192,7 +192,15 @@ const CTAS = home.data.ctas ?? [];
     text-align: end;
   }
 
+  /*
+    Inline-flex and `nowrap`: as plain inline content the outward glyph was a
+    separate word and wrapped onto a line of its own under the credit.
+  */
   .hero__credit a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    white-space: nowrap;
     color: inherit;
   }
 
