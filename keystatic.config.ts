@@ -235,7 +235,21 @@ export default config({
       columns: ['title', 'date'],
       schema: {
         title: fields.slug({
-          name: { label: 'Titolo', validation: { isRequired: true } },
+          name: {
+            label: 'Titolo',
+            /*
+              Where the kit gets found. Keystatic's `ui.navigation` takes
+              collection and singleton keys only, so the admin has nowhere to
+              hang a link, and under `entryLayout: 'content'` the body field's
+              own description is never drawn: the first sidebar field is.
+
+              A path, not a URL: the CMS is served from the same host, and
+              that host changes at the cutover.
+            */
+            description:
+              'Serve una mano a scrivere? Su /redazione trovi il testo da incollare in ChatGPT o Gemini per farti preparare tutti i campi.',
+            validation: { isRequired: true },
+          },
           slug: {
             label: 'Indirizzo (URL)',
             description:
@@ -325,7 +339,13 @@ export default config({
       columns: ['title', 'summary'],
       schema: {
         title: fields.slug({
-          name: { label: 'Nome', validation: { isRequired: true } },
+          name: {
+            label: 'Nome',
+            /* Same reasoning as the news title above. */
+            description:
+              'Serve una mano a scrivere? Su /redazione trovi il testo da incollare in ChatGPT o Gemini per farti preparare tutti i campi.',
+            validation: { isRequired: true },
+          },
           slug: {
             label: 'Indirizzo (URL)',
             description:
