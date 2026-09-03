@@ -7,6 +7,16 @@
  * briefing they can paste into whatever chat window they already have, on a
  * free tier, with no browser support and nothing to install.
  *
+ * ## Why the short prompt is the one on display
+ *
+ * The instructions are fifteen kilobytes and were the thing being copied, which
+ * a volunteer described, fairly, as unwieldy. What the box holds now is the four
+ * lines that name `istruzioni.txt`, and `robots.txt` allows that file even on a
+ * preview host so an assistant can actually fetch it. The full text has not gone
+ * anywhere: it is behind the disclosure under each button, for the free tiers
+ * that cannot open a link, which is what the short prompt tells the model to say
+ * if it cannot.
+ *
  * ## Why a textarea and not a code block
  *
  * It is the no-JavaScript path. Without the script a volunteer can still tap
@@ -43,13 +53,11 @@ const asJson = new URL('/redazione/contenuti.json', site).href;
  * volunteer uses is a fact about them, not about what they are writing, and it
  * is remembered, so after the first visit the page has one button.
  *
- * The `?q=` carries the **short** prompt, the one naming `istruzioni.txt`: the
- * full text is 26,736 characters encoded and Google answers 400 to a Gemini URL
- * somewhere between 8k and 20k. The button also copies the full text, so a
- * model that cannot open the link (every free tier, and everything at all until
- * the cutover lifts `Disallow: /`) is one paste from having it. That is why an
- * undocumented parameter is safe to rely on here: when it does nothing, the
- * result is an empty chat and a full clipboard, which is the fallback anyway.
+ * The `?q=` carries whatever the box holds, which is the short prompt: the full
+ * text is 26,736 characters encoded and Google answers 400 to a Gemini URL
+ * somewhere between 8k and 20k. The same click copies it too, so when the
+ * parameter is ignored, and it is undocumented on all three, the result is an
+ * empty chat and a full clipboard rather than a dead end.
  */
 const CHATS = [
   { id: 'chatgpt', name: 'ChatGPT', href: 'https://chatgpt.com/?q=' },
@@ -70,9 +78,8 @@ const CHATS = [
     <ol>
       <li>Dì qui sotto quale intelligenza artificiale usi. Il sito se lo ricorda.</li>
       <li>
-        Scegli cosa devi scrivere e premi il pulsante: copia il prompt e apre la chat.
-        Se l'intelligenza artificiale non riesce ad aprire da sola le istruzioni, te lo
-        dice: a quel punto incolla, ce le hai già negli appunti.
+        Scegli cosa devi scrivere e premi il pulsante: copia quattro righe e apre la
+        chat. Le regole del club non le incolli, le legge da sola dal sito.
       </li>
       <li>
         Nella stessa finestra, sotto, scrivi le informazioni che hai: appunti, il
@@ -84,6 +91,12 @@ const CHATS = [
         manca. Poi apri <a href={keystatic}>il gestore dei contenuti</a> e riempi i campi.
       </li>
     </ol>
+
+    <p>
+      Se l'intelligenza artificiale risponde che non riesce ad aprire il collegamento,
+      apri il riquadro sotto al pulsante: lì ci sono le istruzioni per intero da
+      incollare. Capita spesso con gli account gratuiti.
+    </p>
 
     <p>
       <strong>Rileggi sempre prima di pubblicare.</strong> Un'intelligenza artificiale sbaglia
@@ -127,22 +140,47 @@ const CHATS = [
           <textarea
             class="kit__text"
             readonly
-            rows="10"
+            rows="5"
             id={`testo-${kind}`}
-            set:text={text}
+            set:text={short}
           />
         </div>
 
         <p class="kit__actions">
-          <button
-            class="button"
-            type="button"
-            data-copy={`testo-${kind}`}
-            data-short={short}
-          >
+          <button class="button" type="button" data-copy={`testo-${kind}`} data-open>
             Copia il prompt
           </button>
         </p>
+
+        <details class="kit__full">
+          <summary>L'intelligenza artificiale non riesce ad aprire il link?</summary>
+          <p>
+            Succede con gli account gratuiti, che spesso non possono leggere una pagina
+            web. Copia questo e incollalo nella stessa conversazione: sono le stesse
+            istruzioni, per intero.
+          </p>
+          <div class="field">
+            <label class="visually-hidden" for={`pieno-${kind}`}>
+              Le istruzioni complete
+            </label>
+            <textarea
+              class="kit__text"
+              readonly
+              rows="8"
+              id={`pieno-${kind}`}
+              set:text={text}
+            />
+          </div>
+          <p class="kit__actions">
+            <button
+              class="button button--outline"
+              type="button"
+              data-copy={`pieno-${kind}`}
+            >
+              Copia le istruzioni complete
+            </button>
+          </p>
+        </details>
       </section>
     ))
   }
@@ -178,6 +216,9 @@ const CHATS = [
 
   const select = document.getElementById('ai') as HTMLSelectElement;
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-copy]')];
+  /* Only the primary button of each section opens a chat and takes the chosen
+     service's name; the one behind the disclosure keeps its own label. */
+  const opens = (button: HTMLButtonElement) => button.hasAttribute('data-open');
 
   const chosen = () => select.options[select.selectedIndex];
 
@@ -195,7 +236,7 @@ const CHATS = [
     const chat = chosen();
     const text =
       chat.value === 'copia' ? 'Copia il prompt' : `Copia e apri ${chat.text}`;
-    for (const button of buttons) button.textContent = text;
+    for (const button of buttons) if (opens(button)) button.textContent = text;
   };
 
   try {
@@ -247,6 +288,12 @@ const CHATS = [
   };
 
   for (const button of buttons) {
+    const own = button.textContent;
+    const restore = () => {
+      if (opens(button)) label();
+      else button.textContent = own;
+    };
+
     button.addEventListener('click', () => {
       const box = document.getElementById(button.dataset.copy!) as HTMLTextAreaElement;
       const chat = chosen();
@@ -257,17 +304,17 @@ const CHATS = [
         the popup blocker sees a real click. Awaiting the copy before opening
         would lose the gesture and the tab with it.
       */
-      const copied = copy(box, `Oggi è ${today}.\n\n${box.value}`);
+      const text = `Oggi è ${today}.\n\n${box.value}`;
+      const copied = copy(box, text);
 
-      if (chat.value !== 'copia') {
-        const url = chat.dataset.url + encodeURIComponent(button.dataset.short!);
-        window.open(url, '_blank', 'noopener');
+      if (opens(button) && chat.value !== 'copia') {
+        window.open(chat.dataset.url + encodeURIComponent(text), '_blank', 'noopener');
       }
 
       copied
         .then(() => {
           button.textContent = 'Copiato';
-          setTimeout(label, 2000);
+          setTimeout(restore, 2000);
         })
         .catch(() => {
           /* Refused, usually because the new tab took the focus. Leave the
@@ -297,6 +344,11 @@ const CHATS = [
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: var(--text-sm);
     line-height: 1.5;
+    /* Grows to its content, so the short prompt is readable whole instead of
+       cut mid-sentence, and the full instructions stop at the cap and scroll.
+       `rows` is the fallback where this is not supported yet. */
+    field-sizing: content;
+    max-height: 40vh;
     resize: vertical;
     /* Wrap rather than scroll sideways: a soft wrap does not alter `value`,
        so what is copied is still the text as written. */
@@ -331,6 +383,26 @@ const CHATS = [
     outline: 2px solid var(--color-focus);
     outline-offset: 1px;
     border-color: var(--color-accent);
+  }
+
+  .kit__full {
+    margin-block-start: var(--space-md);
+    font-size: var(--text-sm);
+  }
+
+  .kit__full summary {
+    cursor: pointer;
+    color: var(--color-text-muted);
+  }
+
+  .kit__full summary:hover {
+    color: var(--color-text);
+  }
+
+  .kit__full > p {
+    max-width: var(--prose-width);
+    margin-block: var(--space-xs);
+    color: var(--color-text-muted);
   }
 
   .picker noscript {

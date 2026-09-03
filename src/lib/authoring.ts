@@ -148,11 +148,10 @@ export function prompt(site: URL, kind: Kind): string {
  * answers 400 to a Gemini link somewhere between 8k and 20k. This one names
  * `/redazione/istruzioni.txt` instead and fits anywhere.
  *
- * The last sentence is what makes it safe to send. `robots.txt` disallows every
- * host that is not the live domain, so until the cutover a model cannot read
- * that URL even when it can browse, and most free tiers never can. Told to say
- * so, it asks; and the button has already put the full instructions on the
- * clipboard, so the volunteer answers with one paste instead of hitting a wall.
+ * The last sentence is what makes it safe to send. `robots.txt` allows this one
+ * file on every host, preview builds included, but a free tier usually cannot
+ * fetch a page at all. Told to say so rather than to guess, it asks, and
+ * `/redazione` keeps the full text one disclosure away for exactly that answer.
  */
 export function linkPrompt(site: URL, kind: Kind): string {
   const what = {
@@ -164,7 +163,7 @@ export function linkPrompt(site: URL, kind: Kind): string {
   return [
     `Leggi le istruzioni del Parapendio Club VentoRelativo su ${new URL('/redazione/istruzioni.txt', site).href}`,
     `e seguile alla lettera: devi prepararmi ${what} per il loro sito.`,
-    'Se non riesci ad aprire quella pagina dimmelo subito, ho il testo delle istruzioni negli appunti e te lo incollo io.',
+    'Se non riesci ad aprire quella pagina dimmelo subito e te le incollo io: non tirare a indovinare.',
   ].join(' ');
 }
 

@@ -93,14 +93,28 @@ staging host today, the branch's own URL in a Keystatic preview, and
 `ventorelativo.it` after the cutover. A hardcoded address would send a volunteer
 to the old Drupal site the day the domain moves.
 
-## Why the clipboard carries the instructions, not just a link
+## Why the box holds four lines, not fifteen kilobytes
 
-`robots.txt` returns `Disallow: /` for every host that is not the live domain,
-and the assistant crawlers honour it, so until the cutover a model cannot read
-`/redazione/istruzioni.txt` even when it is able to browse. Most free tiers
-cannot browse at all. Pasting always works, which is why the full text goes on
-the clipboard on every click, and the link in the `?q=` below is the optimistic
-path rather than the mechanism.
+The first version copied the whole document, and the first volunteer to use it
+said what you would expect: it works, and it is unwieldy. Pasting twenty
+thousand characters into a chat is not what anyone pictures when they are told
+the site will help them write a post.
+
+So the box holds the short prompt, the one naming `/redazione/istruzioni.txt`,
+and `robots.txt` now allows that file and `contenuti.json` **even on a preview
+host**. The `Disallow: /` there exists so a copy of the site cannot compete with
+the site for its own queries; these two files are not a copy of anything, they
+exist only on this build, and an assistant has to be able to fetch them or the
+link is decoration.
+
+The full text is behind the disclosure under each button, for the free tiers
+that cannot open a link at all, which is what the short prompt tells the model
+to say rather than guess. That fallback is the reason the short version can be
+the default: the failure is one sentence and one more click, not a dead end.
+
+The boxes use `field-sizing: content` with a `max-height` cap, so the short
+prompt is readable whole rather than cut mid-sentence, and the full instructions
+stop at 40vh and scroll. `rows` is the fallback where that is not supported.
 
 ## The JSON, and why it is generated
 
