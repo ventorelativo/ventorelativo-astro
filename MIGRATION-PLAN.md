@@ -10,7 +10,7 @@ only, no scraped tables · D7 site specs stay as prose · D8 stay on MapTiler, b
 adapter · D9 no URLs need protecting · D11 refined minimal · D12 freeze content now ·
 D13 tags reshaped (news category only, archives dropped).
 
-**Still open:** D10 (payments) only — parked pending the committee.
+**All resolved.** D10 (payments) closed 2026-09-03 — see §5.
 
 **Phase 1 complete.** Next: Phase 2 (content).
 
@@ -673,9 +673,10 @@ content.
 
 ## 5. Membership / payments
 
-> **⚠️ Provisional — pending Ventorelativo committee approval.** The Stripe fee question
-> below is not settled. Nothing in this section should be built until the committee has
-> ruled on it. The Astro site can ship fully without it (§7, Phase 5).
+> **✅ Approved by the committee, 2026-09-03.** The fee is accepted and is borne by the
+> payer. **D10 resolved: Stripe Payment Links, with Satispay enabled inside them** — see
+> "The decision" below. The Astro site already ships without it (§7, Phase 5); nothing
+> here blocks the cutover.
 
 ### Current state
 
@@ -714,60 +715,67 @@ wrong.
 accounts only — never "anyone with the link" — and keep it out of this repository, which is
 public. See the note at the end of §5.
 
-### The pending decision
+### The decision (D10, resolved 2026-09-03)
 
-| Option                                           | Cost to the club                                | Automation                                                                |
-| ------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------- |
-| **Stripe Payment Link** (card + native Satispay) | 1.5% + €0.25 per transaction, both rails, Italy | Full: one webhook → Make.com → Google Sheet                               |
-| **Satispay Business direct**                     | 0% under €10, flat €0.20 above €10              | Separate integration + reconciliation, outside the Stripe→Make→Sheet flow |
+**Stripe Payment Links, with Satispay enabled as a payment method inside them.** Bank
+transfer stays. Satispay Business direct was considered seriously and rejected — but the
+club does not lose Satispay, which is the point.
 
-Concretely, at the current tiers: a €10 Sostenitore costs €0.40 via Stripe vs €0.00 via
-Satispay Business; a €30 Socio costs €0.70 vs €0.20. **The committee decides whether that
-surcharge is acceptable.** Until then, treat Stripe as unconfirmed.
+**Current fees, checked 2026-09-03.** The table this replaces was out of date in both
+columns: Satispay changed its tariff in September 2026, and the flat €0.20 above €10 no
+longer exists.
 
-### Design implication for the site (do this either way)
+| Rail                       | Fee                            |   €10 |   €30 |
+| -------------------------- | ------------------------------ | ----: | ----: |
+| Satispay Business, direct  | free under €10, 0.95% from €10 | €0.10 | €0.29 |
+| Stripe — EEA consumer card | 1.5% + €0.25                   | €0.40 | €0.70 |
+| Stripe — Satispay          | 1.8% + €0.25                   | €0.43 | €0.79 |
+| Bank transfer              | —                              | €0.00 | €0.00 |
 
-The site's only job is to render pay buttons. Model the tiers as structured data now
-(§2.4) so the payment rail is a URL swap, not a content rewrite:
+**Why not Satispay-only, when it is three to four times cheaper per payment.** Because the
+difference is not money, it is work. On a club of sixty Soci and twenty Sostenitori the
+whole year's saving is about **€30** — under an hour of anyone's time — and what the club
+is actually buying here is the end of hand-reconciliation.
 
-```yaml
-# src/content/pages/membership.yaml
-tiers:
-  - name: Sostenitore
-    price: 10
-    benefits: ['Supporto al club e alle sue iniziative']
-    payUrl: https://… # Satispay today, Stripe Payment Link later
-  - name: Socio
-    price: 30
-    highlight: true
-    benefits:
-      [
-        'Partecipazione alle decisioni',
-        'Diritto di voto alle assemblee',
-        'Priorità per i posti agli eventi',
-      ]
-    payUrl: https://…
-bankTransfer:
-  holder: Associazione Sportiva Vento Relativo
-  iban: IT67W0326830750052117945240
-```
+Satispay cannot deliver that without a server. Its server-to-server callback fires **only
+for payments created through the API** with a `callback_url`; the consumer payment link the
+club uses today sends nothing when someone pays. Automating it means either creating every
+payment through the API or polling the shop's payment list, and both need RSA-signed
+requests — which means a backend. This site deliberately has almost none: two Keystatic
+admin routes, and every other page prerendered on a CDN (rule 3). Standing up a payment
+service inside it would be the largest thing anyone has proposed here, to save €30 a year.
 
-This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the committee votes.
+A Stripe Payment Link is a URL. Its webhook is a checkbox. That asymmetry is the decision.
 
-### Notes if Stripe is approved
+**Satispay is not lost.** Stripe supports it as a payment method for Italian accounts, in
+EUR, in Payment Links — so a member who wants to pay with the app they already have still
+does, at €0.79 on a €30 quota instead of €0.29. That €0.50 is what buys the reconciliation.
 
-- Stripe Payment Links need no code on the Astro site — they are just URLs.
-- The Make.com scenario should key on Stripe's `client_reference_id` or metadata to match
-  the payer to a row; the current `external_code=Sostenitore|Socio` carries the tier but
-  not the member. Decide how a member identifies themselves at checkout (Stripe Payment
-  Links support custom fields). In Make.com the shape is _Search Rows_ on that key, then
-  _Update a Row_ if found or _Add a Row_ if not — a Sheet has no upsert, so the scenario
-  has to branch, and without it a renewing member silently gets a duplicate row.
-- Keep the bank-transfer block visible — it stays the zero-fee route for larger amounts.
-- The Sheet, Make and Stripe all live entirely outside this repo. **No member PII should
-  ever land in the Astro repo**, which is public and committed to by Keystatic.
+**On "the payer pays the fee" — do not render it as a surcharge.** Article 62 of the Codice
+del Consumo, implementing PSD2, forbids charging a consumer a supplement for using a given
+payment instrument, and the AGCM has fined firms for exactly that. Whether a membership
+quota between an ASD and its socio is a consumer contract is genuinely arguable, and this
+plan is not the place to decide it. The risk-free reading is available and costs nothing:
+**a tier has one price, inclusive.** No "+ €0.70 di commissione" line on the page, no second
+number at checkout. If the committee wants the payer to carry the fee, the quota is set at
+a figure that already contains it — a decision about the quota, not about the software.
 
----
+### What this means for the build
+
+Nothing on the Astro site. The tiers have been structured content since Phase 2
+(`src/content/pages/iscrizioni.mdx`), so switching rails is editing `payUrl` in Keystatic —
+two fields, no deploy, no code. That was the point of modelling them that way.
+
+Everything else lives outside this repository: Stripe, Make.com and a Google Sheet. The
+steps are written down rather than built — [`docs/payments.md`](docs/payments.md) — including
+the trap that a Sheet has no upsert, so the scenario has to branch or a renewing member
+silently gets a second row.
+
+- Keep the bank-transfer block visible. It is the zero-fee route, and the one that still
+  works when a provider is between contracts.
+- **No member PII may land in this repository**, which is public and written to by
+  Keystatic. The Sheet holds names and emails; share it with named committee accounts,
+  never "anyone with the link".
 
 ## 6. Open questions / decisions needed before implementation
 
@@ -782,7 +790,7 @@ This means Phase 5 becomes "edit two URLs in Keystatic", whichever way the commi
 | ~~**D7**~~  | ~~Promote `Località / Altitudine / Esposizione` from prose to fields?~~ | —                           | ✅ **RESOLVED: no — keep as prose.** Straight port; the triplet stays as bold labels in the MDX body. Consequence: `summary` becomes the only structured short description, so it carries the cards _and_ the meta description — see §2.3.                                                                                                                                                                     |
 | ~~**D8**~~  | ~~Keep MapTiler or move to MapLibre + free tiles?~~                     | —                           | ✅ **RESOLVED: stay on MapTiler**, free tier, comfortable quota. But build the map component against the **MapLibre API surface** with MapTiler-specific bits isolated in a thin adapter, so switching later stays cheap. See §4.2.1. Restrict the key by domain, move it to `PUBLIC_MAPTILER_KEY`.                                                                                                            |
 | ~~**D9**~~  | ~~Which URLs must be preserved exactly?~~                               | —                           | ✅ **RESOLVED.** No inbound links worth protecting. `/home` → 301 to `/`; `/styleguide`, `/tags/asdasd` and the nid-based geo.json all simply dropped, no redirects needed. All content URLs (`/siti/*`, `/news/*`, `/contatti*`, `/voli`, `/iscrizioni`, `/404`, `/api/navdata/*`) still preserved exactly. Raised **D13** on the tag URLs.                                                                   |
-| **D10**     | **Stripe vs Satispay Business**                                         | §5. Fee vs full automation. | **Committee decision, parked.** Not being worked on. The site ships complete without it — `/iscrizioni` keeps the existing Satispay links until the committee rules.                                                                                                                                                                                                                                           |
+| ~~**D10**~~ | ~~Stripe vs Satispay Business~~                                         | §5. The committee approved. | ✅ **RESOLVED 2026-09-03: Stripe Payment Links, with Satispay enabled inside them.** The committee accepted the fee, and the payer carries it. Satispay-direct is 3-4x cheaper, but saves ~€30 a year and cannot be automated without a backend — its callback fires only for API-created payments. See §5, and do not render the fee as a surcharge (Art. 62 Cod. Cons.).                                     |
 | ~~**D11**~~ | ~~Design direction~~                                                    | —                           | ✅ **RESOLVED: refined minimal**, _amended in Phase 2 — see the note under §6.2._ Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
 | ~~**D12**~~ | ~~Content freeze / dual-run~~                                           | —                           | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover.                                                                                                                          |
 | ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~                                       | —                           | ✅ **RESOLVED: reshape**, _amended in Phase 2._ `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all** — §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links.                                  |
@@ -1224,13 +1232,16 @@ Verify the preserved URLs and the two redirects (`/contact/contatti` → `/conta
 their exact old URLs. Archive the Drupal repo read-only — do not delete it; it stays the
 reference for anything found missing later.
 
-### Phase 6 — Membership & payments _(gated on the committee, decoupled)_
+### Phase 6 — Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
 
 `/iscrizioni` already shipped in Phase 2 with the **existing Satispay links and bank
-transfer**, so the site is complete and live without this. When **D10** is resolved: swap
-the `payUrl` values to Stripe Payment Links, build the Make.com → Google Sheets scenario
-(search-then-update-or-add, so renewals do not duplicate), decide how members identify
-themselves at checkout, test with a real €10 payment, keep the bank-transfer fallback.
+transfer**, so the site is complete and live without this. **D10 is resolved** (§5): Stripe
+Payment Links, with Satispay enabled inside them.
+
+None of what remains is code. It is account work in Stripe, Make.com and a Google Sheet,
+followed by editing two `payUrl` fields in Keystatic — which is why it is written as a
+runbook rather than built: [`docs/payments.md`](docs/payments.md).
+
 **Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.

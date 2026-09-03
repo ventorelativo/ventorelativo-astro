@@ -8,6 +8,8 @@ For club members, developers, and AI agents working on the Ventorelativo site.
 | [architecture.md](architecture.md)           | You want to understand how the site is built, or you are about to change how something works rather than what it says. |
 | [verifying-changes.md](verifying-changes.md) | You have made a change and want to know it actually works. Includes the measurement tool and the known traps.          |
 | [performance.md](performance.md)             | Before adding any library, and whenever a page gets heavier. The site targets 100/100 in PageSpeed Insights.           |
+| [deploying.md](deploying.md)                 | You are setting up hosting or the CMS, or something about a deploy or a preview branch is not behaving.                |
+| [payments.md](payments.md)                   | You are wiring up membership payments — Stripe, the Make.com scenario, and the Google Sheet behind them.               |
 | [../AGENTS.md](../AGENTS.md)                 | You are an AI agent, or you want to see the rules one is given.                                                        |
 | [../MIGRATION-PLAN.md](../MIGRATION-PLAN.md) | You want the full scope of the Drupal → Astro migration, the decisions behind it, and what each phase covers.          |
 
@@ -36,12 +38,13 @@ reasons. Ask it to justify against [`AGENTS.md`](../AGENTS.md) before agreeing.
 
 ## Current state
 
-Phases 1 and 2 are complete: the design system, all the content, every URL the
-old site had, the SEO layer, and a CMS that runs locally (`npm run dev`, then
-<http://localhost:4321/keystatic>).
+Phases 1 to 4 are complete: the design system, all the content, every URL the old
+site had, the SEO layer, the flight-data files gated against the Drupal archive,
+the maps, and a CMS the club edits from a browser at
+`ventorelativo-astro.netlify.app/keystatic`.
 
-The repository is still **local only** — no GitHub remote, no deployment, and the
-live site is still the Drupal one. Phase 3 adds the remote, moves the CMS to
-GitHub so the club can edit from a browser, and turns on automatic deploys;
-Phase 4 brings the maps and flight data; Phase 5 switches the domain.
+What has not happened is the **cutover**: `ventorelativo.it` still serves the old
+Drupal export from a separate Netlify project, and this build asks not to be
+crawled until it does. That is Phase 5. Phase 6 (payments) is unblocked and
+documented in [payments.md](payments.md) but not executed.
 [`MIGRATION-PLAN.md`](../MIGRATION-PLAN.md) §7 tracks all of it.
