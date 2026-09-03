@@ -13,6 +13,8 @@
  * ("mdxJsxTextElement has unexpected children"), and it is the wrong shape for
  * an editor anyway.
  */
+import ExternalIcon from '../ExternalIcon.astro';
+
 interface Link {
   label: string;
   href: string;
@@ -37,6 +39,7 @@ const isExternal = (href: string) => /^https?:\/\//.test(href);
         rel={isExternal(href) ? 'noopener noreferrer' : undefined}
       >
         {label}
+        {isExternal(href) && <ExternalIcon size={14} />}
       </a>
     ))
   }
