@@ -179,8 +179,8 @@ Current budget, at 390x844: `/` 91 kB; `/siti/` 97 kB; a photo-heavy site page
 page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
 the footer's contour texture — the biggest non-photograph item on the site, and
 the first thing to attack if the budget has to come down. `/siti/` and the site
-pages add the map's facade — not MapLibre, which is 970 kB and arrives only when
-a map is opened. Translation is a facade too: nothing from Google loads until a
+pages add the map's facade — not MapLibre, which is 239 kB brotli across three
+files and arrives only when a map is opened. Translation is a facade too: nothing from Google loads until a
 visitor asks for it. Details and the reasoning behind each rule:
 [`docs/performance.md`](docs/performance.md).
 

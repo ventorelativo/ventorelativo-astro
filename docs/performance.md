@@ -14,10 +14,10 @@ Measured on the production build (`npm run build && npm run preview`), at
 
 | Page             | Total  | JavaScript | CSS    |
 | ---------------- | ------ | ---------- | ------ |
-| `/`              | 108 kB | 1.5 kB     | 4.7 kB |
-| `/siti/`         | 97 kB  | 8.1 kB     | 6.3 kB |
-| `/news/`         | 213 kB | 1.5 kB     | 4.7 kB |
-| `/siti/roletto/` | 350 kB | 9.0 kB     | 9.2 kB |
+| `/`              | 108 kB | 1.5 kB     | 4.8 kB |
+| `/siti/`         | 97 kB  | 8.1 kB     | 6.5 kB |
+| `/news/`         | 213 kB | 1.5 kB     | 4.8 kB |
+| `/siti/roletto/` | 350 kB | 9.0 kB     | 9.3 kB |
 
 Almost all of the weight is photographs. The JavaScript column counts external
 files: the pages with a map carry its facade, everything else carries only
@@ -60,6 +60,28 @@ on purpose. Each one says so.
 The rule: **inside a component's client script, prefer duplication to an
 import** unless the thing being imported is big enough that it should be its own
 request anyway — which is exactly what the map's dynamic `import()` is.
+
+### What opening a map costs, and why it is not smaller
+
+MapLibre is **239 kB brotli** across three files, fetched only when somebody
+presses "Apri la mappa". The number quoted before this was 970 kB, which was
+the uncompressed main chunk — not a figure any visitor ever pays.
+
+It was 326 kB until the shared module stopped being downloaded twice; see the
+`rollupOptions` comment in `astro.config.mjs`. What remains is not reducible by
+configuration:
+
+- **There is nothing left to tree-shake.** The GL renderer, the vector-tile
+  parsers and the style spec are one graph, and the map uses all three.
+- **The alternatives lose the features the club asked for.** Leaflet is 14 kB
+  brotli and cannot do 3D terrain, pitch or vector labels; OpenLayers is not
+  much smaller than MapLibre once terrain is added.
+- **The shared module is still parsed twice**, once on each thread, because a
+  worker has its own module graph. That is a CPU cost, not a network one, and
+  nothing about the library lets us avoid it.
+
+The real defence is the facade: a visitor who never opens a map pays none of
+it, and that is measured by the table above rather than argued.
 
 ### Why Vite's chunk-size warning is turned down
 
