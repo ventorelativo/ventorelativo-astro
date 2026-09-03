@@ -8,6 +8,10 @@
  * and a placeholder codice fiscale on a legal notice is a false statement, not
  * a to-do.
  *
+ * It sits directly under the page title, so the heading is set as a small
+ * label rather than a second big blue line competing with the `h1` — it is
+ * still an `h2` in the outline, which is where it has to be.
+ *
  * `registeredOffice` is deliberately allowed to stay empty. For many small
  * associations the registered office is someone's home, publishing it is not
  * required, and an email is a sufficient recapito.
@@ -46,26 +50,44 @@ const rows = [
 
 <style>
   .org {
-    margin-block-start: var(--space-xl);
     max-width: var(--prose-width);
+    margin-block-end: var(--space-lg);
+  }
+
+  h2 {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
   }
 
   .org__list {
     display: grid;
     gap: var(--space-2xs);
-    margin-block-start: var(--space-sm);
+    margin-block-start: var(--space-2xs);
   }
 
+  /*
+    A fixed label column rather than a minimum width: with `min-width` the one
+    long label ("Registro attività sportive") pushed its own value out of line
+    with the others, and a list of identifiers is read down the column.
+  */
   .org__row {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 13rem 1fr;
     gap: var(--space-3xs) var(--space-sm);
     padding-block-end: var(--space-2xs);
     border-block-end: 1px solid var(--color-border);
   }
 
+  @media (width < 32rem) {
+    .org__row {
+      grid-template-columns: 1fr;
+    }
+  }
+
   dt {
-    min-width: 9rem;
     color: var(--color-text-muted);
     font-size: var(--text-sm);
   }

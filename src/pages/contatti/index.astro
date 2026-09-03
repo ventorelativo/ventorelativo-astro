@@ -19,6 +19,9 @@ const { contacts } = page.data;
   description={page.data.description}
   ogRoute="contatti"
 >
+  {/* Who is answering, before anything asks the reader to write. */}
+  <OrganizationDetails />
+
   <div class="prose">
     <Content />
   </div>
@@ -33,8 +36,6 @@ const { contacts } = page.data;
     </p>
     <ContactForm />
   </div>
-
-  <OrganizationDetails />
 </PageLayout>
 
 <style>
