@@ -24,6 +24,8 @@
  * The people using this are Italian-speaking volunteers. Field labels and
  * descriptions are in Italian for the same reason the site is.
  */
+import { createElement } from 'react';
+
 import { config, collection, singleton, fields } from '@keystatic/core';
 import { block } from '@keystatic/core/content-components';
 
@@ -137,6 +139,29 @@ const PREVIEW_BASE = 'https://{branch}--ventorelativo-astro.netlify.app';
  */
 const BRANCH_PREFIX = 'modifiche-';
 
+/**
+ * The logo's mountain, as a 24px mark for the admin UI.
+ *
+ * Traced from `src/assets/logo-card.svg` rather than imported: Keystatic wants
+ * a React component, an SVG import in this file would pull the asset pipeline
+ * into the CMS config, and at this size the lockup's wordmark is unreadable
+ * anyway.
+ */
+function BrandMark() {
+  return createElement(
+    'svg',
+    { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none' },
+    createElement('path', {
+      fill: '#F5B400',
+      d: 'M2 17.5 9.2 7.4a1 1 0 0 1 1.6-.05L14 11.4l2.1-2.7a1 1 0 0 1 1.6.02L22 17.5H2Z',
+    }),
+    createElement('path', {
+      fill: '#1F52A6',
+      d: 'M3.6 8.2c2.6-1.9 5.4-2.7 8.4-2.4-2.2.6-4 1.6-5.6 3.1-1.1 1-1.9 2-2.5 3.1-.4-1.3-.5-2.6-.3-3.8Zm10.9-2c2.4.2 4.6 1 6.4 2.4.2 1.1.1 2.2-.2 3.3-.9-1.9-2.4-3.4-4.4-4.5a11 11 0 0 0-1.8-.8Z',
+    }),
+  );
+}
+
 export default config({
   /*
     Deployed: GitHub mode. The club edits from a browser and every save is a
@@ -162,11 +187,21 @@ export default config({
       },
 
   ui: {
-    brand: { name: 'VentoRelativo' },
+    /*
+      The club's mark in the admin's corner, so an editor can see whose site
+      they are in — Keystatic looks identical for every project otherwise, and
+      the club will have more than one thing on GitHub eventually.
+
+      `createElement` rather than JSX because this file is `.ts`, and renaming
+      it to `.tsx` would mean touching every import that names it. The mark is
+      the logo's monogram, drawn small: the full lockup is 708x292 and would be
+      a stripe in a 24px slot.
+    */
+    brand: { name: 'VentoRelativo', mark: BrandMark },
     navigation: {
       Contenuti: ['news', 'sites'],
-      Pagine: ['home', 'voli', 'iscrizioni', 'contatti'],
-      Impostazioni: ['social'],
+      Pagine: ['home', 'voli', 'iscrizioni', 'contatti', 'privacy'],
+      Impostazioni: ['social', 'organizzazione'],
     },
   },
 
