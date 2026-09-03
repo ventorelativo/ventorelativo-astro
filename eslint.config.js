@@ -29,7 +29,17 @@ export default [
       It is third-party minified code — linting it reports a thousand things
       nobody here can act on, and drowns the gate.
     */
-    ignores: ['dist/', '.astro/', 'node_modules/', 'src/content/', 'public/vendor/'],
+    ignores: [
+      'dist/',
+      '.astro/',
+      /* The adapter's bundled output. Present after any build, so without
+         this a `npm run verify` following a build lints 124 errors out of
+         code nobody here wrote. */
+      '.netlify/',
+      'node_modules/',
+      'src/content/',
+      'public/vendor/',
+    ],
   },
 
   js.configs.recommended,
