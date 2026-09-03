@@ -1242,15 +1242,16 @@ redirected, or listed as deliberately dropped with the decision that dropped it.
 first run it found `/contact` — a real page in the old build, with no redirect — which is
 now one (`/contact/contatti` had one; the bare path did not).
 
-**Three things must be set in Netlify before the move, and one is currently broken.**
-`PUBLIC_MAPTILER_KEY` and `PUBLIC_TRACESTRACK_KEY` are not set there, so the deployed map
-builds a style URL ending in a bare `?key=`, which returns 403: the map opens and draws
-nothing. `PUBLIC_CF_BEACON_TOKEN` is likewise unset, so there are no analytics. All three
-are environment variables, not code.
+**The two map keys are set** (2026-09-03): before that the deployed map built a style URL
+ending in a bare `?key=` and got a 403 back — it opened, drew nothing and reported nothing.
+`PUBLIC_CF_BEACON_TOKEN` is still unset, so there are no analytics; that is a decision to
+take rather than an omission (`docs/cutover.md` step 2).
 
-**The Tracestrack key must be rotated, not just moved.** It was hard-coded and committed,
-so it is in this repository's history and in every bundle built from it. `docs/cutover.md`
-step 1b.
+**The Tracestrack key still has to be rotated, and after the move rather than before**
+(decided 2026-09-03). It was hard-coded and committed, so the old value is in this
+repository's history and in every bundle built from it. Rotating first would 403 the topo
+layer on the live site until the new key's referrer list caught up, and nothing is billable
+on the account. `docs/cutover.md`, "Still open".
 
 **Test content has to come out first:** the `a-test-news` post written to prove Phase 3.
 `/styleguide` **stays** (decided 2026-09-03) — it is `noindex` and out of the sitemap, and

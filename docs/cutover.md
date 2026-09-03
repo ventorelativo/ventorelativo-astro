@@ -12,27 +12,16 @@ not strand anyone mid-way.
 
 ## Before the domain moves
 
-### 1. Set the two map keys in Netlify
+### 1. Set the two map keys in Netlify — done 2026-09-03
 
-**The deployed map does not work today.** The bundle on
-`ventorelativo-astro.netlify.app` contains a style URL ending in a bare `?key=`,
-and that request returns 403 — the map opens, draws nothing and reports no
-error. Both variables are set in `.env` locally, which is why nobody noticed.
+`PUBLIC_MAPTILER_KEY` and `PUBLIC_TRACESTRACK_KEY` are set in Netlify → **Site
+configuration → Environment variables**. Before that the deployed bundle carried
+a style URL ending in a bare `?key=`, which returns 403 — the map opened, drew
+nothing and reported no error.
 
-Netlify → **Site configuration → Environment variables** → add
-`PUBLIC_MAPTILER_KEY` and `PUBLIC_TRACESTRACK_KEY` with the values from `.env`,
-then redeploy. `netlify.toml` already lists both in `SECRETS_SCAN_OMIT_KEYS`, so
-the build will not fail on them; without that line it would.
-
-A build without the MapTiler key now says so in the deploy log.
-
-### 1b. Rotate the Tracestrack key first
-
-It was hard-coded in `src/lib/mapConfig.ts` and committed, so it is in this
-repository's history and in the public bundles built from it. Moving it to an
-environment variable stopped the _next_ build leaking it; it did not un-publish
-the old one. Issue a new key at tracestrack.com, put that one in `.env` and in
-Netlify, and revoke the old.
+`netlify.toml` lists both in `SECRETS_SCAN_OMIT_KEYS`, so the build does not
+fail on finding them in the output, where Astro deliberately put them. A build
+without the MapTiler key says so in the deploy log.
 
 ### 2. Set `PUBLIC_CF_BEACON_TOKEN`, or decide not to
 
@@ -115,6 +104,17 @@ Then:
   preview has no other address.
 
 ## Still open at the time of writing
+
+- **Rotate the Tracestrack key.** Deliberately not a blocker (decided
+  2026-09-03): rotating before the move would 403 the topographic base layer on
+  the live site until the new key's referrer list caught up, and there is no
+  money on the account. But the old value was hard-coded in
+  `src/lib/mapConfig.ts` and committed, so it is in this repository's history
+  and in every public bundle built from it — moving it to an environment
+  variable stopped the next build leaking it, not the ones already published.
+  After the move: issue a new key at tracestrack.com with `ventorelativo.it` and
+  `https://*--ventorelativo-astro.netlify.app` on its referrer list, put it in
+  `.env` and in Netlify, redeploy, open a map, then revoke the old key.
 
 - Phase 6 (payments) is documented in [payments.md](payments.md) and not
   executed. Nothing about it blocks the cutover — `/iscrizioni` works today with
