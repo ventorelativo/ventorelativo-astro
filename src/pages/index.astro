@@ -202,6 +202,15 @@ const CTAS = home.data.ctas ?? [];
       linear-gradient(to bottom, var(--hero-scrim-top), var(--hero-scrim-bottom));
   }
 
+  /*
+    The homepage header is transparent and sits on the photograph. A shadow
+    under it there reads as a seam across the picture rather than as depth,
+    which is the opposite of what it does on a page with a content sheet.
+  */
+  :global(.header) {
+    box-shadow: none;
+  }
+
   .hero__credit {
     position: absolute;
     inset-block-end: var(--space-2xs);
