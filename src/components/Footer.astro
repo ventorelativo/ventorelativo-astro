@@ -93,11 +93,38 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
 
 <style>
   .footer {
+    position: relative;
     margin-block-start: auto;
     padding-block: var(--space-md);
     border-top: 1px solid var(--color-border);
     background-color: var(--color-bg-subtle);
     font-size: var(--text-sm);
+  }
+
+  /*
+    The old site's contour pattern, back where it was — `main + footer` had
+    `background-image: var(--bg-countour)`.
+
+    Drawn through a mask rather than as a background image, so one file works
+    in both colour schemes: the SVG supplies the shape, `--color-topo` the
+    colour. As a background image it was a fixed grey that had to be light
+    enough for the light theme and so vanished on the dark one.
+
+    On a pseudo-element because the footer's own background has to stay a flat
+    token, and because a mask on the footer itself would clip its children.
+  */
+  .footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-topo);
+    mask-image: url('/topo.svg');
+    mask-size: 600px;
+    pointer-events: none;
+  }
+
+  .footer__inner {
+    position: relative;
   }
 
   .footer__inner {

@@ -123,6 +123,15 @@
   */
   --color-on-brand: #ffffff;
 
+  /*
+    The contour lines behind the footer and the flight-site cards.
+
+    Faint on purpose — it is texture, not decoration you should notice. Lighter
+    in dark mode than the arithmetic suggests, because thin lines lose more to
+    a dark ground than a solid block would.
+  */
+  --color-topo: light-dark(#0f172a1a, #ffffff14);
+
   /* ------------------------------------------------------------------ map */
   /*
     One colour per feature type, ported from the archived

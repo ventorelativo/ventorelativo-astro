@@ -81,6 +81,14 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# The contour pattern behind the footer and the site cards. Not hashed — it is
+# served from public/ so the CSS can name it — so it is versioned by hand:
+# change the drawing, change the filename.
+[[headers]]
+  for = "/topo.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # Flight-computer data. Small, and pilots should get the current file.
 #
 # Content-Type is set explicitly because `.cup` is not an extension any server
