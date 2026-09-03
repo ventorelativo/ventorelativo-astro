@@ -162,17 +162,43 @@ const BRANCH_PREFIX = 'modifiche-';
  * anyway.
  */
 function BrandMark() {
+  /*
+    The mark links to the site, which is what a logo in a CMS should do: an
+    editor wanting to see the page they are writing has nowhere else to click.
+
+    It is also the only place in the admin that takes markup we write. `ui`
+    accepts `brand` (a name and this component) and `navigation` (collection
+    and singleton keys, nothing else); there is no dashboard to extend and a
+    field `description` is a plain string, so it cannot be clickable.
+    Keystatic's `SidebarHeader` renders this component bare, inside an `HStack`
+    and not inside a link of its own, so an anchor here is valid rather than
+    nested.
+
+    `target="_blank"`: the admin is a single-page app holding unsaved form
+    state, and navigating away from it in the same tab throws that away.
+  */
   return createElement(
-    'svg',
-    { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none' },
-    createElement('path', {
-      fill: '#F5B400',
-      d: 'M2 17.5 9.2 7.4a1 1 0 0 1 1.6-.05L14 11.4l2.1-2.7a1 1 0 0 1 1.6.02L22 17.5H2Z',
-    }),
-    createElement('path', {
-      fill: '#1F52A6',
-      d: 'M3.6 8.2c2.6-1.9 5.4-2.7 8.4-2.4-2.2.6-4 1.6-5.6 3.1-1.1 1-1.9 2-2.5 3.1-.4-1.3-.5-2.6-.3-3.8Zm10.9-2c2.4.2 4.6 1 6.4 2.4.2 1.1.1 2.2-.2 3.3-.9-1.9-2.4-3.4-4.4-4.5a11 11 0 0 0-1.8-.8Z',
-    }),
+    'a',
+    {
+      href: '/',
+      target: '_blank',
+      rel: 'noreferrer',
+      title: 'Apri il sito',
+      'aria-label': 'Apri il sito in una nuova scheda',
+      style: { display: 'flex' },
+    },
+    createElement(
+      'svg',
+      { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none' },
+      createElement('path', {
+        fill: '#F5B400',
+        d: 'M2 17.5 9.2 7.4a1 1 0 0 1 1.6-.05L14 11.4l2.1-2.7a1 1 0 0 1 1.6.02L22 17.5H2Z',
+      }),
+      createElement('path', {
+        fill: '#1F52A6',
+        d: 'M3.6 8.2c2.6-1.9 5.4-2.7 8.4-2.4-2.2.6-4 1.6-5.6 3.1-1.1 1-1.9 2-2.5 3.1-.4-1.3-.5-2.6-.3-3.8Zm10.9-2c2.4.2 4.6 1 6.4 2.4.2 1.1.1 2.2-.2 3.3-.9-1.9-2.4-3.4-4.4-4.5a11 11 0 0 0-1.8-.8Z',
+      }),
+    ),
   );
 }
 
