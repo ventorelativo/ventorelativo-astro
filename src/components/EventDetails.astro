@@ -365,10 +365,30 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
 </style>
 
 <script>
-  import { dismissable } from '../lib/dropdown';
+  /*
+    <details> has no light-dismiss of its own. Written out here rather than
+    imported from a shared helper, which the theme toggle and the language
+    switcher also want: Astro inlines a component's script only while it has no
+    imports, and adding one cost 2.0 kB and three requests on *every* page —
+    see docs/performance.md. Ten lines, three times, is the cheaper trade.
 
+    The listeners are never removed. Navigation is cross-document
+    (`@view-transition { navigation: auto }`), so each page starts fresh.
+  */
   const root = document.querySelector<HTMLDetailsElement>('[data-calendar]');
+
   if (root) {
-    dismissable(root, root.querySelector<HTMLElement>('[data-calendar-summary]'));
+    const summary = root.querySelector<HTMLElement>('[data-calendar-summary]');
+
+    document.addEventListener('click', (event) => {
+      if (root.open && !root.contains(event.target as Node)) root.open = false;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && root.open) {
+        root.open = false;
+        summary?.focus();
+      }
+    });
   }
 </script>
