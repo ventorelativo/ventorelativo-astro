@@ -29,17 +29,16 @@ export const getStaticPaths: GetStaticPaths = async () => {
   ]);
 
   return [
-    {
-      params: { route: 'home' },
-      props: { title: SITE.slogan, kind: SITE.name } satisfies CardOptions,
-    },
+    /*
+      `news` is listed by hand because it is an index with no entry in `pages`.
+      `home` and `siti` are not: both *are* pages, and listing them here as
+      well produced two paths for `/og/home.jpg`. Astro kept the first and
+      warned about the second on every build — the card was right, the route
+      table was not.
+    */
     {
       params: { route: 'news' },
       props: { title: 'News', kind: SITE.name } satisfies CardOptions,
-    },
-    {
-      params: { route: 'siti' },
-      props: { title: 'Siti di volo', kind: SITE.name } satisfies CardOptions,
     },
     ...news.map((entry) => ({
       params: { route: `news/${entry.id}` },
@@ -59,7 +58,15 @@ export const getStaticPaths: GetStaticPaths = async () => {
     })),
     ...pages.map((entry) => ({
       params: { route: entry.id },
-      props: { title: entry.data.title, kind: SITE.name } satisfies CardOptions,
+      props: {
+        /*
+          The homepage's card says what the club *is*. Its page title is the
+          club's name, which is already on the card as `kind` — printed twice
+          it read as a mistake.
+        */
+        title: entry.id === 'home' ? SITE.slogan : entry.data.title,
+        kind: SITE.name,
+      } satisfies CardOptions,
     })),
   ];
 };
