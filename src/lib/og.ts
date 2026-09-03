@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 11;
+const TEMPLATE_VERSION = 12;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -46,26 +46,6 @@ const CACHE_DIR = '.astro/og-cache';
 const BRAND_BLUE = '#1f52a6';
 
 const font = await readFile('src/assets/fonts/Metropolis-Bold.ttf');
-
-/**
- * The brand-blue veil laid over a washed photograph.
- *
- * 0.58, and the title is protected by a scrim beside it rather than by this.
- * Taking the veil to 0.82 — enough for white to clear 4.5:1 anywhere on the
- * card — flattened the photograph into a blue rectangle with a suggestion of
- * something behind it, which defeats the point of using a photograph. The
- * ridge line has to be visible.
- */
-const WASH = await sharp({
-  create: {
-    width: WIDTH,
-    height: HEIGHT,
-    channels: 4,
-    background: { r: 0x1f, g: 0x52, b: 0xa6, alpha: 0.58 },
-  },
-})
-  .png()
-  .toBuffer();
 
 /*
   The branding on every card is one asset: `src/assets/og-logo.svg`, the mark on
@@ -143,6 +123,36 @@ function card(
             style: { position: 'absolute', top: 0, left: 0, objectFit: 'cover' },
           },
         },
+        /*
+          A washed card takes two layers, not one, because the photograph and
+          the words want opposite things.
+
+          The brand veil below is heaviest at the top, where this photograph's
+          sky is a flat bleached grey worth losing, and fades to almost nothing
+          at the foot, where the ridge line is — the reason for using a
+          photograph at all.
+
+          The words then need protection the veil cannot give them: measured
+          across the title row the picture runs from 0.22 to 0.72 luminance,
+          and white on 0.72 is 1.37:1. So this layer is a dark corner anchored
+          under the text and gone by two-thirds of the way across, which leaves
+          the peaks on the right exactly as the veil left them.
+        */
+        background &&
+          washed && {
+            type: 'div',
+            props: {
+              style: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: WIDTH,
+                height: HEIGHT,
+                backgroundImage:
+                  'linear-gradient(to top right, rgba(9,14,22,0.86) 0%, rgba(9,14,22,0.40) 30%, rgba(9,14,22,0) 62%)',
+              },
+            },
+          },
         // Over a photograph: a scrim, heavier at the foot, so the title reads.
         // Without one: a little depth on the flat blue.
         {
@@ -158,14 +168,8 @@ function card(
                 background && !washed
                   ? 'linear-gradient(to bottom, rgba(9,14,22,0.15) 0%, rgba(9,14,22,0.55) 55%, rgba(9,14,22,0.88) 100%)'
                   : washed
-                    ? /*
-                        Left to right, not top to bottom. The text sits bottom
-                        left and this photograph's ridge line runs across the
-                        lower right, so a foot scrim would have darkened the
-                        one thing the card is showing. This darkens the column
-                        the words are in and leaves the mountains alone.
-                      */
-                      'linear-gradient(to right, rgba(9,14,22,0.66) 0%, rgba(9,14,22,0.42) 40%, rgba(9,14,22,0) 78%)'
+                    ? // The brand veil, heaviest where the sky is.
+                      'linear-gradient(to bottom, rgba(31,82,166,0.90) 0%, rgba(31,82,166,0.62) 34%, rgba(31,82,166,0.16) 100%)'
                     : 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(9,14,22,0.35) 100%)',
             },
           },
@@ -266,8 +270,7 @@ export async function renderCard({
           blue leaves the photograph's own colours fighting through it; doing
           only the desaturation leaves a grey card that is not the club's.
         */
-        .modulate(washed ? { saturation: 0.2, brightness: 1.06 } : {})
-        .composite(washed ? [{ input: WASH, blend: 'over' }] : [])
+        .modulate(washed ? { saturation: 0.25, brightness: 1.02 } : {})
         .jpeg({ quality: 82 })
         .toBuffer()
     : null;
