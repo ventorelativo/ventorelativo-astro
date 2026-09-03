@@ -14,17 +14,24 @@ Measured on the production build (`npm run build && npm run preview`), at
 
 | Page             | Total  | JavaScript | CSS    |
 | ---------------- | ------ | ---------- | ------ |
-| `/`              | 88 kB  | 1.5 kB     | 3.9 kB |
-| `/siti/`         | 82 kB  | 13.3 kB    | 5.7 kB |
-| `/news/`         | 343 kB | 1.5 kB     | 3.9 kB |
-| `/siti/roletto/` | 335 kB | 14.1 kB    | 8.1 kB |
+| `/`              | 108 kB | 1.5 kB     | 4.7 kB |
+| `/siti/`         | 97 kB  | 8.1 kB     | 6.3 kB |
+| `/news/`         | 213 kB | 1.5 kB     | 4.7 kB |
+| `/siti/roletto/` | 350 kB | 9.0 kB     | 9.2 kB |
 
 Almost all of the weight is photographs. The JavaScript column counts external
 files: the pages with a map carry its facade, everything else carries only
-Astro's prefetch. On top of that every page inlines 4.0 kB of script (1.6 kB on
-the wire) — the no-flash theme script, the theme toggle, the nav drawer and the
-language switcher, small enough that Astro puts them in the document rather
-than spending a request on them.
+Astro's prefetch. On top of that every page inlines its component scripts
+(1.5 kB on the wire) — the no-flash theme script, the theme toggle, the nav
+drawer and the language switcher, small enough that Astro puts them in the
+document rather than spending a request on them.
+
+Two of these numbers are worse than the ones this table held before, and both
+for the same reason: `topo.svg`, the contour texture behind the footer, is
+15 kB on the wire and loads on **every page**. It is the largest non-font,
+non-photograph item on the site and the obvious thing to attack if the budget
+ever needs to come down — a small tile repeated through `mask-size` would do
+the same job for a fraction of it.
 
 Measure it yourself — never estimate:
 
@@ -36,6 +43,23 @@ npm run weight -- http://localhost:4399/siti/
 Do it against the **build**, not the dev server: `astro dev` ships ~400 kB of
 Vite client and HMR machinery that never reaches production, which makes dev
 numbers meaningless.
+
+### A shared module stops a script being inlined
+
+Astro inlines a component's `<script>` only while it has nothing to import.
+Adding one static import — even to a ten-line helper in `src/lib/` — turns that
+script into an external module _and_ pulls in a shared chunk beside it.
+
+This was measured, not guessed: factoring the `<details>` light-dismiss logic
+out of the theme toggle and the language switcher, which looked like pure
+tidying, took `/` from 91.3 kB over 8 requests to 93.3 kB over 11. Two kilobytes
+and three round-trips on every page of the site, to avoid ten duplicated lines.
+It was reverted, and the same ten lines are now written out in three components
+on purpose. Each one says so.
+
+The rule: **inside a component's client script, prefer duplication to an
+import** unless the thing being imported is big enough that it should be its own
+request anyway — which is exactly what the map's dynamic `import()` is.
 
 ### Why Vite's chunk-size warning is turned down
 

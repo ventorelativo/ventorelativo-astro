@@ -12,19 +12,27 @@ not strand anyone mid-way.
 
 ## Before the domain moves
 
-### 1. Set `PUBLIC_MAPTILER_KEY` in Netlify
+### 1. Set the two map keys in Netlify
 
 **The deployed map does not work today.** The bundle on
 `ventorelativo-astro.netlify.app` contains a style URL ending in a bare `?key=`,
 and that request returns 403 — the map opens, draws nothing and reports no
-error. The variable is set in `.env` locally, which is why nobody noticed.
+error. Both variables are set in `.env` locally, which is why nobody noticed.
 
 Netlify → **Site configuration → Environment variables** → add
-`PUBLIC_MAPTILER_KEY` with the value from `.env`, then redeploy. `netlify.toml`
-already lists it in `SECRETS_SCAN_OMIT_KEYS`, so the build will not fail on it;
-without that line it would.
+`PUBLIC_MAPTILER_KEY` and `PUBLIC_TRACESTRACK_KEY` with the values from `.env`,
+then redeploy. `netlify.toml` already lists both in `SECRETS_SCAN_OMIT_KEYS`, so
+the build will not fail on them; without that line it would.
 
-A build without the key now says so in the deploy log.
+A build without the MapTiler key now says so in the deploy log.
+
+### 1b. Rotate the Tracestrack key first
+
+It was hard-coded in `src/lib/mapConfig.ts` and committed, so it is in this
+repository's history and in the public bundles built from it. Moving it to an
+environment variable stopped the _next_ build leaking it; it did not un-publish
+the old one. Issue a new key at tracestrack.com, put that one in `.env` and in
+Netlify, and revoke the old.
 
 ### 2. Set `PUBLIC_CF_BEACON_TOKEN`, or decide not to
 

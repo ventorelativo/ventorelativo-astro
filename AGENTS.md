@@ -170,12 +170,15 @@ npm run build && npm run preview
 npm run weight -- http://localhost:4399/siti/
 ```
 
-Current budget, at 390x844: `/` 72 kB; `/siti/` 82 kB; a photo-heavy site page
-335 kB, almost all of it photographs. Every page inlines 4.0 kB of script
-(1.6 kB on the wire); `/siti/` and the site pages add the map's facade — not
-MapLibre, which is 240 kB and arrives only when a map is opened. Translation is
-a facade too: nothing from Google loads until a visitor asks for it. Details and the reasoning behind each
-rule: [`docs/performance.md`](docs/performance.md).
+Current budget, at 390x844: `/` 91 kB; `/siti/` 97 kB; a photo-heavy site page
+99 kB above the fold and ~350 kB scrolled, almost all of it photographs. Every
+page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
+the footer's contour texture — the biggest non-photograph item on the site, and
+the first thing to attack if the budget has to come down. `/siti/` and the site
+pages add the map's facade — not MapLibre, which is 970 kB and arrives only when
+a map is opened. Translation is a facade too: nothing from Google loads until a
+visitor asks for it. Details and the reasoning behind each rule:
+[`docs/performance.md`](docs/performance.md).
 
 ## Conventions
 
@@ -262,3 +265,12 @@ rule: [`docs/performance.md`](docs/performance.md).
   `netlify.toml`; never disable the scan, which still has real secrets to catch.
 - **`<Picture>` and `<Image>` put your `class` on the inner `<img>`**, not on the
   `<picture>` wrapper. Positioning the wrapper needs `:global(picture)`.
+- **An import inside a component's client `<script>` stops Astro inlining it.**
+  The script becomes an external module and drags a shared chunk along with it.
+  Factoring ten lines of `<details>` dismissal out of two components cost 2.0 kB
+  and three requests on _every_ page. Inside a client script, prefer duplication
+  to a shared helper — and if you do import, measure `/` before and after.
+- **Two `getStaticPaths` entries can claim the same path.** Astro keeps one,
+  warns, and carries on; the card the `/og/` route built for the homepage was
+  wrong for weeks because the entry that won was not the one that looked
+  authoritative. A build warning about a "conflicting route" is a real bug.

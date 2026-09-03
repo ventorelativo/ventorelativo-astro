@@ -1242,10 +1242,15 @@ redirected, or listed as deliberately dropped with the decision that dropped it.
 first run it found `/contact` — a real page in the old build, with no redirect — which is
 now one (`/contact/contatti` had one; the bare path did not).
 
-**Two things must be set in Netlify before the move, and one is currently broken.**
-`PUBLIC_MAPTILER_KEY` is not set there, so the deployed map builds a style URL ending in a
-bare `?key=`, which returns 403: the map opens and draws nothing. `PUBLIC_CF_BEACON_TOKEN`
-is likewise unset, so there are no analytics. Both are environment variables, not code.
+**Three things must be set in Netlify before the move, and one is currently broken.**
+`PUBLIC_MAPTILER_KEY` and `PUBLIC_TRACESTRACK_KEY` are not set there, so the deployed map
+builds a style URL ending in a bare `?key=`, which returns 403: the map opens and draws
+nothing. `PUBLIC_CF_BEACON_TOKEN` is likewise unset, so there are no analytics. All three
+are environment variables, not code.
+
+**The Tracestrack key must be rotated, not just moved.** It was hard-coded and committed,
+so it is in this repository's history and in every bundle built from it. `docs/cutover.md`
+step 1b.
 
 **Test content has to come out first:** the `a-test-news` post written to prove Phase 3,
 and `/styleguide`.
@@ -1267,7 +1272,7 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(items 1-6 done; 7 dropped)_
+### Phase 7 — Beyond parity _(items 1-7 done; 8 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
@@ -1379,7 +1384,54 @@ decisions the plan had made:
 - **Two view transitions**: the news teaser's photograph into the article hero,
   and the flight-site card's title into the site page's `h1`.
 
-**7. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
+**7. A second pass over the same surfaces, 2026-09-03.** ✅ _Done at the club's
+request, after item 6._ Mostly corrections to work item 6 had just shipped,
+which is the point of recording them:
+
+- **The outward mark.** Every link that leaves the site now carries the same
+  glyph — cards, buttons, table cells, and links an editor writes in a
+  paragraph. The prose case cannot use the component (markdown renders no
+  components), so it is the same drawing as a CSS mask; `:not(:has(.external))`
+  keeps the two from both firing on one link. Deliberately unmarked: the
+  footer's social icons, which have no text, and the map's tile attribution.
+- **The homepage's social card was wrong, and had been.** `home` and `siti` were
+  each listed twice in `/og/[...route].jpg`'s `getStaticPaths` — once by hand,
+  once from the `pages` collection — so Astro warned about a conflicting path
+  and kept one arbitrarily. The one it kept printed the club's name twice.
+  The card now builds on the homepage's own photograph, washed into the brand
+  blue at 0.58 with the scrim moved beside the text rather than under it, and
+  the lockup went from 300px to 440px on every card so the name is legible at
+  the size a preview is actually shown.
+- **Four calendar destinations, not one file.** An event offers Google Calendar
+  and Outlook as pre-filled URLs built at build time, and the `.ics` twice —
+  once without `download` (the phone opens Calendar) and once with it (the
+  browser saves the file). All anchors; nothing is fetched from Google or
+  Microsoft until somebody picks one.
+- **`.field` joined `.card` as a global primitive**, because `/styleguide`
+  could not show a form control that matched the one the contact form renders
+  while the rules lived inside that component.
+- **The tier cards line up** head and foot, via `grid-template-rows: subgrid` —
+  equal heights alone were not enough once the highlighted tier's badge made
+  its header band taller than the other's.
+- **Meta descriptions were rewritten against what the pages now say**, and
+  `/siti` was found to be ignoring its own entry's title and description in
+  favour of two hardcoded copies that had already drifted.
+- **Three build warnings, all real.** A `mapConfig` import that was both static
+  and dynamic had been pulling the whole module into the eager bundle of every
+  page with a map (2 kB); Vite's 500 kB chunk warning fires on Keystatic's admin
+  UI and MapLibre, both lazy, and is now turned down to just above the larger
+  one with the reasoning in `docs/performance.md`. The build is warning-free.
+- **One refactor was reverted after measuring it.** Sharing the `<details>`
+  light-dismiss logic between three components cost 2.0 kB and three requests on
+  every page, because Astro inlines a component script only while it has no
+  imports. Ten duplicated lines are cheaper. Recorded in AGENTS.md's traps.
+
+**Open, and the club's to settle:** the name is set uppercase where it is a
+wordmark (header, social card) while `/stampa` still tells readers to write
+"VentoRelativo" in prose. `SITE.name` stays mixed-case data and the uppercasing
+happens at render time, so either answer is a one-line change.
+
+**8. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
 
 **Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
 i18n routing (single locale — GTranslate covers the rest, G11), and anything requiring edge
