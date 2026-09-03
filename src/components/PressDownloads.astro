@@ -2,122 +2,81 @@
 /**
  * The press kit's download grid.
  *
- * Each tile previews the artwork by drawing the real logo component on the
- * ground the file has, rather than by loading the file: the PNGs are 1-2 MB of
- * 2000px artwork between them, and nobody should download all six to look at a
- * page.
+ * Each tile previews its artwork with an `<img>` pointing at the SVG the page
+ * is offering, so what you look at is literally the file you get — no
+ * possibility of a preview that has drifted from the download, which is a
+ * mistake this component has already made once.
  *
- * The list itself is `src/lib/press.ts`, which is also what generates the
- * files — one definition, so a tile cannot advertise something the build did
- * not write.
+ * The PNGs are 1-2 MB of 2000px artwork between them and are never loaded
+ * here; the vectors are 2-3 kB each on the wire and cached.
+ *
+ * The list is `src/lib/press.ts`, which is also what generates the files — one
+ * definition, so a tile cannot advertise something the build did not write.
  */
-import { readFile } from 'node:fs/promises';
+import sharp from 'sharp';
 
-import { PRESS_ASSETS, repaintBlue } from '../lib/press';
-
-/*
-  The logo once, as a <symbol>, referenced by every tile.
-
-  `<Logo>` inlines the whole drawing, and seven copies made a 119 kB HTML page
-  — gzip flattened it to 13 kB, so the wire cost was fine and the parse cost was
-  not. This is what the Drupal theme did too, for the same reason.
-
-  The classes become presentation attributes because CSS selectors do not reach
-  inside a `<use>` shadow tree, while custom properties inherit into it — so a
-  tile can still turn the blue white by setting `--color-accent`.
-*/
-const raw = (await readFile('src/assets/logo-card.svg', 'utf8'))
-  .replace(/^[\s\S]*?<svg[^>]*>/, '')
-  .replace(/<\/svg>\s*$/, '');
+import { PRESS_VARIANTS, variantSource } from '../lib/press';
 
 /*
-  Two symbols, with the colours baked in, rather than one recoloured by a
-  custom property. Custom properties are supposed to inherit into a `<use>`
-  shadow tree and `getComputedStyle` said they did, while the reversed tile
-  went on drawing itself blue. Baking it is also what the downloadable files
-  do, so the preview and the file cannot disagree. A second copy of the
-  geometry costs nothing on the wire: it differs by one hex value and gzip
-  eats it.
-
-  `repaintBlue` throws if the fill it expects is not in the artwork — the first
-  version of this replaced the class names `<Logo>` uses rather than the `fill`
-  attributes the file actually has, produced two identical symbols, and said
-  nothing.
+  Each variant's real proportions, read from the artwork rather than assumed:
+  the lockup, the bordered version and the square are three different shapes,
+  and the "2000×825" on the label has to be the size the file actually is.
 */
-const logo = raw;
-const logoReversed = repaintBlue(raw, '#FFFFFF');
-
-const VECTOR = {
-  href: '/stampa/ventorelativo-logo.svg',
-  label: 'Logo vettoriale (SVG)',
-  use: 'Per la stampa e per qualsiasi ridimensionamento. È il file sorgente.',
-  meta: 'SVG · scalabile',
-};
-
-const rasters = PRESS_ASSETS.map((asset) => ({
-  href: `/stampa/${asset.slug}.png`,
-  label: asset.label,
-  use: asset.use,
-  meta: `PNG · ${asset.width}×${asset.height ?? Math.round((asset.width * 292) / 708)} px`,
-  background: asset.background,
-  reversed: asset.reversed ?? false,
-}));
+const tiles = await Promise.all(
+  PRESS_VARIANTS.map(async (variant) => {
+    const meta = await sharp(await variantSource(variant)).metadata();
+    const ratio = (meta.width ?? 1) / (meta.height ?? 1);
+    const height = variant.height ?? Math.round(variant.width / ratio);
+    return {
+      ...variant,
+      /* Previews are drawn from the vector when there is one. */
+      preview: variant.formats.includes('svg')
+        ? `/stampa/${variant.slug}.svg`
+        : `/stampa/${PRESS_VARIANTS[0].slug}.svg`,
+      ratio,
+      pngSize: `${variant.width}×${height} px`,
+    };
+  }),
+);
 ---
 
-{/* Hidden, and defined once: the geometry every tile below points at. */}
-<svg class="press__symbols" aria-hidden="true" focusable="false">
-  <symbol id="vr-press-logo" viewBox="0 0 708 292" set:html={logo} />
-  <symbol id="vr-press-logo-neg" viewBox="0 0 708 292" set:html={logoReversed} />
-</svg>
-
 <ul class="press">
-  <li class="press__item card">
-    <span class="press__preview press__preview--check">
-      <svg
-        class="press__logo"
-        viewBox="0 0 708 292"
-        role="img"
-        aria-label="Ventorelativo"
-      >
-        <use href="#vr-press-logo"></use>
-      </svg>
-    </span>
-    <span class="press__body">
-      <strong>{VECTOR.label}</strong>
-      <span class="press__use">{VECTOR.use}</span>
-      <span class="press__meta">{VECTOR.meta}</span>
-    </span>
-    <a class="button button--outline press__get" href={VECTOR.href} download>Scarica</a>
-  </li>
-
   {
-    rasters.map((asset) => (
+    tiles.map((tile) => (
       <li class="press__item card">
         <span
-          class:list={[
-            'press__preview',
-            !asset.background && 'press__preview--check',
-            asset.reversed && 'press__preview--reversed',
-          ]}
-          style={asset.background ? `background-color:${asset.background}` : undefined}
+          class:list={['press__preview', !tile.background && 'press__preview--check']}
+          style={tile.background ? `background-color:${tile.background}` : undefined}
         >
-          <svg
-            class="press__logo"
-            viewBox="0 0 708 292"
-            role="img"
-            aria-label="Ventorelativo"
-          >
-            <use href={asset.reversed ? '#vr-press-logo-neg' : '#vr-press-logo'} />
-          </svg>
+          <img class="press__logo" src={tile.preview} alt="" width="120" height="52" />
         </span>
+
         <span class="press__body">
-          <strong>{asset.label}</strong>
-          <span class="press__use">{asset.use}</span>
-          <span class="press__meta">{asset.meta}</span>
+          <strong>{tile.label}</strong>
+          <span class="press__use">{tile.use}</span>
         </span>
-        <a class="button button--outline press__get" href={asset.href} download>
-          Scarica
-        </a>
+
+        <span class="press__get">
+          {tile.formats.includes('svg') && (
+            <a
+              class="button button--outline"
+              href={`/stampa/${tile.slug}.svg`}
+              download
+            >
+              SVG
+            </a>
+          )}
+          {tile.formats.includes('png') && (
+            <a
+              class="button button--outline"
+              href={`/stampa/${tile.slug}.png`}
+              download
+            >
+              PNG
+            </a>
+          )}
+          <span class="press__meta">{tile.pngSize}</span>
+        </span>
       </li>
     ))
   }
@@ -135,7 +94,7 @@ const rasters = PRESS_ASSETS.map((asset) => ({
   }
 
   /* Surface from the `.card` primitive. No hover: the card is not the link,
-     the button inside it is. */
+     the buttons inside it are. */
   .press__item {
     display: flex;
     flex-direction: column;
@@ -143,21 +102,11 @@ const rasters = PRESS_ASSETS.map((asset) => ({
     padding: var(--space-sm);
   }
 
-  .press__symbols {
-    position: absolute;
-    width: 0;
-    height: 0;
-  }
-
-  .press__logo {
-    height: 2.4rem;
-    width: auto;
-  }
-
   .press__preview {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 6rem;
     padding: var(--space-sm);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -165,7 +114,7 @@ const rasters = PRESS_ASSETS.map((asset) => ({
 
   /*
     A checkerboard for the files with a transparent ground — the only way to
-    show "transparent" that does not look like "white".
+    show "transparent" that does not read as "white".
   */
   .press__preview--check {
     background-color: #ffffff;
@@ -182,19 +131,12 @@ const rasters = PRESS_ASSETS.map((asset) => ({
       -8px 0;
   }
 
-  /*
-    A dark checkerboard for the reversed file with a transparent ground. On the
-    light one it was a white logo on a near-white square — the preview showed
-    an empty box, which is exactly the wrong thing to say about a file whose
-    whole point is that it is white.
-  */
-  .press__preview--check.press__preview--reversed {
-    background-color: #2a2f36;
-    background-image:
-      linear-gradient(45deg, #3a4149 25%, transparent 25%),
-      linear-gradient(-45deg, #3a4149 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #3a4149 75%),
-      linear-gradient(-45deg, transparent 75%, #3a4149 75%);
+  /* `height: auto` so each drawing keeps its own proportions — three of the
+     five are not the same shape. */
+  .press__logo {
+    width: auto;
+    max-width: 100%;
+    height: 3rem;
   }
 
   .press__body {
@@ -209,15 +151,19 @@ const rasters = PRESS_ASSETS.map((asset) => ({
     text-wrap: pretty;
   }
 
+  .press__get {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs);
+    margin-block-start: auto;
+    padding-block-start: var(--space-2xs);
+  }
+
   .press__meta {
     color: var(--color-text-muted);
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
-  }
-
-  .press__get {
-    margin-block-start: auto;
-    align-self: start;
   }
 </style>

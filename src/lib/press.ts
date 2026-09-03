@@ -1,168 +1,128 @@
 /**
- * The press kit's downloadable artwork.
+ * The press kit's artwork.
  *
- * One list, rendered at build time from `src/assets/logo-card.svg` — the same
- * file `<Logo>` inlines into the header. Nothing here is a second copy of the
- * logo that could quietly diverge from the one on the site, which is the usual
- * way a press kit goes stale.
+ * One list of variants; each one has a source SVG in `src/assets/press/` and
+ * produces the downloads the page offers. The rasters are generated at build
+ * from those same files, so there is no folder of exported PNGs to keep in
+ * step with the drawings — which is how a press kit goes stale.
  *
  * ## Why these five
  *
  * A journalist or a club member posting on Facebook needs, in practice: the
- * vector for print, a big transparent PNG for anything digital, a version with
- * a solid ground for the many places that flatten transparency onto white text
- * or a dark card, and a square for a profile picture. That is the list.
+ * vector for print, a big transparent PNG for anything digital, something that
+ * survives being dropped on a photograph, a one-colour version for a fax-grade
+ * reproduction, and a square for a profile picture. That is the list.
  *
- * The square variants exist because the lockup is 708x292 — a 2.4:1 oval — and
- * every avatar slot on every platform is a square or a circle. Uploaded as-is
- * it comes out as a stripe with the ends cut off.
+ * The square exists because the lockup is a 2.4:1 oval and every avatar slot on
+ * every platform is a square or a circle. Uploaded as-is it comes out as a
+ * stripe with the ends cut off.
  */
 import { readFile } from 'node:fs/promises';
 import sharp from 'sharp';
 
-/** The blue the logo is drawn in; the ground the reversed versions sit on. */
+/** The blue the logo is drawn in. */
 export const BRAND_BLUE = '#1F52A6';
 
-/**
- * Repaint the logo's blue.
- *
- * A string replace on the literal, which is safe here because the artwork is a
- * flat export with two hard-coded fills and no gradients, `style` blocks or
- * `currentColor`. It throws rather than returning the input unchanged, because
- * a silent no-op here produces a "reversed" file that is not reversed — which
- * is exactly what happened when this was first written against the class names
- * `<Logo>` uses rather than the attributes the file actually has.
- */
-export function repaintBlue(svg: string, colour: string): string {
-  const out = svg.replaceAll(BRAND_BLUE, colour);
-  if (out === svg) {
-    throw new Error(
-      `press: no ${BRAND_BLUE} in the logo, so repainting it did nothing. ` +
-        'Has src/assets/logo-card.svg changed?',
-    );
-  }
-  return out;
-}
-
-export interface PressAsset {
+export interface PressVariant {
   /** File name without extension; also the route. */
   slug: string;
   label: string;
   /** What it is for, in one line. */
   use: string;
+  /** File under `src/assets/press/`. */
+  source: string;
+  /** Which downloads to offer. */
+  formats: ('svg' | 'png')[];
+  /** Raster width. */
   width: number;
-  /** Square when set equal to `width`; otherwise follows the artwork. */
+  /** Set equal to `width` for a square; otherwise the artwork's own ratio. */
   height?: number;
-  /** A solid ground, or transparent when absent. */
+  /** A solid ground for the raster, or transparent when absent. */
   background?: string;
-  /** Fraction of the shorter side left clear around the logo. */
+  /** Fraction of the shorter side left clear around the artwork. */
   padding?: number;
-  /**
-   * Swap the logo's blue for white before rasterising.
-   *
-   * Needed for anything on a dark ground, and not optional: the logo's
-   * "white" is transparency, not paint. Composited onto blue, the sky behind
-   * the mountain and the gaps in the wordmark fill with blue, the blue
-   * paraglider lines disappear into it, and what is left is a yellow blob.
-   * A reversed mark is a different drawing, not a different background.
-   */
-  reversed?: boolean;
 }
 
-export const PRESS_ASSETS: PressAsset[] = [
+export const PRESS_VARIANTS: PressVariant[] = [
   {
     slug: 'ventorelativo-logo',
-    label: 'Logo, PNG trasparente',
-    use: 'Uso generale su fondi chiari. 2000 px di larghezza.',
+    label: 'Logo a colori',
+    use: 'La versione principale. Su fondi chiari e uniformi.',
+    source: 'logo.svg',
+    formats: ['svg', 'png'],
     width: 2000,
     padding: 0.02,
   },
   {
     slug: 'ventorelativo-logo-fondo-bianco',
     label: 'Logo su fondo bianco',
-    use: 'Dove la trasparenza non è supportata, o su una foto.',
+    use: 'Dove la trasparenza non è supportata: documenti, stampa, allegati.',
+    source: 'logo.svg',
+    formats: ['png'],
     width: 2000,
     background: '#ffffff',
     padding: 0.08,
   },
   {
-    slug: 'ventorelativo-logo-fondo-blu',
-    label: 'Logo in negativo su fondo blu',
-    use: 'Su fondi scuri, o quando serve un blocco pieno.',
-    width: 2000,
-    background: BRAND_BLUE,
-    padding: 0.08,
-    reversed: true,
-  },
-  {
-    slug: 'ventorelativo-logo-negativo',
-    label: 'Logo in negativo, PNG trasparente',
-    use: 'Da mettere su una foto scura o su un fondo di colore vostro.',
+    slug: 'ventorelativo-logo-bordo',
+    label: 'Logo con bordo',
+    use: 'Sopra una foto o un fondo poco uniforme: il bordo bianco lo stacca dallo sfondo.',
+    source: 'logo-bordo.svg',
+    formats: ['svg', 'png'],
     width: 2000,
     padding: 0.02,
-    reversed: true,
   },
   {
-    slug: 'ventorelativo-quadrato-bianco',
-    label: 'Quadrato, fondo bianco',
-    use: 'Immagine del profilo: Facebook, Instagram, WhatsApp.',
-    width: 1000,
-    height: 1000,
-    background: '#ffffff',
-    padding: 0.12,
+    slug: 'ventorelativo-logo-mono',
+    label: 'Logo monocromatico',
+    use: 'Un solo colore, per stampe in bianco e nero, timbri, serigrafie e ricami.',
+    source: 'logo-mono.svg',
+    formats: ['svg', 'png'],
+    width: 2000,
+    padding: 0.02,
   },
   {
-    slug: 'ventorelativo-quadrato-blu',
-    label: 'Quadrato in negativo, fondo blu',
-    use: 'Immagine del profilo dove il bianco sparisce nell’interfaccia.',
+    slug: 'ventorelativo-quadrato',
+    label: 'Logo quadrato',
+    use: 'Immagine del profilo: chat, Facebook, Instagram. Già centrato per il ritaglio circolare.',
+    source: 'logo-quadrato.svg',
+    formats: ['svg', 'png'],
     width: 1000,
     height: 1000,
-    background: BRAND_BLUE,
-    padding: 0.12,
-    reversed: true,
   },
 ];
 
-/** The source artwork, read once per build. */
-export function logoSource(): Promise<Buffer> {
-  return readFile('src/assets/logo-card.svg');
+/** Read one variant's source artwork. */
+export function variantSource(variant: PressVariant): Promise<Buffer> {
+  return readFile(`src/assets/press/${variant.source}`);
+}
+
+/** The height a variant's raster comes out at, for the label on the page. */
+export function rasterHeight(variant: PressVariant, ratio: number): number {
+  return variant.height ?? Math.round(variant.width / ratio);
 }
 
 /**
- * The same drawing with its blue painted white.
- *
- * A string replace on the fill attribute, which is safe here because the file
- * is a flat export with two literal fills and no gradients, `style` blocks or
- * `currentColor` — the assertion below is what keeps that true if the artwork
- * is ever replaced.
- */
-export async function reversedLogo(): Promise<Buffer> {
-  const svg = (await logoSource()).toString('utf8');
-  return Buffer.from(repaintBlue(svg, '#FFFFFF'), 'utf8');
-}
-
-/**
- * Rasterise one asset.
+ * Rasterise one variant.
  *
  * `density: 400` because sharp rasterises SVG through librsvg at a DPI, not at
  * a target width: left at the default 72 the 2000px output is an upscale of a
- * 708px bitmap and the wordmark's thin strokes break up.
+ * 700px bitmap and the wordmark's thin strokes break up.
  */
-export async function renderAsset(asset: PressAsset): Promise<Buffer> {
-  const source = asset.reversed ? await reversedLogo() : await logoSource();
-  const pad = asset.padding ?? 0;
+export async function renderVariant(variant: PressVariant): Promise<Buffer> {
+  const source = await variantSource(variant);
+  const meta = await sharp(source).metadata();
+  const ratio = (meta.width ?? 1) / (meta.height ?? 1);
 
-  const boxWidth = asset.width;
-  const boxHeight = asset.height ?? Math.round((asset.width * 292) / 708);
-  const innerWidth = Math.round(boxWidth * (1 - pad * 2));
-  const innerHeight = Math.round(boxHeight * (1 - pad * 2));
+  const pad = variant.padding ?? 0;
+  const boxWidth = variant.width;
+  const boxHeight = variant.height ?? Math.round(variant.width / ratio);
 
-  const logo = await sharp(source, { density: 400 })
+  const art = await sharp(source, { density: 400 })
     .resize({
-      width: innerWidth,
-      height: innerHeight,
+      width: Math.round(boxWidth * (1 - pad * 2)),
+      height: Math.round(boxHeight * (1 - pad * 2)),
       fit: 'inside',
-      withoutEnlargement: false,
     })
     .png()
     .toBuffer();
@@ -172,10 +132,10 @@ export async function renderAsset(asset: PressAsset): Promise<Buffer> {
       width: boxWidth,
       height: boxHeight,
       channels: 4,
-      background: asset.background ?? { r: 0, g: 0, b: 0, alpha: 0 },
+      background: variant.background ?? { r: 0, g: 0, b: 0, alpha: 0 },
     },
   })
-    .composite([{ input: logo, gravity: 'centre' }])
+    .composite([{ input: art, gravity: 'centre' }])
     .png({ compressionLevel: 9 })
     .toBuffer();
 }
