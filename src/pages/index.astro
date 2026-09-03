@@ -127,19 +127,43 @@ const CTAS = home.data.ctas ?? [];
       The hero is treated differently per scheme, deliberately.
       No `color-scheme` override here — each mode gets its own character:
 
-      LIGHT: a pale, hazy wash with dark text, as the Drupal theme had it. The
-      photo is a dusk shot, so the white scrim needed to make dark text legible
-      also bleaches the mountains out — that softness is the intended look, not
-      a defect, and it keeps interior pages and the homepage feeling related.
+      Heaviest at the top and nearly clear at the foot — the other way up from
+      where this started. The scrim exists to carry the logo and the buttons,
+      which sit in the upper half; running it the other way spent its density
+      on the ridge line, which is the one part of the picture worth seeing.
+      The credit sits over the clear end, and is the only thing there.
 
-      DARK: a much lighter scrim, so the photograph stays intact and the snow
-      and ridgeline read properly behind light text.
+      LIGHT: a pale wash, as the Drupal theme had it, but no longer bleaching
+      the mountains out — that was a side effect of the old direction, not the
+      intent.
+
+      DARK: lighter again, so the snow and the ridge read properly behind
+      light text.
 
       Both are expressed as one light-dark() pair per gradient stop, so there is
       still a single place to tune each.
     */
-    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.64), rgb(22 25 28 / 0.35));
-    --hero-scrim-bottom: light-dark(rgb(255 255 255 / 0.84), rgb(22 25 28 / 0.65));
+    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.84), rgb(22 25 28 / 0.62));
+    --hero-scrim-bottom: light-dark(rgb(255 255 255 / 0.24), rgb(22 25 28 / 0.14));
+
+    /*
+      A soft pool behind the logo and the buttons.
+
+      Once the linear scrim stopped covering the whole picture, the content had
+      only whatever the sky happened to be behind it — and this sky is bright.
+      The outline buttons' label measured 5.0:1 in light and 1.4:1 in dark
+      against it. An ellipse with no visible edge puts a controlled ground
+      under the content and leaves the rest of the photograph alone.
+    */
+    --hero-pool: light-dark(rgb(255 255 255 / 0.55), rgb(22 25 28 / 0.62));
+
+    /*
+      The credit sits on the clear end of the scrim, which is now the raw
+      photograph in both schemes — so it takes a light colour in both, rather
+      than following a token meant for a page background it is no longer on.
+    */
+    --hero-credit: rgb(255 255 255 / 0.88);
+    --hero-credit-strong: rgb(255 255 255);
   }
 
   /*
@@ -173,11 +197,9 @@ const CTAS = home.data.ctas ?? [];
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(
-      to bottom,
-      var(--hero-scrim-top),
-      var(--hero-scrim-bottom)
-    );
+    background:
+      radial-gradient(60% 42% at 50% 46%, var(--hero-pool) 0%, transparent 100%),
+      linear-gradient(to bottom, var(--hero-scrim-top), var(--hero-scrim-bottom));
   }
 
   .hero__credit {
@@ -185,10 +207,11 @@ const CTAS = home.data.ctas ?? [];
     inset-block-end: var(--space-2xs);
     /* Lines up with the container gutter the hero content uses. */
     inset-inline-end: var(--space-md);
-    color: var(--color-text-muted);
+    color: var(--hero-credit);
     font-size: var(--text-xs);
-    /* Sits over the photograph, so it needs the scrim's stacking context but
-       not its own background — the gradient's dark end is already under it. */
+    /* No panel behind it — a shadow is enough over terrain, and a box here
+       would be the loudest thing in the corner. */
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.55);
     text-align: end;
   }
 
@@ -205,7 +228,7 @@ const CTAS = home.data.ctas ?? [];
   }
 
   .hero__credit a:hover {
-    color: var(--color-text-strong);
+    color: var(--hero-credit-strong);
   }
 
   .hero__content {
@@ -214,6 +237,22 @@ const CTAS = home.data.ctas ?? [];
     align-items: center;
     gap: var(--space-xs);
     padding-block: var(--header-height);
+  }
+
+  /*
+    The outline buttons sit on a photograph, not on a page.
+
+    In dark mode their label is `--color-accent`, a light blue that measured
+    2.1:1 against this sky before any of today's changes and 2.5:1 after the
+    pool went in — readable to nobody either way. White takes it to 7.2:1 and
+    costs nothing: the button is over a picture, so the accent was never
+    carrying brand meaning here that the mark above it does not carry better.
+
+    Light mode keeps the accent, which measures 5.9:1 and is the colour the old
+    theme used.
+  */
+  .hero__ctas :global(.button--outline) {
+    --button-outline-color: light-dark(var(--color-accent), var(--color-on-brand));
   }
 
   .hero__ctas {
