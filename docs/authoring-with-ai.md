@@ -148,6 +148,26 @@ writing, so it is asked once and remembered in `localStorage` under
 `redazione-ai`. After the first visit the page is one button per content type,
 labelled with where it will send them.
 
+### The copy must never be able to break the open
+
+`navigator.clipboard` does not exist on an insecure origin, and `npm run dev`
+prints `http://192.168.x.x:4321` beside the localhost address. Opened at that
+address, the click handler threw on its first line, so nothing was copied **and**
+no tab opened: one broken half took the working half with it. It looked like the
+button did nothing at all, with no error unless devtools happened to be open.
+
+The copy is now a function that cannot throw, with `document.execCommand` behind
+it: deprecated, and the only thing that copies on an insecure origin. It works
+on the selection and the box does not hold the date line, so the value is
+swapped for one synchronous call and put back before anything paints.
+
+Verified with a real trusted click over the DevTools Protocol, reading the
+clipboard back afterwards: 18,136 characters with the date line on top, and the
+tab at `chatgpt.com/?q=…`, on both the modern and the `execCommand` path. The
+first attempt at that test clicked the wrong place, because `scroll-behavior:
+smooth` means a rect read straight after `scrollIntoView` is already stale: the
+same trap `docs/verifying-changes.md` records for screenshots.
+
 That is the site's second stored key, and `/privacy` lists it beside `theme`.
 The notice claims nothing leaves the device and there is no banner because there
 is nothing to consent to; a preference added without saying so would make that

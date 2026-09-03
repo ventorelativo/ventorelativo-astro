@@ -214,18 +214,50 @@ const CHATS = [
     label();
   });
 
+  /*
+    Copy, without ever throwing.
+
+    `navigator.clipboard` does not exist on an insecure origin, and `npm run
+    dev` advertises `http://192.168.x.x:4321` beside localhost. Opened at that
+    address, the first line of this handler threw, so nothing was copied *and*
+    no tab opened: the broken half took the working half with it.
+
+    `execCommand` is deprecated and is the only thing that copies there. It
+    works on the selection and the box does not hold the date line, so the
+    value is swapped for one synchronous call and put back before anything can
+    paint.
+  */
+  const copy = (box: HTMLTextAreaElement, text: string) => {
+    try {
+      if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
+
+      const original = box.value;
+      box.value = text;
+      box.select();
+      /* Cast because the deprecation is the point: `astro check` flags the
+         real signature, and there is no replacement that copies on an
+         insecure origin. */
+      const legacy = document as unknown as { execCommand(command: string): boolean };
+      const ok = legacy.execCommand('copy');
+      box.value = original;
+      return ok ? Promise.resolve() : Promise.reject(new Error('copy refused'));
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  };
+
   for (const button of buttons) {
     button.addEventListener('click', () => {
       const box = document.getElementById(button.dataset.copy!) as HTMLTextAreaElement;
       const chat = chosen();
 
       /*
-        Order matters. The clipboard write is started first, inside the gesture
-        and while the document still has focus; `window.open` follows in the
-        same turn, so the popup blocker sees a real click. Awaiting the write
-        before opening would lose the gesture and the tab with it.
+        Order matters. The copy starts first, inside the gesture and while the
+        document still has focus; `window.open` follows in the same turn, so
+        the popup blocker sees a real click. Awaiting the copy before opening
+        would lose the gesture and the tab with it.
       */
-      const copied = navigator.clipboard.writeText(`Oggi è ${today}.\n\n${box.value}`);
+      const copied = copy(box, `Oggi è ${today}.\n\n${box.value}`);
 
       if (chat.value !== 'copia') {
         const url = chat.dataset.url + encodeURIComponent(button.dataset.short!);
