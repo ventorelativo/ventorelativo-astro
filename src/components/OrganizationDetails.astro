@@ -17,6 +17,7 @@
  * required, and an email is a sufficient recapito.
  */
 import { getEntry } from 'astro:content';
+import H2 from './H2.astro';
 
 const org = (await getEntry('settings', 'organization'))?.data;
 
@@ -34,7 +35,7 @@ const rows = [
 {
   rows.length > 0 && (
     <section class="org">
-      <h2>Dati dell'associazione</h2>
+      <H2>Dati dell'associazione</H2>
       {/* `notranslate`: a codice fiscale must survive the translator intact. */}
       <dl class="org__list notranslate">
         {rows.map(({ label, value }) => (

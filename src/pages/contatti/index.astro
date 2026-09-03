@@ -7,6 +7,7 @@ import PageLayout from '../../layouts/PageLayout.astro';
 import ContactButtons from '../../components/ContactButtons.astro';
 import ContactForm from '../../components/ContactForm.astro';
 import OrganizationDetails from '../../components/OrganizationDetails.astro';
+import H2 from '../../components/H2.astro';
 
 const page = await getEntry('pages', 'contatti');
 if (!page) throw new Error('Missing src/content/pages/contatti.mdx');
@@ -29,7 +30,7 @@ const { contacts } = page.data;
   {contacts && <ContactButtons contacts={contacts} />}
 
   <div class="form">
-    <h2>Scrivici</h2>
+    <H2>Scrivici</H2>
     <p class="form__intro">
       Il modulo arriva alla stessa casella dell'indirizzo qui sopra. Se preferisci il
       telefono, il numero è quello del direttivo: chiamalo a un'ora ragionevole.

@@ -17,6 +17,7 @@
  */
 import type { CollectionEntry } from 'astro:content';
 import Badge from './Badge.astro';
+import H2 from './H2.astro';
 
 interface Props {
   entry: CollectionEntry<'sites'>;
@@ -29,9 +30,9 @@ const href = `/siti/${entry.id}/`;
 
 <article class="card card--link">
   {/* The other half of the morph into the site page's h1: see global.css. */}
-  <h2 class="card__title" style={`view-transition-name: site-${entry.id}`}>
+  <H2 class="card__title" style={`view-transition-name: site-${entry.id}`}>
     <a class="card__stretch" href={href}>{title}</a>
-  </h2>
+  </H2>
   <p class="card__summary">{summary}</p>
 
   {

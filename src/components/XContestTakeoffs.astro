@@ -15,6 +15,7 @@ import { takeoffSearchUrl } from '../lib/xcontest';
 import type { LatLon } from '../lib/geo';
 import type { FeatureType } from '../lib/featureTypes';
 import ExternalIcon from './ExternalIcon.astro';
+import H2 from './H2.astro';
 
 interface Feature {
   name: string;
@@ -35,7 +36,7 @@ const takeoffs = Astro.props.features.filter(
 {
   takeoffs.length > 0 && (
     <section class="flights">
-      <h2>Voli da questo sito</h2>
+      <H2>Voli da questo sito</H2>
       <p class="note">Richiede un account XContest per vedere le tracce.</p>
       <ul>
         {takeoffs.map((takeoff) => (

@@ -27,6 +27,7 @@ import ArticleCard from '../components/ArticleCard.astro';
 import SiteCard from '../components/SiteCard.astro';
 import Badge from '../components/Badge.astro';
 import PricingTiers from '../components/PricingTiers.astro';
+import H2 from '../components/H2.astro';
 
 /* Real entries, so the cards below are exactly what /news and /siti render. */
 const [post] = await getCollection('news', ({ data }) => !data.draft);
@@ -98,7 +99,7 @@ const TIERS = [
 >
   <div class="stack">
     <section>
-      <h2>Colori</h2>
+      <H2>Colori</H2>
       <ul class="swatches">
         {
           SWATCHES.map(([token, label]) => (
@@ -126,7 +127,7 @@ const TIERS = [
     </section>
 
     <section>
-      <h2>Tipografia</h2>
+      <H2>Tipografia</H2>
       {
         /*
         Real headings inside `.prose`, which is where body copy lives. The
@@ -136,7 +137,7 @@ const TIERS = [
       }
       <div class="prose specimen">
         <h1>Titolo di primo livello <code>h1</code></h1>
-        <h2>Titolo di secondo livello <code>h2</code></h2>
+        <H2>Titolo di secondo livello <code>h2</code></H2>
         <h3>Titolo di terzo livello <code>h3</code></h3>
         <h4>Titolo di quarto livello <code>h4</code></h4>
         <p>
@@ -160,7 +161,7 @@ const TIERS = [
     </section>
 
     <section>
-      <h2>Bottoni</h2>
+      <H2>Bottoni</H2>
       <p class="note">
         Tre colori, ciascuno pieno o in outline. <code>.button--outline</code> è un modificatore:
         prende il colore che il bottone ha già, quindi si combina con tutti e tre invece di
@@ -205,7 +206,7 @@ const TIERS = [
     </section>
 
     <section>
-      <h2>Etichette</h2>
+      <H2>Etichette</H2>
       <p class="row">
         <Badge label="Eventi" />
         <Badge label="Competizioni" />
@@ -214,7 +215,7 @@ const TIERS = [
     </section>
 
     <section>
-      <h2>Schede</h2>
+      <H2>Schede</H2>
       <p class="note">
         I componenti veri, con voci vere delle collezioni: quello che si vede qui è
         quello che rendono <code>/news</code> e <code>/siti</code>.
@@ -250,7 +251,7 @@ const TIERS = [
     </section>
 
     <section>
-      <h2>Campi</h2>
+      <H2>Campi</H2>
       <div class="fields">
         <p class="field">
           <label for="sg-text">Campo di testo</label>

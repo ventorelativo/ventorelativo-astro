@@ -8,6 +8,7 @@
 import { getEntry, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import PricingTiers from '../../components/PricingTiers.astro';
+import H2 from '../../components/H2.astro';
 
 const page = await getEntry('pages', 'iscrizioni');
 if (!page) throw new Error('Missing src/content/pages/iscrizioni.mdx');
@@ -29,7 +30,7 @@ const { tiers, bankTransfer } = page.data;
   {
     bankTransfer && (
       <section class="bank">
-        <h2>Bonifico bancario</h2>
+        <H2>Bonifico bancario</H2>
         <p>Alternativamente, puoi effettuare un bonifico verso:</p>
         <p>
           <strong>{bankTransfer.holder}</strong>

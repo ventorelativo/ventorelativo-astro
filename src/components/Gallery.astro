@@ -32,6 +32,7 @@ import { Image, getImage } from 'astro:assets';
   costs no request, and cannot fail at runtime.
 */
 import 'bigger-picture/css';
+import H2 from './H2.astro';
 
 interface Props {
   images: { src: ImageMetadata; alt: string }[];
@@ -58,7 +59,7 @@ const full = await Promise.all(
 ---
 
 <section class="gallery">
-  {title && <h2>{title}</h2>}
+  {title && <H2>{title}</H2>}
 
   <div class="gallery__grid" data-gallery>
     {

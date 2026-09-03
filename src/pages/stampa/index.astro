@@ -15,6 +15,7 @@ import { getEntry, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import PressDownloads from '../../components/PressDownloads.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
+import H2 from '../../components/H2.astro';
 
 const page = await getEntry('pages', 'stampa');
 if (!page) throw new Error('Missing src/content/pages/stampa.mdx');
@@ -26,7 +27,7 @@ const { Content } = await render(page);
   description={page.data.description}
   intro="Loghi da scaricare e come usarli. Se scrivi di noi, qui c'è tutto quello che serve."
 >
-  <h2 class="downloads__title">File</h2>
+  <H2 class="downloads__title">File</H2>
   <PressDownloads />
 
   <div class="prose guidelines">

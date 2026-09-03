@@ -1,0 +1,51 @@
+---
+/**
+ * An `h2` that gives itself an `id`, derived from its own text.
+ *
+ * Headings written in MDX get one from Astro's markdown pipeline. Headings
+ * rendered by a component got nothing, so "Dati per il navigatore", "Punti di
+ * volo" and a dozen others could not be linked to, and the one link that
+ * needed to be had a hand-written id on the section instead.
+ *
+ * A component rather than an `id` on each `<h2>` for one reason: the id can
+ * then never be forgotten, and can never drift from the words above it.
+ * `scripts/check-heading-ids.mjs` fails the build if an `h2` reaches `dist/`
+ * without an id, so a plain `<h2>` is caught rather than quietly unlinkable.
+ *
+ * The slot is rendered once, to a string, and its text is what the slug is
+ * built from. That is what lets a card title work: its heading contains an
+ * anchor, and the tags come out before slugging.
+ */
+import { slugify } from '../lib/slug';
+
+interface Props {
+  class?: string;
+  style?: string;
+  /** Override when the visible words make a poor or colliding anchor. */
+  id?: string;
+}
+
+const { class: className, style, id } = Astro.props;
+
+/*
+  Entities are decoded before slugging. The slot arrives as *rendered HTML*, so
+  an apostrophe is `&#39;` and an ampersand is `&amp;` by the time it gets
+  here. Slugging the markup gave `pian-dell39alpe` and `hike-amp-fly`.
+*/
+const html = await Astro.slots.render('default');
+const text = html
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+  .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+  .replace(/&(?:nbsp|#160);/g, ' ')
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"')
+  .replace(/&amp;/g, '&')
+  .replace(/\s+/g, ' ')
+  .trim();
+---
+
+<h2 id={id ?? slugify(text)} class:list={[className]} style={style}>
+  <Fragment set:html={html} />
+</h2>

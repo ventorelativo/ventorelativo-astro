@@ -12,6 +12,7 @@ import type { CollectionEntry } from 'astro:content';
 import Badge from './Badge.astro';
 import { formatDate, isoDate } from '../utils/date';
 import { FEATURE_SYMBOLS } from '../lib/featureIcons';
+import H2 from './H2.astro';
 
 interface Props {
   entry: CollectionEntry<'news'>;
@@ -103,11 +104,11 @@ const href = `/news/${entry.id}/`;
       <time datetime={isoDate(date)}>{formatDate(date)}</time>
     </p>
 
-    <h2 class="card__title">
+    <H2 class="card__title">
       <a class="card__stretch" href={href}>
         {title}
       </a>
-    </h2>
+    </H2>
 
     {
       event && (

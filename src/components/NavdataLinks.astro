@@ -12,6 +12,7 @@
  * app that understands it is the point. On a desktop the browser downloads it
  * anyway.
  */
+import H2 from './H2.astro';
 const FILES = [
   {
     href: '/api/navdata/ventorelativo-waypoints.cup',
@@ -26,8 +27,8 @@ const FILES = [
 ];
 ---
 
-<section class="navdata" id="dati-per-il-navigatore">
-  <h2>Dati per il navigatore</h2>
+<section class="navdata">
+  <H2>Dati per il navigatore</H2>
   <p class="navdata__intro">
     Generati da questo sito e aggiornati a ogni modifica: decolli, atterraggi e
     atterraggi alti da caricare nello strumento, per averli sotto gli occhi in volo
@@ -56,12 +57,6 @@ const FILES = [
 
 <style>
   .navdata {
-    /*
-      An anchor target, linked from the page's intro. The site header is
-      `position: fixed`, so without this the browser scrolls the heading to
-      y=0 and the header covers it.
-    */
-    scroll-margin-block-start: calc(var(--header-height) + var(--space-sm));
     margin-block-start: var(--space-lg);
     padding-block-start: var(--space-md);
     border-block-start: 1px solid var(--color-border);

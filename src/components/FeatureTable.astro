@@ -12,6 +12,7 @@ import { FEATURE_SYMBOLS, symbolId } from '../lib/featureIcons';
 import { forecastUrl, formatCoordinates, navigationUrl } from '../lib/coordinateLinks';
 import type { LatLon } from '../lib/geo';
 import ExternalIcon from './ExternalIcon.astro';
+import H2 from './H2.astro';
 
 interface Feature {
   name: string;
@@ -39,7 +40,7 @@ const sorted = [...features].sort(
 {
   sorted.length > 0 && (
     <section class="features">
-      <h2>Punti di volo</h2>
+      <H2>Punti di volo</H2>
 
       {/* Scrolls itself rather than the page: AGENTS.md, wide content. */}
       <div class="features__scroll">
