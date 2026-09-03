@@ -502,6 +502,21 @@ export default config({
       },
     }),
 
+    privacy: singleton({
+      previewUrl: `${PREVIEW_BASE}/privacy/`,
+      label: 'Pagina: Privacy',
+      path: 'src/content/pages/privacy',
+      format: { contentField: 'content' },
+      schema: {
+        title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
+        description: fields.text({
+          label: 'Descrizione per Google',
+          multiline: true,
+        }),
+        content: fields.mdx({ label: 'Informativa' }),
+      },
+    }),
+
     contatti: singleton({
       previewUrl: `${PREVIEW_BASE}/contatti/`,
       label: 'Pagina: Contatti',

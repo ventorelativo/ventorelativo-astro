@@ -1,0 +1,26 @@
+---
+/**
+ * /privacy — the information notice GDPR Art. 13 requires.
+ *
+ * The old Drupal site had none. It is a page rather than a component because
+ * the club has to be able to change it without a developer: what the site
+ * loads changes (Stripe is coming, the analytics token may never be set), and
+ * a privacy policy that describes last year's site is worse than none.
+ *
+ * Kept short and in plain Italian on purpose. Most of what makes this site
+ * easy to describe is architectural: nothing third-party loads until a visitor
+ * asks for it, so most of the page is about things that do not happen.
+ */
+import { getEntry, render } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+
+const page = await getEntry('pages', 'privacy');
+if (!page) throw new Error('Missing src/content/pages/privacy.mdx');
+const { Content } = await render(page);
+---
+
+<PageLayout title={page.data.title} description={page.data.description}>
+  <div class="prose">
+    <Content />
+  </div>
+</PageLayout>
