@@ -942,10 +942,10 @@ const typeNames = Object.fromEntries(
           valley, where there is no relief to show at that scale anyway, so it
           gets the flat view that has always framed correctly.
 
-          Measuring the real screen positions afterwards and zooming out until
-          they fit was tried first and is worse: `project` consults terrain
-          that has not loaded, so it reports positions the map will never paint
-          and the correction runs away.
+          The screen positions are measured afterwards regardless, and the zoom
+          corrected: see the re-frame below. That is what catches the rest,
+          including the flat sites, because terrain moves a point on screen
+          whether the camera is pitched or not.
         */
         const bounds = boundsOf(data);
         const span = Math.max(bounds[1][0] - bounds[0][0], bounds[1][1] - bounds[0][1]);
@@ -1028,53 +1028,118 @@ const typeNames = Object.fromEntries(
           terrain.rise();
 
           /*
-            And then check the framing again, once the ground has actually
-            risen.
+            And then frame it again, once the ground has actually risen.
 
-            `fitBounds` solves for a flat world: it knows the rectangle, not
-            the altitudes inside it. So a takeoff a thousand metres above its
-            landing is projected further up the screen than the fit allowed
-            for, and on the steepest sites (Prali, Le Grange) it left the frame
-            entirely. Nothing was wrong with the fit; the ground moved after it.
+            `fitBounds` and `cameraForBounds` solve for a flat world: they know
+            the rectangle, not the altitudes inside it. The renderer and
+            `project` both *do* know, so a point 700 m above the valley floor
+            is drawn away from where the fit put it: up the screen on a pitched
+            camera, and radially outward from the centre even on a flat one.
+            On Sarsenà that took the takeoff to y = -149 in a 598px box while
+            `cameraForBounds` still reported the view as fitting.
 
-            The earlier attempt at this ran immediately and chased its own tail,
-            because `project` consults terrain that has not loaded and returns
-            positions the map will never paint. Waiting for `idle` is what makes
-            it honest: by then the DEM tiles are in and the projection is the
-            one on screen. Bounded to six steps of a quarter zoom level, so a
-            site that somehow cannot be framed gives up rather than zooming to
-            the whole Alps.
+            Which is why this runs whenever terrain is on and not only when the
+            camera is tilted. The flat sites are not exempt; they were just
+            wrong more quietly.
+
+            Waiting for `idle` is what makes the measurement honest: an earlier
+            version ran immediately, when `project` consults DEM tiles that
+            have not arrived, and chased positions the map would never paint.
+
+            The correction solves for the zoom directly rather than stepping
+            blindly. It still iterates, because moving the camera changes the
+            displacement it is correcting for, and it is bounded so a site that
+            cannot be framed gives up instead of zooming out to the whole Alps.
           */
           const points = coordinatesOf(data);
 
-          if (points.length > 0 && tilt > 0) {
-            const PADDING = 48;
-            const MAX_STEPS = 6;
+          if (points.length > 0) {
+            /*
+              Room left around the outermost marker, so nothing sits on the
+              frame edge at the end of the transition.
+
+              Proportional, capped: a flat 64px is a tenth of the desktop map
+              and more than a third of a phone's 340px width, which pushed the
+              phone a whole zoom level further out than it needed for the same
+              two markers.
+            */
+            const marginOf = (box: HTMLElement) =>
+              Math.min(
+                64,
+                Math.round(Math.min(box.clientWidth, box.clientHeight) * 0.12),
+              );
+            const MAX_STEPS = 8;
             let steps = 0;
 
-            const allInFrame = () => {
+            /**
+             * How much too big the markers are for the frame, as a ratio.
+             * At most 1 means they all fit with the margin to spare.
+             */
+            const overflow = () => {
               const box = map.getContainer();
-              const width = box.clientWidth;
-              const height = box.clientHeight;
-              return points.every((point) => {
-                const { x, y } = map.project(point);
-                return (
-                  x >= PADDING &&
-                  y >= PADDING &&
-                  x <= width - PADDING &&
-                  y <= height - PADDING
-                );
-              });
+              const screen = points.map((point) => map.project(point));
+              const xs = screen.map((p) => p.x);
+              const ys = screen.map((p) => p.y);
+              const spread = {
+                x: Math.max(...xs) - Math.min(...xs),
+                y: Math.max(...ys) - Math.min(...ys),
+              };
+              const margin = marginOf(box);
+              const room = {
+                x: Math.max(box.clientWidth - 2 * margin, 1),
+                y: Math.max(box.clientHeight - 2 * margin, 1),
+              };
+              return {
+                ratio: Math.max(spread.x / room.x, spread.y / room.y),
+                centre: {
+                  x: (Math.max(...xs) + Math.min(...xs)) / 2,
+                  y: (Math.max(...ys) + Math.min(...ys)) / 2,
+                },
+              };
             };
 
-            const check = () => {
-              if (steps >= MAX_STEPS || allInFrame()) return;
-              steps += 1;
-              map.easeTo({ zoom: map.getZoom() - 0.25, duration: 200 });
-              map.once('idle', check);
+            /*
+              One correction per step, zoom before pan.
+
+              Doing both at once did not converge: `unproject` raycasts to the
+              terrain surface, so recentring on a screen position moved the
+              camera much further than the pixels suggested, and the next step
+              had to undo it. Prali still ended 23px outside the frame after
+              five of those. `panBy` moves the camera by screen pixels and has
+              no such surprise in it.
+            */
+            const reframe = () => {
+              if (steps >= MAX_STEPS) return;
+              const box = map.getContainer();
+              const { ratio, centre } = overflow();
+              const drift = {
+                x: centre.x - box.clientWidth / 2,
+                y: centre.y - box.clientHeight / 2,
+              };
+              const duration = prefersReducedMotion() ? 0 : 220;
+
+              if (ratio > 1) {
+                steps += 1;
+                /* Solve it, with a tenth of a level of slack so a borderline
+                   fit settles instead of oscillating. */
+                map.easeTo({
+                  zoom: map.getZoom() - Math.min(Math.log2(ratio) + 0.1, 1.5),
+                  duration,
+                });
+                map.once('idle', reframe);
+                return;
+              }
+
+              /* A marker can fit the frame and still sit against one edge. */
+              const slack = marginOf(box) / 2;
+              if (Math.abs(drift.x) > slack || Math.abs(drift.y) > slack) {
+                steps += 1;
+                map.panBy([drift.x, drift.y], { duration });
+                map.once('idle', reframe);
+              }
             };
 
-            map.once('idle', check);
+            map.once('idle', reframe);
           }
         }
 
