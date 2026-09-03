@@ -47,7 +47,7 @@ const DROPPED = {
   '/404/': 'Astro serves 404.html directly; no page lives at /404/',
   // Deleted at cutover (Phase 5). Until then it is built but kept out of the
   // sitemap and out of search.
-  '/styleguide/': 'temporary design reference, deleted at cutover',
+  '/styleguide/': 'design reference, not a page of the site — noindex, no sitemap',
   /*
     Drupal's own contact path. It did render a page in the archived build, and
     briefly had a redirect here — but the club confirms it was an artefact of

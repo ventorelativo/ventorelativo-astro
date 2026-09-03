@@ -434,7 +434,7 @@ public URLs are preserved.**
 | `/sitemap.xml`                             | `@astrojs/sitemap`                                     | —                                                                                  |
 | _(new)_ `/rss.xml`                         | `src/pages/rss.xml.ts`                                 | `news`                                                                             |
 | `/contact/contatti`                        | —                                                      | **301 → `/contatti`** (existing redirect, preserve)                                |
-| `/styleguide`                              | —                                                      | Drupal `twbstools` dev page. **Drop**                                              |
+| `/styleguide`                              | `/styleguide/`                                         | Drupal `twbstools` dev page. **Rebuilt and kept** — noindex, not in the sitemap    |
 | **New:** `/keystatic`, `/api/keystatic/*`  | Keystatic integration                                  | `prerender = false`                                                                |
 
 ### Page composition (mirrors today's Layout Builder stacks)
@@ -1252,8 +1252,10 @@ are environment variables, not code.
 so it is in this repository's history and in every bundle built from it. `docs/cutover.md`
 step 1b.
 
-**Test content has to come out first:** the `a-test-news` post written to prove Phase 3,
-and `/styleguide`.
+**Test content has to come out first:** the `a-test-news` post written to prove Phase 3.
+`/styleguide` **stays** (decided 2026-09-03) — it is `noindex` and out of the sitemap, and
+the club wants it as a reference for both people and AI agents. Amends §3, which had it
+down to drop.
 
 Archive the Drupal repo read-only — do not delete it. Two gates in `npm run verify` read
 it by path, and it stays the reference for anything found missing later.

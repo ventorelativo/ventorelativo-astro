@@ -22,7 +22,7 @@ import { getCollection } from 'astro:content';
 /** Not in the sitemap, and why. Must match `scripts/check-sitemap.mjs`. */
 export const EXCLUDED = [
   '/404', // an error page, not a destination
-  '/styleguide/', // development reference, deleted at cutover
+  '/styleguide/', // a design reference, not a page of the site (also noindex)
   '/contatti/messaggio-inviato/', // post-action page, noindex
   '/iscrizioni/grazie/', // post-action page, noindex
   '/keystatic', // the CMS

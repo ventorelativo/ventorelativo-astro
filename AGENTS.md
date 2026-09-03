@@ -24,7 +24,7 @@ last update to this file:
 
 **Built:** every URL the old site had. `/`, `/news/` and its articles, `/siti/`
 and all fourteen flight sites, `/voli`, `/iscrizioni`, `/contatti` with a
-Netlify form and its thank-you page, `/404`, plus the temporary `/styleguide`.
+Netlify form and its thank-you page, `/404`, plus `/styleguide`.
 Four collections — `news`, `sites`, `pages`, `settings` — in
 `src/content.config.ts`, with MDX bodies in `src/content/`.
 
@@ -45,8 +45,10 @@ features through GeoJSON.
   export from a separate Netlify project; this build lives at
   `ventorelativo-astro.netlify.app` and disallows crawling until it does. That
   move is Phase 5.
-- `/styleguide` is a temporary design reference and should be deleted before
-  the site goes live (Phase 5).
+- `/styleguide` stays. It renders every token, primitive and component as the
+  real element, which makes it the fastest way for a person _or an agent_ to see
+  what the site already has before inventing something new. It is `noindex` and
+  excluded from the sitemap, so it is not part of the public site.
 - RSS: dropped by decision, not oversight (MIGRATION-PLAN.md S9).
 - A cookie banner. There is nothing to consent to: opening a page fetches
   nothing third-party and stores no cookie, and `npm run privacy:check` fails

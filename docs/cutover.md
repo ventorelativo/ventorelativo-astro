@@ -52,7 +52,6 @@ checking their own branch.
 - **`/news/a-test-news/`** — written from the CMS to prove Phase 3 worked. It is
   lorem ipsum, and it is currently the newest post, so it is the first card on
   `/news/` and would be the first thing a visitor sees. Delete it in Keystatic.
-- **`/styleguide`** — a development reference. Delete `src/pages/styleguide.astro`.
   It is already out of the sitemap and out of search, but after the move it would
   be a real page on the club's domain. `scripts/check-urls.mjs` already knows it
   is meant to go.
