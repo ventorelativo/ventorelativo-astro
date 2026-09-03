@@ -56,6 +56,14 @@ interface Props {
     end?: Date;
     location: string;
   };
+  /** Present on a flight site: the SportsActivityLocation node's fields. */
+  place?: {
+    name: string;
+    description: string;
+    takeoffs: { name: string; lat: number; lon: number }[];
+    tags?: string[];
+    image?: string;
+  };
 }
 
 const {
@@ -69,6 +77,7 @@ const {
   breadcrumbLabels,
   article,
   event,
+  place,
   noindex = false,
 } = Astro.props;
 ---
@@ -113,6 +122,7 @@ const {
       breadcrumbLabels={breadcrumbLabels}
       article={article}
       event={event}
+      place={place}
     />
 
     {

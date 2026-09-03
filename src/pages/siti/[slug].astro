@@ -38,6 +38,22 @@ const features = (await getEntries(entry.data.mapFeatures)).map(
 // card blurb and the meta description (D7), and on the page it only repeated
 // the Località / Altitudine / Esposizione the body opens with.
 const { Content } = await render(entry);
+
+/*
+  The site as a place, for the schema.org graph (S7, and the note in
+  src/lib/schema.ts that said this waited on Phase 4's coordinates).
+
+  Takeoffs only. A landing is part of a flight rather than somewhere anyone
+  sets out for, and every one of them is already published, with the obstacle,
+  in the two navdata files.
+*/
+const takeoffs = features
+  .filter((feature) => feature.type === 'takeoff' && feature.point)
+  .map((feature) => ({
+    name: feature.name,
+    lat: feature.point!.lat,
+    lon: feature.point!.lon,
+  }));
 ---
 
 <EntryLayout
@@ -45,6 +61,7 @@ const { Content } = await render(entry);
   description={summary}
   breadcrumbLabels={{ '/siti': 'Siti di volo' }}
   ogRoute={`siti/${entry.id}`}
+  place={{ name: title, description: summary, takeoffs, tags }}
 >
   {
     tags.length > 0 && (

@@ -16,9 +16,11 @@ import {
   clubNode,
   eventNode,
   graph,
+  placeNode,
   websiteNode,
   type ArticleInput,
   type EventInput,
+  type PlaceInput,
 } from '../lib/schema';
 
 interface Props {
@@ -29,9 +31,11 @@ interface Props {
   article?: Omit<ArticleInput, 'url'>;
   /** Present when that post announces an event. */
   event?: Omit<EventInput, 'url'>;
+  /** Present on a flight site: the SportsActivityLocation node's fields. */
+  place?: Omit<PlaceInput, 'url'>;
 }
 
-const { title, breadcrumbLabels, article, event } = Astro.props;
+const { title, breadcrumbLabels, article, event, place } = Astro.props;
 
 const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 const url = new URL(Astro.url.pathname, site);
@@ -42,6 +46,7 @@ const data = graph([
   breadcrumbNode(site, crumbsFor(Astro.url.pathname, title, breadcrumbLabels)),
   article ? articleNode(site, { ...article, url }) : undefined,
   event ? eventNode(site, { ...event, url }) : undefined,
+  place ? placeNode(site, { ...place, url }) : undefined,
 ]);
 ---
 

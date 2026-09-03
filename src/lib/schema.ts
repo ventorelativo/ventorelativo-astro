@@ -23,11 +23,10 @@
  * true and more useful statement — it is the same centre and 20 km radius the
  * XContest searches use.
  *
- * No `Place` node for flight sites yet. A site without coordinates is a name
- * and a sentence, which adds nothing; with them it becomes a real location
- * search engines can place on a map. The coordinates arrive in Phase 4 with the
- * map features, and that is when a `SportsActivityLocation` node is worth
- * adding.
+ * The `Place` node for flight sites arrived with Phase 4, as this comment used
+ * to promise it would: a site without coordinates was a name and a sentence,
+ * and adding one would have said nothing. It has takeoffs now, so it is a real
+ * location — see `placeNode`.
  *
  * `Event` used to be absent here, because the dates and places lived only in
  * prose and guessing at them from a body would have produced structured data
@@ -182,6 +181,75 @@ export function eventNode(site: URL, event: EventInput): Node {
     location: { '@type': 'Place', name: event.location },
     organizer: { '@id': ids.club(site) },
     url: event.url.href,
+  };
+}
+
+export interface PlaceInput {
+  url: URL;
+  name: string;
+  description: string;
+  /** The site's takeoffs. The first one stands for the site's position. */
+  takeoffs: { name: string; lat: number; lon: number }[];
+  /** Site attributes — "Adatto ai principianti", "Hike&Fly". */
+  tags?: string[];
+  /** Absolute URL of one photograph, when the site has any. */
+  image?: string;
+}
+
+/**
+ * A flight site.
+ *
+ * `SportsActivityLocation` rather than plain `Place`: it says what the location
+ * is *for*, which is the entire point of the page. A search engine or an
+ * assistant asked "where can I fly near Pinerolo" can answer from this without
+ * reading the prose.
+ *
+ * The site's own `geo` is its first takeoff, not a centroid of everything it
+ * owns. A centroid of a takeoff and its landings is a point in mid-air over a
+ * valley, which is not where anybody goes. Landings are deliberately not
+ * modelled as places of their own — they are parts of a flight, not
+ * destinations, and `/api/navdata/*` already publishes every one of them in
+ * the format a pilot's instrument actually reads.
+ *
+ * No `elevation`: the club has never recorded altitudes as data. It is in the
+ * prose of each page, and the `elev` column of the CUP file is empty for all
+ * 29 waypoints. Copying a number out of a sentence is how structured data
+ * starts lying.
+ */
+export function placeNode(site: URL, place: PlaceInput): Node | undefined {
+  const [first] = place.takeoffs;
+  if (!first) return undefined;
+
+  return {
+    '@type': 'SportsActivityLocation',
+    '@id': `${place.url.href}#place`,
+    name: place.name,
+    description: place.description,
+    url: place.url.href,
+    image: place.image,
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: first.lat,
+      longitude: first.lon,
+    },
+    sport: 'Parapendio',
+    keywords: place.tags?.length ? place.tags.join(', ') : undefined,
+    /*
+      Every takeoff, so a site with several is not reduced to its first. They
+      are `Place`, not another SportsActivityLocation: a takeoff is a spot
+      within the site, not a venue of its own.
+    */
+    containsPlace: place.takeoffs.map((takeoff) => ({
+      '@type': 'Place',
+      name: takeoff.name,
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: takeoff.lat,
+        longitude: takeoff.lon,
+      },
+    })),
+    isPartOf: { '@id': ids.website(site) },
+    mainEntityOfPage: place.url.href,
   };
 }
 
