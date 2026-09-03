@@ -2,13 +2,23 @@
 /**
  * The when and where of a news post that announces an event.
  *
- * Replaces the `<Facts>` blocks the two event posts wrote by hand — same three
- * rows, but from structured fields, so the date shown here, the date in the
- * `.ics` and the date in the structured data are one value rather than three
- * copies that can drift.
+ * Replaces the `<Facts>` blocks the two event posts wrote by hand — same
+ * information, but from structured fields, so the date shown here, the date in
+ * the `.ics` and the date in the structured data are one value rather than
+ * three copies that can drift.
  *
- * A `<dl>` because that is what this is: terms and their definitions.
+ * ## Why the date is a block and not a line
+ *
+ * A pilot reading this is deciding whether to be somewhere on a morning. The
+ * day and the takeoff are the two facts that decide it, and prose buries them.
+ * So the day is a tear-off-calendar block and the rest is a short labelled
+ * list, each row with the icon that already means that thing on this site —
+ * the takeoff and landing glyphs from the maps, not a generic pin.
+ *
+ * A post with no `event` renders none of this and reads as a plain article,
+ * which is the point of keeping events inside `news` rather than beside it.
  */
+import { FEATURE_SYMBOLS } from '../lib/featureIcons';
 import { formatDate, isoDate } from '../utils/date';
 
 interface Props {
@@ -24,34 +34,62 @@ interface Props {
 
 const { event, slug } = Astro.props;
 
+const it = (options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('it-IT', options);
+
+const day = it({ day: 'numeric' }).format(event.start);
+const month = it({ month: 'short' }).format(event.start).replace('.', '');
+const year = it({ year: 'numeric' }).format(event.start);
+const weekday = it({ weekday: 'long' }).format(event.start);
+
+/* "sabato 16 maggio 2026", or a range when the event spans days. */
 const when = event.end
   ? `${formatDate(event.start)} – ${formatDate(event.end)}`
-  : formatDate(event.start);
+  : `${weekday} ${formatDate(event.start)}`;
+
+const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
+  <path d="M3 8.5h14M7 2.5v4M13 2.5v4" />`;
 ---
 
 <section class="event">
-  <dl class="event__facts">
-    <div class="event__item">
-      <dt>Quando</dt>
-      <dd>
-        <time datetime={isoDate(event.start)}>{when}</time>
-      </dd>
-    </div>
+  <div class="event__when">
+    {/* A date block, not a date string: it is the first thing to find. */}
+    <time class="event__date" datetime={isoDate(event.start)}>
+      <span class="event__day">{day}</span>
+      <span class="event__month">{month}</span>
+      <span class="event__year">{year}</span>
+    </time>
 
-    <div class="event__item">
-      <dt>Decollo</dt>
-      <dd>{event.location}</dd>
-    </div>
+    <dl class="event__facts">
+      <div class="event__row">
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+          <g class="stroke" set:html={CALENDAR} />
+        </svg>
+        <dt class="visually-hidden">Quando</dt>
+        <dd>{when}</dd>
+      </div>
 
-    {
-      event.landing && (
-        <div class="event__item">
-          <dt>Atterraggio</dt>
-          <dd>{event.landing}</dd>
-        </div>
-      )
-    }
-  </dl>
+      <div class="event__row">
+        <svg viewBox="0 0 100 100" width="18" height="18" aria-hidden="true">
+          <g class="glyph glyph--takeoff" set:html={FEATURE_SYMBOLS.takeoff} />
+        </svg>
+        <dt>Decollo</dt>
+        <dd>{event.location}</dd>
+      </div>
+
+      {
+        event.landing && (
+          <div class="event__row">
+            <svg viewBox="0 0 100 100" width="18" height="18" aria-hidden="true">
+              <g class="glyph glyph--landing" set:html={FEATURE_SYMBOLS.landing} />
+            </svg>
+            <dt>Atterraggio</dt>
+            <dd>{event.landing}</dd>
+          </div>
+        )
+      }
+    </dl>
+  </div>
 
   {
     /*
@@ -60,7 +98,10 @@ const when = event.end
   */
   }
   <p class="event__add">
-    <a class="button button--outline" href={`/news/calendario/${slug}.ics`} download>
+    <a class="button" href={`/news/calendario/${slug}.ics`} download>
+      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+        <g class="stroke" set:html={CALENDAR} />
+      </svg>
       Aggiungi al calendario
     </a>
   </p>
@@ -68,26 +109,91 @@ const when = event.end
 
 <style>
   .event {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-md);
     margin-block: var(--space-md);
-  }
-
-  .event__facts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: var(--space-2xs);
-    margin: 0;
-  }
-
-  .event__item {
-    padding: var(--space-xs) var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background-color: var(--color-bg-subtle);
   }
 
+  .event__when {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    /* Lets the facts column shrink instead of pushing the panel wider than
+       the phone: a long takeoff name would otherwise overflow. */
+    min-width: 0;
+  }
+
+  .event__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 4.25rem;
+    padding: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-md);
+    background-color: var(--brand-blue);
+    color: var(--color-on-brand);
+    line-height: 1.05;
+  }
+
+  .event__day {
+    font-size: var(--text-2xl);
+    font-weight: 500;
+  }
+
+  .event__month {
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .event__year {
+    font-size: var(--text-xs);
+    opacity: 0.75;
+  }
+
+  .event__facts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: 0;
+  }
+
+  /*
+    Label above value, not beside it. Side by side, "Decollo" and "Montoso
+    (Bagnolo Piemonte)" split a phone's width in half and the place name wrapped
+    into a three-line column — the one fact the panel exists to show.
+  */
+  .event__row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: var(--space-2xs);
+  }
+
+  .event__row svg {
+    grid-row: span 2;
+  }
+
+  .event__row:has(dt.visually-hidden) svg {
+    grid-row: auto;
+  }
+
+  /* `flex: none` so a long place name does not squash its icon. */
+  .event__row svg {
+    flex: none;
+  }
+
   dt {
     color: var(--color-text-muted);
     font-size: var(--text-xs);
+    line-height: 1.3;
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
   }
@@ -96,9 +202,32 @@ const when = event.end
     margin: 0;
     color: var(--color-text-strong);
     font-weight: 500;
+    line-height: 1.3;
+    text-wrap: pretty;
+  }
+
+  .stroke {
+    fill: none;
+    stroke: var(--color-text-muted);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The map's own colours, so a takeoff means the same thing everywhere. */
+  .glyph--takeoff {
+    fill: var(--color-map-takeoff);
+  }
+
+  .glyph--landing {
+    fill: var(--color-map-landing);
   }
 
   .event__add {
-    margin-block-start: var(--space-sm);
+    margin: 0;
+  }
+
+  .event__add .stroke {
+    stroke: currentColor;
   }
 </style>

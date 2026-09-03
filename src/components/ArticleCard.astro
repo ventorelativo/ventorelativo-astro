@@ -11,6 +11,7 @@ import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Badge from './Badge.astro';
 import { formatDate, isoDate } from '../utils/date';
+import { FEATURE_SYMBOLS } from '../lib/featureIcons';
 
 interface Props {
   entry: CollectionEntry<'news'>;
@@ -52,25 +53,47 @@ const CARD_IMAGE = {
   fit: 'cover',
   position: 'center',
 } as const;
-const { title, date, summary, image, category } = entry.data;
+const { title, date, summary, image, category, event } = entry.data;
+/*
+  An event's card says so before you read it: the day sits on the image and
+  the takeoff replaces nothing — it is added under the title. A post without
+  `event` gets neither and reads as an article, which is the whole reason
+  events live inside `news` rather than in a collection of their own.
+*/
+const it = (options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('it-IT', options);
+const when = event && {
+  day: it({ day: 'numeric' }).format(event.start),
+  month: it({ month: 'short' }).format(event.start).replace('.', ''),
+  iso: isoDate(event.start),
+};
 const href = `/news/${entry.id}/`;
 ---
 
 <article class="card">
   {
+    /* The date chip lives with the image so it can sit on it. */
     image && (
-      <Image
-        class="card__image"
-        style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
-        src={image.src}
-        alt={image.alt}
-        {...CARD_IMAGE}
-        widths={[400, 700, 900]}
-        sizes="(width < 48rem) calc(100vw - 3rem), (width < 64rem) calc(50vw - 3rem), 21rem"
-        quality={70}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchpriority={priority ? 'high' : 'auto'}
-      />
+      <div class="card__media">
+        {when && (
+          <time class="card__when" datetime={when.iso}>
+            <span class="card__day">{when.day}</span>
+            <span class="card__month">{when.month}</span>
+          </time>
+        )}
+        <Image
+          class="card__image"
+          style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
+          src={image.src}
+          alt={image.alt}
+          {...CARD_IMAGE}
+          widths={[400, 700, 900]}
+          sizes="(width < 48rem) calc(100vw - 3rem), (width < 64rem) calc(50vw - 3rem), 21rem"
+          quality={70}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchpriority={priority ? 'high' : 'auto'}
+        />
+      </div>
     )
   }
 
@@ -83,6 +106,17 @@ const href = `/news/${entry.id}/`;
     <h2 class="card__title">
       <a href={href}>{title}</a>
     </h2>
+
+    {
+      event && (
+        <p class="card__where">
+          <svg viewBox="0 0 100 100" width="16" height="16" aria-hidden="true">
+            <g class="glyph" set:html={FEATURE_SYMBOLS.takeoff} />
+          </svg>
+          {event.location}
+        </p>
+      )
+    }
 
     <p class="card__summary">{summary}</p>
   </div>
@@ -104,10 +138,64 @@ const href = `/news/${entry.id}/`;
     border-color: var(--color-border-strong);
   }
 
+  .card__media {
+    position: relative;
+  }
+
   .card__image {
     width: 100%;
     height: 12rem;
     object-fit: cover;
+    /* The image is a block; without this the media box keeps a text baseline
+       gap under it and the chip's corner never lines up. */
+    display: block;
+  }
+
+  /*
+    The day, on the picture. It is the one thing that distinguishes an event
+    from an article at a glance, and a badge in the body would be a fourth
+    thing competing with the category, the date and the title.
+  */
+  .card__when {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: var(--space-2xs);
+    inset-inline-start: var(--space-2xs);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 3rem;
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-md);
+    background-color: var(--brand-blue);
+    color: var(--color-on-brand);
+    line-height: 1.05;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card__day {
+    font-size: var(--text-lg);
+    font-weight: 500;
+  }
+
+  .card__month {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .card__where {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    color: var(--color-text-strong);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .card__where .glyph {
+    flex: none;
+    fill: var(--color-map-takeoff);
   }
 
   .card__body {
