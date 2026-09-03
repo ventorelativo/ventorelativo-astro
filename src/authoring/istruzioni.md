@@ -364,6 +364,8 @@ Nessuno di questi valori si indovina: o te lo scrivono, o resta com'è.
 
 Le istruzioni aggiornate sono sempre qui: {{istruzioni}}
 
+Se preferisci i dati alla prosa, le stesse tabelle in JSON: {{contenuti}}
+
 Se il volontario ti chiede una cosa che queste istruzioni non coprono, dillo
 invece di improvvisare.
 

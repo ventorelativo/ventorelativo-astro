@@ -30,6 +30,7 @@ const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 const blocks = KINDS.map((entry) => ({ ...entry, text: prompt(site, entry.kind) }));
 const keystatic = new URL('/keystatic', site).href;
 const plainText = new URL('/redazione/istruzioni.txt', site).href;
+const asJson = new URL('/redazione/contenuti.json', site).href;
 
 /**
  * The chats a volunteer is likely to already have open, as plain links.
@@ -140,7 +141,9 @@ const CHATS = [
     <H2>Le istruzioni da sole</H2>
     <p>
       Il prompt qui sopra contiene già tutto. Se ti serve leggere le regole senza il
-      resto, o passarle a qualcuno, sono qui: <a href={plainText}>istruzioni.txt</a>.
+      resto, o passarle a qualcuno, sono qui: <a href={plainText}>istruzioni.txt</a>. Le
+      stesse tabelle in forma di dati, per chi collega il sito a un programma:
+      <a href={asJson}>contenuti.json</a>.
     </p>
   </div>
 </PageLayout>

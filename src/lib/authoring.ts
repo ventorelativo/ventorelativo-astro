@@ -77,7 +77,8 @@ for (const name of [...ALWAYS, 'news', 'siti', 'pagine', 'chiusura']) {
 function fill(text: string, site: URL): string {
   return text
     .replaceAll('{{keystatic}}', new URL('/keystatic', site).href)
-    .replaceAll('{{istruzioni}}', new URL('/redazione/istruzioni.txt', site).href);
+    .replaceAll('{{istruzioni}}', new URL('/redazione/istruzioni.txt', site).href)
+    .replaceAll('{{contenuti}}', new URL('/redazione/contenuti.json', site).href);
 }
 
 /**
@@ -138,4 +139,114 @@ export function prompt(site: URL, kind: Kind): string {
     'Le informazioni che ho:',
     '',
   ].join('\n');
+}
+/**
+ * The document's tables, as data, for `/redazione/contenuti.json`.
+ *
+ * Generated rather than written, and generated from the same markdown a person
+ * reads, because a hand-kept JSON copy would be a fifth description of the same
+ * fields (AGENTS.md rule 12) and the first one to go stale: nothing renders it,
+ * so nobody would notice.
+ *
+ * The columns are mapped explicitly and an unknown header throws. A generic
+ * slugifier would quietly turn a renamed column into a new key and every
+ * consumer would read `undefined` from then on.
+ */
+const COLUMNS: Record<string, string> = {
+  Campo: 'campo',
+  Etichetta: 'etichetta',
+  Obbligatorio: 'obbligatorio',
+  Regole: 'regole',
+  Indirizzo: 'indirizzo',
+  "Cosa c'è": 'contenuto',
+  'Dove si modifica': 'dove',
+  Voce: 'voce',
+  Quante: 'quante',
+  'Cosa comanda': 'comanda',
+  Cosa: 'cosa',
+  Perché: 'perche',
+};
+
+export interface Table {
+  /** The `##` or `###` heading the table sits under. */
+  titolo: string;
+  righe: Record<string, string | boolean>[];
+}
+
+/** Markdown emphasis is for the reader; a consumer of the JSON wants the text. */
+const plain = (cell: string) => cell.replace(/[`*]/g, '').trim();
+
+/** "sì" and "no" become booleans; "se è un evento" stays the sentence it is. */
+function value(column: string, cell: string): string | boolean {
+  const text = plain(cell);
+  if (column !== 'obbligatorio') return text;
+  if (text === 'sì') return true;
+  if (text === 'no') return false;
+  return text;
+}
+
+function tables(block: string): Table[] {
+  const found: Table[] = [];
+  let heading = '';
+  const lines = block.split('\n');
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const title = line.match(/^#{2,3} (.+)$/);
+    if (title) {
+      heading = title[1];
+      continue;
+    }
+    if (!line.startsWith('|')) continue;
+
+    const rows: string[] = [];
+    while (i < lines.length && lines[i].startsWith('|')) {
+      rows.push(lines[i]);
+      i += 1;
+    }
+
+    /* `| a | b |` splits to ['', 'a', 'b', '']: the outer pipes are borders. */
+    const cells = (row: string) => row.split('|').slice(1, -1);
+    const columns = cells(rows[0]).map((name) => {
+      const key = COLUMNS[plain(name)];
+      if (!key) {
+        throw new Error(
+          `istruzioni.md has a table column "${plain(name)}" that ` +
+            'src/lib/authoring.ts does not know. Add it to COLUMNS.',
+        );
+      }
+      return key;
+    });
+
+    found.push({
+      titolo: heading,
+      /* Row 1 is the `---` separator every markdown table carries. */
+      righe: rows.slice(2).map((row) =>
+        Object.fromEntries(
+          cells(row)
+            .map((cell, index) => [columns[index], value(columns[index], cell)])
+            .filter(([, cell]) => cell !== ''),
+        ),
+      ),
+    });
+  }
+
+  return found;
+}
+
+export function contentModel(site: URL) {
+  return {
+    sito: site.origin,
+    gestoreContenuti: new URL('/keystatic', site).href,
+    istruzioni: new URL('/redazione/istruzioni.txt', site).href,
+    lingua: 'it',
+    nota:
+      'Generato da src/authoring/istruzioni.md, che resta il testo autorevole. ' +
+      'Le regole di scrittura e i divieti stanno lì, non qui.',
+    mappa: tables(blocks.get('mappa')!),
+    tipi: (['news', 'siti', 'pagine'] as Kind[]).map((kind) => ({
+      id: kind,
+      sezioni: tables(blocks.get(kind)!),
+    })),
+  };
 }
