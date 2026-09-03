@@ -119,17 +119,18 @@ const CHECK_ATTRS = {
     position: relative;
   }
 
+  /*
+    No pill, no border: the flag is already a bordered rectangle and wrapping
+    it in a second outline made two frames around one small object.
+  */
   summary {
     display: flex;
     padding: 0.375rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    background-color: var(--color-bg);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     list-style: none; /* Firefox */
-    transition:
-      background-color var(--transition),
-      border-color var(--transition);
+    transition: opacity var(--transition);
+    opacity: 0.85;
   }
 
   summary::-webkit-details-marker {
@@ -138,7 +139,7 @@ const CHECK_ATTRS = {
 
   summary:hover,
   [open] summary {
-    border-color: var(--color-border-strong);
+    opacity: 1;
   }
 
   summary:focus-visible {
