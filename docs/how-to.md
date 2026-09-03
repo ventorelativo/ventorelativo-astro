@@ -31,6 +31,23 @@ rebuild for the whole session rather than one per save.
 
 Full runbook: [`deploying.md`](deploying.md).
 
+## Draft a post with ChatGPT or Gemini
+
+Open **`/redazione`**, copy the prompt for what you are writing, paste it into
+whatever chat you use, and add your raw notes underneath. You get back a value
+for every field, the text to paste into the body, and a list of what the model
+could not fill in.
+
+It works on a free account and needs nothing installed. The rules the model is
+given, the club's tone, the fields, the things it must never invent, are one
+document: [`src/authoring/istruzioni.md`](../src/authoring/istruzioni.md).
+Change it there and `/redazione` follows; `npm run verify` fails if it stops
+agreeing with the schemas.
+
+**Read what comes back before you save it.** A model gets dates wrong with
+total confidence. The reasoning, and what is deliberately not built, is in
+[`authoring-with-ai.md`](authoring-with-ai.md).
+
 Everything below is the same job done by hand, which is still fine.
 
 ## Change the club name, slogan, email or site description

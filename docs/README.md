@@ -7,6 +7,7 @@ For club members, developers, and AI agents working on the Ventorelativo site.
 | [how-to.md](how-to.md)                       | You want to change something: text, a nav item, a colour, a page, an image. Start here.                                |
 | [architecture.md](architecture.md)           | You want to understand how the site is built, or you are about to change how something works rather than what it says. |
 | [verifying-changes.md](verifying-changes.md) | You have made a change and want to know it actually works. Includes the measurement tool and the known traps.          |
+| [authoring-with-ai.md](authoring-with-ai.md) | A volunteer wants to draft a post with ChatGPT or Gemini, or you are changing the rules they are given.                |
 | [performance.md](performance.md)             | Before adding any library, and whenever a page gets heavier. The site targets 100/100 in PageSpeed Insights.           |
 | [deploying.md](deploying.md)                 | You are setting up hosting or the CMS, or something about a deploy or a preview branch is not behaving.                |
 | [payments.md](payments.md)                   | You are wiring up membership payments: Stripe, the Make.com scenario, and the Google Sheet behind them.                |
