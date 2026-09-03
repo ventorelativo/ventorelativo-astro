@@ -22,10 +22,10 @@ The whole feature is **a document and a copy button**:
 | `scripts/check-authoring.mjs` | Fails the build when the document and the schemas disagree.                |
 | `scripts/check-content.mjs`   | Fails the build on an em dash, which is the rule a model breaks by reflex. |
 
-A volunteer copies the prompt for what they are changing, pastes it into
-whatever chat they use, adds their raw notes underneath, and gets back the entry
-to open, a value for every field that changes, and a list of what the model
-could not fill. They type those into Keystatic themselves. Nothing is automated, nothing is published without a
+A volunteer copies one prompt, pastes it into whatever chat they use, adds
+their raw notes underneath, and gets back a finished `.mdx` file for a new post,
+or a list of the fields that change for an edit. For the new post they press
+**Paste entry** in Keystatic and every field fills at once. Nothing is automated, nothing is published without a
 person reading it, and no key or account is involved.
 
 ## Why not WebMCP
@@ -77,11 +77,15 @@ The last table is the important one. Without it a model asked to "change the
 menu" or "make the privacy page friendlier" will cheerfully explain how to edit
 the source. With it, the instruction is to say so and stop.
 
-## Why the document is sliced
+## Why the page asks nothing but which chat
 
-A free tier has a small context window and quietly drops instructions once it
-fills. Someone writing a news post has no use for the flight-site rules, so the
-copy button ships the common sections plus one type. The `<!-- blocco:… -->`
+There were three prompts, one per content type. Making a volunteer classify
+their own task before they have written a word is a decision they should never
+have been handed: the instructions tell the model how to tell a new post from an
+edit, and that is the model's job. The page is now one box and one button.
+
+The slicing machinery stays in `src/lib/authoring.ts` because the markers are
+what the gate checks and what keeps a block from going missing. The `<!-- blocco:… -->`
 markers in the markdown are the seams, and `src/lib/authoring.ts` throws at
 build time if one goes missing: a contract that silently omits a rule is worse
 than no contract.
@@ -115,6 +119,32 @@ the default: the failure is one sentence and one more click, not a dead end.
 The boxes use `field-sizing: content` with a `max-height` cap, so the short
 prompt is readable whole rather than cut mid-sentence, and the full instructions
 stop at 40vh and scroll. `rows` is the fallback where that is not supported.
+
+## Paste entry, and why the answer is a file
+
+Keystatic's entry toolbar has **Copy entry** and **Paste entry**. `getPastedEntry`
+reads the clipboard and, finding no Keystatic-flavoured HTML on it, falls back to
+`text/plain` and runs `parseEntryFromPlaintext` → `parseEntry(...,
+requireFrontmatter: true)` against the entry's own data file path. A complete
+`.mdx` on the clipboard therefore fills the whole form.
+
+Verified on production, twice, with a real click: title, date, summary, body with
+its bold and its emoji, `category` switching the select to Competizioni, the
+event checkbox ticked and its dates and places filled. Two fields stay empty on
+purpose: the slug, which has a regenerate button beside it that derives it from
+the title, and the image, which the volunteer picks.
+
+So the instructions ask for a **file** for a new post and a **field list** for an
+edit. That split is not cosmetic: pasting a file over an existing entry replaces
+everything, including the fields the model was never told about.
+
+The frontmatter template is written out key by key, with a rule against
+inventing any, because an unknown key fails the paste with nothing on screen to
+explain why. `title` and `summary` are always double-quoted, which is what makes
+an Italian sentence with a colon in it safe.
+
+There is one wrinkle: the first **Paste entry** makes Chrome ask for clipboard
+permission. Keystatic's own source carries a TODO about removing that need.
 
 ## The JSON, and why it is generated
 

@@ -1,63 +1,58 @@
 ---
 /**
- * /redazione: the kit a volunteer hands to an AI before writing a post.
+ * /redazione: the kit a volunteer hands to an AI before writing.
  *
- * The whole feature is a document and a copy button. WebMCP, an MCP server and
- * an API key were all considered and all rejected: what a volunteer needs is a
- * briefing they can paste into whatever chat window they already have, on a
- * free tier, with no browser support and nothing to install.
+ * One prompt, one button. There used to be three, one per content type, and
+ * making a volunteer classify their own task before they had written anything
+ * was a decision they should never have been asked to make: the instructions
+ * tell the model how to tell a new post from an edit, which is its job.
  *
- * ## Why the short prompt is the one on display
+ * ## The shape of the flow
  *
- * The instructions are fifteen kilobytes and were the thing being copied, which
- * a volunteer described, fairly, as unwieldy. What the box holds now is the four
- * lines that name `istruzioni.txt`, and `robots.txt` allows that file even on a
- * preview host so an assistant can actually fetch it. The full text has not gone
- * anywhere: it is behind the disclosure under each button, for the free tiers
- * that cannot open a link, which is what the short prompt tells the model to say
- * if it cannot.
+ * The prompt names `/redazione/istruzioni.txt`, which `robots.txt` allows even
+ * on a preview host, so an assistant reads the rules itself rather than being
+ * fed fifteen kilobytes. The answer comes back as a whole `.mdx` file, and
+ * Keystatic's "Paste entry" fills every field from it: verified on production,
+ * including the category, the event checkbox and its dates.
+ *
+ * The full instructions are still on the page, behind the disclosure, because a
+ * free tier usually cannot open a link at all and the short prompt tells the
+ * model to say so rather than guess.
  *
  * ## Why a textarea and not a code block
  *
- * It is the no-JavaScript path. Without the script a volunteer can still tap
- * into the box, select all and copy, which a `<pre>` on a phone makes
- * miserable; and the box scrolls internally, so a thousand-word prompt does not
- * turn the page into a corridor. What you read in it is exactly what the model
- * receives, which is the point: no hidden system prompt, no surprises.
+ * It is the no-JavaScript path: without the script a volunteer can still tap
+ * into the box and copy by hand, which a `<pre>` on a phone makes miserable.
+ * What is in it is exactly what the model receives.
  *
  * ## Why it is noindex and out of the sitemap
  *
- * Same reason as /styleguide: it is a tool for the people who run the site, not
- * a page of the site. Keeping it on the real domain rather than in the repo is
- * deliberate, a volunteer with a phone and a locandina can reach a URL.
+ * Same reason as /styleguide: a tool for the people who run the site, not a
+ * page of it.
  */
+import { Image } from 'astro:assets';
+
 import PageLayout from '../../layouts/PageLayout.astro';
 import H2 from '../../components/H2.astro';
-import { KINDS, linkPrompt, prompt } from '../../lib/authoring';
+import { linkPrompt, prompt } from '../../lib/authoring';
+import pasteButton from '../../assets/redazione/paste-entry.png';
 
 const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 
-const blocks = KINDS.map((entry) => ({
-  ...entry,
-  text: prompt(site, entry.kind),
-  short: linkPrompt(site, entry.kind),
-}));
+const short = linkPrompt(site);
+const full = prompt(site);
 const keystatic = new URL('/keystatic', site).href;
 const plainText = new URL('/redazione/istruzioni.txt', site).href;
 const asJson = new URL('/redazione/contenuti.json', site).href;
 
 /**
- * Where the prompt can be sent, chosen once for the whole page.
+ * Where the prompt can be sent, chosen once and remembered.
  *
- * One choice at the top rather than a row of buttons per section: which chat a
- * volunteer uses is a fact about them, not about what they are writing, and it
- * is remembered, so after the first visit the page has one button.
- *
- * The `?q=` carries whatever the box holds, which is the short prompt: the full
- * text is 26,736 characters encoded and Google answers 400 to a Gemini URL
- * somewhere between 8k and 20k. The same click copies it too, so when the
- * parameter is ignored, and it is undocumented on all three, the result is an
- * empty chat and a full clipboard rather than a dead end.
+ * The `?q=` carries the short prompt: the full instructions are 26,736
+ * characters encoded and Google answers 400 to a Gemini URL somewhere between
+ * 8k and 20k. The same click copies it, so when the parameter is ignored, and
+ * it is undocumented on all three, the result is an empty chat and a full
+ * clipboard rather than a dead end.
  */
 const CHATS = [
   { id: 'chatgpt', name: 'ChatGPT', href: 'https://chatgpt.com/?q=' },
@@ -68,43 +63,22 @@ const CHATS = [
 
 <PageLayout
   title="Redazione"
-  description="Come preparare una news o la scheda di un sito con l'aiuto di un'intelligenza artificiale, rispettando le regole del sito."
-  intro="Le regole della casa in un blocco di testo da incollare in ChatGPT, Gemini, Claude o quello che usi. Funziona anche con gli account gratuiti."
+  description="Come scrivere una news o correggere una pagina del sito con l'aiuto di un'intelligenza artificiale."
+  intro="Scrivi una news, annuncia un evento o correggi una scheda, facendoti aiutare da ChatGPT, Gemini o Claude. Funziona anche con gli account gratuiti."
   noindex
 >
   <div class="prose">
     <H2>Come funziona</H2>
 
     <ol>
-      <li>Dì qui sotto quale intelligenza artificiale usi. Il sito se lo ricorda.</li>
+      <li>Dici qui sotto quale intelligenza artificiale usi. Il sito se lo ricorda.</li>
+      <li>Premi il pulsante: copia il prompt e apre la chat.</li>
       <li>
-        Scegli cosa devi scrivere e premi il pulsante: copia quattro righe e apre la
-        chat. Le regole del club non le incolli, le legge da sola dal sito.
+        Incolli il prompt e sotto scrivi quello che sai: appunti, il messaggio che ti è
+        arrivato, quello che c'è sulla locandina. Anche in disordine.
       </li>
-      <li>
-        Nella stessa finestra, sotto, scrivi le informazioni che hai: appunti, il
-        messaggio che ti è arrivato, quello che c'è sulla locandina. Anche disordinate,
-        non importa.
-      </li>
-      <li>
-        Ricevi il valore di ogni campo, il testo da incollare e l'elenco di quello che
-        manca. Poi apri <a href={keystatic}>il gestore dei contenuti</a> e riempi i campi.
-      </li>
+      <li>Ti risponde con il testo pronto. Lo copi e lo porti nel sito.</li>
     </ol>
-
-    <p>
-      Se l'intelligenza artificiale risponde che non riesce ad aprire il collegamento,
-      apri il riquadro sotto al pulsante: lì ci sono le istruzioni per intero da
-      incollare. Capita spesso con gli account gratuiti.
-    </p>
-
-    <p>
-      <strong>Rileggi sempre prima di pubblicare.</strong> Un'intelligenza artificiale sbaglia
-      le date e si inventa i dettagli con la faccia di chi li sa. Le istruzioni le dicono
-      di lasciare vuoto quello che non sa e di elencartelo, ma l'ultima parola è tua: controlla
-      date, luoghi e quote contro i tuoi appunti. Niente va online prima che tu unisca le
-      modifiche.
-    </p>
   </div>
 
   <div class="picker field">
@@ -120,85 +94,110 @@ const CHATS = [
       }
     </select>
     <noscript>
-      Senza JavaScript i pulsanti non funzionano: seleziona il testo nella casella e
+      Senza JavaScript il pulsante non funziona: seleziona il testo nella casella e
       copialo a mano.
     </noscript>
   </div>
 
-  {
-    blocks.map(({ kind, label, hint, text, short }) => (
-      <section class="kit">
-        <H2 id={`prompt-${kind}`}>{label}</H2>
-        <p class="kit__hint">{hint}</p>
+  <section class="kit">
+    <div class="field">
+      <label class="visually-hidden" for="prompt">Il prompt da copiare</label>
+      {
+        /* `set:text` rather than a child: an expression inside the tag would put
+          the JSX indentation into the value the volunteer copies. */
+      }
+      <textarea class="kit__text" readonly rows="5" id="prompt" set:text={short} />
+    </div>
 
-        <div class="field">
-          <label class="visually-hidden" for={`testo-${kind}`}>
-            Il prompt da copiare
-          </label>
-          {/* `set:text` rather than a child: an expression inside the tag would
-              put the JSX indentation into the value the volunteer copies. */}
-          <textarea
-            class="kit__text"
-            readonly
-            rows="5"
-            id={`testo-${kind}`}
-            set:text={short}
-          />
-        </div>
+    <p class="kit__actions">
+      <button class="button" type="button" data-copy="prompt" data-open>
+        Copia il prompt
+      </button>
+    </p>
 
-        <p class="kit__actions">
-          <button class="button" type="button" data-copy={`testo-${kind}`} data-open>
-            Copia il prompt
-          </button>
-        </p>
-
-        <details class="kit__full">
-          <summary>L'intelligenza artificiale non riesce ad aprire il link?</summary>
-          <p>
-            Succede con gli account gratuiti, che spesso non possono leggere una pagina
-            web. Copia questo e incollalo nella stessa conversazione: sono le stesse
-            istruzioni, per intero.
-          </p>
-          <div class="field">
-            <label class="visually-hidden" for={`pieno-${kind}`}>
-              Le istruzioni complete
-            </label>
-            <textarea
-              class="kit__text"
-              readonly
-              rows="8"
-              id={`pieno-${kind}`}
-              set:text={text}
-            />
-          </div>
-          <p class="kit__actions">
-            <button
-              class="button button--outline"
-              type="button"
-              data-copy={`pieno-${kind}`}
-            >
-              Copia le istruzioni complete
-            </button>
-          </p>
-        </details>
-      </section>
-    ))
-  }
+    <details class="kit__full">
+      <summary>L'intelligenza artificiale non riesce ad aprire il link?</summary>
+      <p>
+        Capita con gli account gratuiti, che spesso non leggono le pagine web. Copia
+        questo e incollalo nella stessa conversazione: sono le stesse istruzioni, per
+        intero.
+      </p>
+      <div class="field">
+        <label class="visually-hidden" for="pieno">Le istruzioni complete</label>
+        <textarea class="kit__text" readonly rows="8" id="pieno" set:text={full} />
+      </div>
+      <p class="kit__actions">
+        <button class="button button--outline" type="button" data-copy="pieno">
+          Copia le istruzioni complete
+        </button>
+      </p>
+    </details>
+  </section>
 
   <div class="prose">
+    <H2>Portare il testo nel sito</H2>
+
+    <p>
+      Per una <strong>news nuova</strong> l'intelligenza artificiale ti dà un blocco di testo
+      che comincia con tre trattini. Copialo tutto, apri <a href={keystatic}
+        >il gestore dei contenuti</a
+      >, scegli <strong>News</strong> e poi <strong>+</strong> per creare una voce nuova.
+      In alto a destra premi <strong>Paste entry</strong>: tutti i campi si riempiono da
+      soli.
+    </p>
+
+    <figure class="shot">
+      <Image
+        src={pasteButton}
+        alt="I pulsanti in alto a destra nel gestore dei contenuti: un orologio, due icone a forma di appunti e il pulsante blu Create"
+        widths={[310, 620]}
+        sizes="310px"
+        quality={90}
+      />
+      <figcaption>
+        <strong>Paste entry</strong> è la seconda icona a forma di appunti, subito prima del
+        pulsante blu <strong>Create</strong>. La prima volta il browser chiede il
+        permesso di leggere gli appunti: rispondi <strong>Allow</strong>.
+      </figcaption>
+    </figure>
+
+    <p>Restano due cose da fare a mano:</p>
+
+    <ul>
+      <li>
+        premere il pulsante con le frecce circolari accanto a <strong
+          >Indirizzo (URL)</strong
+        >, che si scrive da solo a partire dal titolo;
+      </li>
+      <li>caricare la foto e incollare il testo alternativo.</li>
+    </ul>
+
+    <p>
+      Per una <strong>correzione</strong> a una pagina o a una scheda che esiste già, non
+      c'è niente da incollare in blocco: ricevi l'elenco dei campi da cambiare, apri la voce
+      e cambi solo quelli.
+    </p>
+
+    <p>
+      <strong>Rileggi prima di salvare.</strong> Un'intelligenza artificiale sbaglia le date
+      con la faccia di chi le sa: controlla date e luoghi contro i tuoi appunti. Quello che
+      salvi va online in un paio di minuti.
+    </p>
+
     <H2>Le istruzioni da sole</H2>
     <p>
-      Il prompt qui sopra contiene già tutto. Se ti serve leggere le regole senza il
-      resto, o passarle a qualcuno, sono qui: <a href={plainText}>istruzioni.txt</a>. Le
-      stesse tabelle in forma di dati, per chi collega il sito a un programma:
-      <a href={asJson}>contenuti.json</a>.
+      Le regole che l'intelligenza artificiale legge, se ti servono in chiaro: <a
+        href={plainText}>istruzioni.txt</a
+      >. Le stesse in forma di dati, per chi collega il sito a un programma: <a
+        href={asJson}>contenuti.json</a
+      >.
     </p>
   </div>
 </PageLayout>
 
 <script>
   /*
-    One remembered choice, one button per prompt.
+    One remembered choice, one button.
 
     The date is prepended here rather than baked into the page because the page
     is built once and read for months: a model told the wrong date will happily
@@ -216,8 +215,8 @@ const CHATS = [
 
   const select = document.getElementById('ai') as HTMLSelectElement;
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-copy]')];
-  /* Only the primary button of each section opens a chat and takes the chosen
-     service's name; the one behind the disclosure keeps its own label. */
+  /* Only the primary button opens a chat and takes the chosen service's name;
+     the one behind the disclosure keeps its own label. */
   const opens = (button: HTMLButtonElement) => button.hasAttribute('data-open');
 
   const chosen = () => select.options[select.selectedIndex];
@@ -328,37 +327,6 @@ const CHATS = [
 </script>
 
 <style>
-  .kit {
-    max-width: var(--prose-width);
-    margin-block: var(--space-lg);
-  }
-
-  .kit__hint {
-    margin-block: var(--space-2xs) var(--space-sm);
-    color: var(--color-text-muted);
-  }
-
-  .kit__text {
-    /* Monospace so a stray character in a field value is visible, and small:
-       this is a block to be copied, not to be read closely. */
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    /* Grows to its content, so the short prompt is readable whole instead of
-       cut mid-sentence, and the full instructions stop at the cap and scroll.
-       `rows` is the fallback where this is not supported yet. */
-    field-sizing: content;
-    max-height: 40vh;
-    resize: vertical;
-    /* Wrap rather than scroll sideways: a soft wrap does not alter `value`,
-       so what is copied is still the text as written. */
-    white-space: pre-wrap;
-  }
-
-  .kit__actions {
-    margin-block-start: var(--space-sm);
-  }
-
   .picker {
     max-width: var(--prose-width);
     margin-block: var(--space-lg);
@@ -385,6 +353,37 @@ const CHATS = [
     border-color: var(--color-accent);
   }
 
+  .picker noscript {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .kit {
+    max-width: var(--prose-width);
+    margin-block: var(--space-lg);
+  }
+
+  .kit__text {
+    /* Monospace so a stray character is visible, and small: this is a block to
+       be copied, not to be read closely. */
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    /* Grows to its content, so the short prompt is readable whole instead of
+       cut mid-sentence, and the full instructions stop at the cap and scroll.
+       `rows` is the fallback where this is not supported yet. */
+    field-sizing: content;
+    max-height: 40vh;
+    resize: vertical;
+    /* Wrap rather than scroll sideways: a soft wrap does not alter `value`,
+       so what is copied is still the text as written. */
+    white-space: pre-wrap;
+  }
+
+  .kit__actions {
+    margin-block-start: var(--space-sm);
+  }
+
   .kit__full {
     margin-block-start: var(--space-md);
     font-size: var(--text-sm);
@@ -405,7 +404,22 @@ const CHATS = [
     color: var(--color-text-muted);
   }
 
-  .picker noscript {
+  .shot {
+    margin-block: var(--space-md);
+  }
+
+  /* The screenshot is of a dark admin: a border keeps it from bleeding into a
+     light page, and the radius matches the toolbar it was cut from. */
+  .shot :global(img) {
+    width: 310px;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .shot figcaption {
+    margin-block-start: var(--space-2xs);
     color: var(--color-text-muted);
     font-size: var(--text-sm);
   }

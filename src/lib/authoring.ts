@@ -25,24 +25,6 @@ import source from '../authoring/istruzioni.md?raw';
 /** The content types a volunteer can ask about. Matches the `blocco:` markers. */
 export type Kind = 'news' | 'siti' | 'pagine';
 
-export const KINDS: { kind: Kind; label: string; hint: string }[] = [
-  {
-    kind: 'news',
-    label: 'Una news o un evento',
-    hint: 'Un annuncio, una gara, un hike & fly, un ritrovo.',
-  },
-  {
-    kind: 'siti',
-    label: 'Un sito di volo',
-    hint: 'La scheda di uno dei quattordici siti, da correggere o completare.',
-  },
-  {
-    kind: 'pagine',
-    label: 'Una pagina fissa o le impostazioni',
-    hint: 'Home, iscrizioni, contatti, privacy, kit stampa, i social, i dati del club.',
-  },
-];
-
 /**
  * Always sent, whatever the volunteer is editing.
  *
@@ -113,18 +95,12 @@ export function instructions(
  * No date here on purpose: the copy script prepends today's, so it is the day
  * the volunteer copied and not the day the site was built.
  */
-export function prompt(site: URL, kind: Kind): string {
-  const what = {
-    news: 'Devi prepararmi una news o un evento',
-    siti: 'Devi aiutarmi con la scheda di un sito di volo',
-    pagine: 'Devi aiutarmi a modificare una pagina fissa o le impostazioni',
-  }[kind];
-
+export function prompt(site: URL): string {
   return [
     /* One line per paragraph, not wrapped at 80 columns like the document
        below it: this part is read inside a narrow box on a phone, where a hard
        wrap breaks a second time and comes out ragged. */
-    `${what} per il sito del Parapendio Club VentoRelativo.`,
+    'Devi aiutarmi con il sito del Parapendio Club VentoRelativo.',
     '',
     'Segui alla lettera le istruzioni del club che ti incollo qui sotto: sono le regole della casa, comprese quelle su cosa non inventare mai e sul trattino lungo, che non va usato.',
     '',
@@ -132,7 +108,7 @@ export function prompt(site: URL, kind: Kind): string {
     '',
     '----- ISTRUZIONI DEL CLUB -----',
     '',
-    instructions(site, [kind]),
+    instructions(site),
     '',
     '----- FINE DELLE ISTRUZIONI -----',
     '',
@@ -142,7 +118,7 @@ export function prompt(site: URL, kind: Kind): string {
 }
 
 /**
- * The short prompt that travels in a `?q=` query string.
+ * The short prompt: what the volunteer copies, and what rides in a `?q=`.
  *
  * The full one is 26,736 characters encoded and does not fit in a URL: Google
  * answers 400 to a Gemini link somewhere between 8k and 20k. This one names
@@ -153,17 +129,12 @@ export function prompt(site: URL, kind: Kind): string {
  * fetch a page at all. Told to say so rather than to guess, it asks, and
  * `/redazione` keeps the full text one disclosure away for exactly that answer.
  */
-export function linkPrompt(site: URL, kind: Kind): string {
-  const what = {
-    news: 'una news o un evento',
-    siti: 'la scheda di un sito di volo',
-    pagine: 'una modifica a una pagina fissa o alle impostazioni',
-  }[kind];
-
+export function linkPrompt(site: URL): string {
   return [
     `Leggi le istruzioni del Parapendio Club VentoRelativo su ${new URL('/redazione/istruzioni.txt', site).href}`,
-    `e seguile alla lettera: devi prepararmi ${what} per il loro sito.`,
+    'e seguile alla lettera per aiutarmi con il loro sito.',
     'Se non riesci ad aprire quella pagina dimmelo subito e te le incollo io: non tirare a indovinare.',
+    'Ecco cosa mi serve:',
   ].join(' ');
 }
 
