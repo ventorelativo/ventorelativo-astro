@@ -48,6 +48,11 @@ features through GeoJSON.
 - `/styleguide` is a temporary design reference and should be deleted before
   the site goes live (Phase 5).
 - RSS: dropped by decision, not oversight (MIGRATION-PLAN.md S9).
+- A cookie banner. There is nothing to consent to: opening a page fetches
+  nothing third-party and stores no cookie, and `npm run privacy:check` fails
+  if that stops being true. The map, the translator and their tile providers
+  load only on interaction. `/privacy` says exactly this — keep the two in
+  step, and the gate's allowlist with them.
 - `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it —
   the maps inline their data.
 - Membership payments (Phase 6) wait on the committee (D10). `/iscrizioni`
@@ -69,8 +74,10 @@ npm run dev       # dev server on http://localhost:4321 (background-managed)
 npm run build     # static build into dist/
 npm run preview   # serve the built output
 npm run check     # astro check — types and template diagnostics
-npm run verify    # check + lint + build + navdata gate. Run before claiming done.
+npm run verify    # check + lint + build + three gates. Run before claiming done.
 npm run navdata:check  # flight files vs the archived Drupal build (needs a build first)
+npm run urls:check     # every URL the old site served still resolves
+npm run privacy:check  # no page loads a third party before a visitor asks
 npm run shot      # screenshot + measure a page in a real emulated viewport
 npm run weight    # transferred bytes by resource type (run against the build)
 ```
@@ -137,7 +144,8 @@ phone on mountain data.
 
 - **Zero JavaScript is the default.** A page gets none unless something on it
   cannot work without it. Today: the theme toggle, the nav drawer, the gallery,
-  the language switcher, the map.
+  the language switcher, the map, and a three-line WebMCP guard that fetches
+  its module only if the browser has the API.
 - **Load it only where it is used** — an import in a component's client
   `<script>` reaches only pages rendering that component; one in a layout
   reaches every page.

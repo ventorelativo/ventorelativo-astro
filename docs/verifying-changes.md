@@ -65,6 +65,24 @@ dark appearance every file named `…-light.png` held a dark screenshot, with
 nothing to say so. Both directions are now set explicitly. Distrust any light
 shot taken before 2026-09-03.
 
+## The three gates in `npm run verify`
+
+Beyond types, lint and the build, `verify` runs three checks that exist because
+each guards a promise the site makes and cannot keep by accident:
+
+| Gate                    | Fails when                                                        |
+| ----------------------- | ----------------------------------------------------------------- |
+| `npm run navdata:check` | the flight-computer files stop matching the archived Drupal build |
+| `npm run urls:check`    | a URL the old site served stops resolving                         |
+| `npm run privacy:check` | a page starts loading something third-party unasked               |
+
+All three read `dist/`, so they need a build first — `verify` does that for
+them. All three were proved by being broken on purpose: removing a built page,
+pointing a redirect at nothing, and dropping a Google Fonts link into a page.
+
+`urls:check` and `navdata:check` read `../ventorelativo-drupal`. That archive is
+the evidence, which is why Phase 5 archives it rather than deleting it.
+
 ## Lighthouse, for the things a screenshot cannot show
 
 `npm run shot` answers "does it fit and read". It says nothing about whether a

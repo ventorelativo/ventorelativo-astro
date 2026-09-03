@@ -715,6 +715,12 @@ wrong.
 accounts only — never "anyone with the link" — and keep it out of this repository, which is
 public. See the note at the end of §5.
 
+### Quota amounts (decided 2026-09-03)
+
+**€10 Sostenitore and €30 Socio, for everyone, unchanged.** The committee accepted the
+processing fee and chose not to move the quotas to absorb it. Nothing on the page shows a
+surcharge — see the note on Art. 62 below, which this decision keeps comfortably clear of.
+
 ### The decision (D10, resolved 2026-09-03)
 
 **Stripe Payment Links, with Satispay enabled as a payment method inside them.** Bank
@@ -1261,7 +1267,7 @@ runbook rather than built: [`docs/payments.md`](docs/payments.md).
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(items 1-4 done; 5 dropped)_
+### Phase 7 — Beyond parity _(items 1-5 done; 6 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
@@ -1330,7 +1336,24 @@ under `prefers-reduced-motion`.
 The lesson is worth keeping: the framework's answer and the platform's answer were not the
 same size.
 
-**5. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
+**5. GDPR.** ✅ _Done 2026-09-03, at the club's request._ The site had no privacy notice
+at all — the Drupal one did not either. `/privacy` now says, in plain Italian, what happens
+to a visitor's data, and most of it is a list of things that do not happen: opening a page
+fetches nothing third-party and stores no cookie. The map, the translator and their tile
+providers load only on interaction, which is what lets the site work without a consent
+banner. The contact form carries the Art. 13 notice at the point of collection — a line and
+a link, not a checkbox, because answering a message someone chose to send does not rest on
+consent.
+
+`npm run privacy:check` fails the build if any page starts loading something third-party on
+its own, and its allowlist has to match what the notice claims. A promise in a legal page
+is worth what the check behind it is worth.
+
+Still open, and listed in the report: the association's registered office is not in the
+notice (the email is), and whether Cloudflare's cookieless beacon should stay or be
+replaced by server-side analytics is the club's call.
+
+**6. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
 
 **Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
 i18n routing (single locale — GTranslate covers the rest, G11), and anything requiring edge
