@@ -10,7 +10,7 @@ declare module 'bigger-picture/css';
 /**
  * GTranslate's facade (`LanguageSwitcher.astro`) drives Google's translate
  * element, which arrives as a global rather than a module. Only the two
- * members we touch are declared — the widget's full surface is neither
+ * members we touch are declared: the widget's full surface is neither
  * documented nor stable.
  */
 declare interface Window {

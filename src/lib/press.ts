@@ -4,7 +4,7 @@
  * One list of variants; each one has a source SVG in `src/assets/press/` and
  * produces the downloads the page offers. The rasters are generated at build
  * from those same files, so there is no folder of exported PNGs to keep in
- * step with the drawings — which is how a press kit goes stale.
+ * step with the drawings, which is how a press kit goes stale.
  *
  * ## Why these five
  *

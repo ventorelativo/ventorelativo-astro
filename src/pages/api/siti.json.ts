@@ -1,5 +1,5 @@
 /**
- * /api/siti.json — the flight sites as data.
+ * /api/siti.json, the flight sites as data.
  *
  * Written for machines: the WebMCP tools in `src/lib/webmcp.ts` answer from
  * this, and anything else that wants the club's sites without parsing pages
@@ -14,7 +14,7 @@
  * Altitude and exposure are *not* separate fields. They live inside `summary`,
  * written by the club as "1581m/1276m, SE, Bagnolo Piemonte (CN)", and the
  * club has never recorded them as data. Splitting them here would mean parsing
- * prose and publishing the guess as fact — the same reason `placeNode` in
+ * prose and publishing the guess as fact: the same reason `placeNode` in
  * src/lib/schema.ts emits no `elevation`.
  */
 import type { APIRoute } from 'astro';

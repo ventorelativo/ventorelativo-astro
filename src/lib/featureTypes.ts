@@ -14,11 +14,11 @@
 export type FeatureType = 'takeoff' | 'landing' | 'obstacle' | 'poi';
 
 interface FeatureTypeInfo {
-  /** Shown to visitors, so Italian. Singular — it labels one row. */
+  /** Shown to visitors, so Italian. Singular, it labels one row. */
   label: string;
   /**
    * The glyph the old site's map popups used for this kind, kept so a pilot
-   * who knew that map still recognises this one. Decorative — every place it
+   * who knew that map still recognises this one. Decorative: every place it
    * appears is beside the written label, so it is hidden from assistive tech.
    */
   emoji: string;
@@ -38,8 +38,8 @@ interface FeatureTypeInfo {
    */
   cupStyle: number;
   /**
-   * OpenAir airspace class. Only landings are ever written — everything else is
-   * either filtered out or has no polygon — but the fallback is recorded so the
+   * OpenAir airspace class. Only landings are ever written: everything else is
+   * either filtered out or has no polygon, but the fallback is recorded so the
    * behaviour is visible rather than implied.
    */
   openAirClass: string;

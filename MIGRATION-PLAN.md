@@ -1,4 +1,4 @@
-# Ventorelativo — Drupal 11 → Astro + Keystatic migration plan
+# Ventorelativo: Drupal 11 → Astro + Keystatic migration plan
 
 **Status:** approved. Phase 1 complete.
 **Source site:** `/Users/marcus/Repos/ventorelativo-drupal` (Drupal 11.3.12, Tome static export → Netlify)
@@ -10,7 +10,7 @@ only, no scraped tables · D7 site specs stay as prose · D8 stay on MapTiler, b
 adapter · D9 no URLs need protecting · D11 refined minimal · D12 freeze content now ·
 D13 tags reshaped (news category only, archives dropped).
 
-**All resolved.** D10 (payments) closed 2026-09-03 — see §5.
+**All resolved.** D10 (payments) closed 2026-09-03: see §5.
 
 **Phase 1 complete.** Next: Phase 2 (content).
 
@@ -32,10 +32,10 @@ build. Counts are actual item counts in `content/`.
 | `storage`           | `map_feature` | Elemento mappa | 34                | `name` (base), `field_type` (list), `field_location` (geofield/WKT)                               |
 | `taxonomy_term`     | `tags`        | Etichette      | 4                 | `name`                                                                                            |
 | `block_content`     | `basic`       | Blocco base    | 7                 | `body`                                                                                            |
-| `menu_link_content` | `main`        | —              | 5                 | —                                                                                                 |
-| `path_alias`        | —             | —              | 29                | —                                                                                                 |
-| `redirect`          | —             | —              | 1                 | `/contact/contatti` → `/contatti` (301)                                                           |
-| `file`              | —             | —              | 18                | 3 unused/orphaned                                                                                 |
+| `menu_link_content` | `main`        | n/a            | 5                 | n/a                                                                                               |
+| `path_alias`        | n/a           | n/a            | 29                | n/a                                                                                               |
+| `redirect`          | n/a           | n/a            | 1                 | `/contact/contatti` → `/contatti` (301)                                                           |
+| `file`              | n/a           | n/a            | 18                | 3 unused/orphaned                                                                                 |
 
 `map_feature` breakdown by `field_type`: **16 takeoff, 13 landing, 4 poi, 1 obstacle**.
 
@@ -47,12 +47,12 @@ Geometry shapes actually stored in `field_location` (WKT):
 
 ### Custom modules
 
-| Module    | What it does                                                                                                                                                                   | Ported how                                                  |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `helper`  | Dark/light theme toggle block + sitewide `SportsClub` JSON-LD + homepage hero preload hint                                                                                     | Inline script + `<Schema>` component + `<link rel=preload>` |
-| `mapper`  | MapTiler SDK map block for `/siti` (`/api/sites/all/geo.json`); geofield formatter; admin map widget; WKT `GEOMETRYCOLLECTION` splitter for Leaflet                            | MapTiler SDK island (see §4.2)                              |
-| `navdata` | Generates `/api/navdata/ventorelativo-airspace.txt` (OpenAir) and `…-waypoints.cup` (SeeYou CUP) from `storage` geometries; plus an SDC download-links block                   | Two Astro static endpoints (see §4.3)                       |
-| `scraper` | XContest flight scraper block on `/voli` — **the table rendering is commented out**; only 5 outbound XContest search buttons actually render. Login disabled since Cloudflare. | 5 static links (see §4.4)                                   |
+| Module    | What it does                                                                                                                                                                  | Ported how                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `helper`  | Dark/light theme toggle block + sitewide `SportsClub` JSON-LD + homepage hero preload hint                                                                                    | Inline script + `<Schema>` component + `<link rel=preload>` |
+| `mapper`  | MapTiler SDK map block for `/siti` (`/api/sites/all/geo.json`); geofield formatter; admin map widget; WKT `GEOMETRYCOLLECTION` splitter for Leaflet                           | MapTiler SDK island (see §4.2)                              |
+| `navdata` | Generates `/api/navdata/ventorelativo-airspace.txt` (OpenAir) and `…-waypoints.cup` (SeeYou CUP) from `storage` geometries; plus an SDC download-links block                  | Two Astro static endpoints (see §4.3)                       |
+| `scraper` | XContest flight scraper block on `/voli`: **the table rendering is commented out**; only 5 outbound XContest search buttons actually render. Login disabled since Cloudflare. | 5 static links (see §4.4)                                   |
 
 ### Views
 
@@ -64,11 +64,11 @@ Geometry shapes actually stored in `field_location` (WKT):
 | `xcontest_flights`                 | `map_sites_node` (block)                                                                                                               | Per-takeoff XContest search links                                    |
 | `flight_data`                      | `airspace`, `waypoints` (embeds)                                                                                                       | Filters feeding the navdata endpoints                                |
 | `news`                             | `news_block`, `news_page`, `feed_1`                                                                                                    | Article listing (10/page) + RSS (not currently exported)             |
-| `frontpage`, `archive`, `glossary` | —                                                                                                                                      | **Disabled**, no migration needed                                    |
+| `frontpage`, `archive`, `glossary` | n/a                                                                                                                                    | **Disabled**, no migration needed                                    |
 
 ### Theme (`vr`, Bootstrap 5.3 subtheme)
 
-- Regions: `header`, `nav_branding`, `nav_main`, `nav_additional`, `breadcrumb`, `content`, `sidebar_first`, `sidebar_second`, `footer` — **the two sidebar regions are unused by every placed block**.
+- Regions: `header`, `nav_branding`, `nav_main`, `nav_additional`, `breadcrumb`, `content`, `sidebar_first`, `sidebar_second`, `footer`, **the two sidebar regions are unused by every placed block**.
 - SDC components: `listing` (article teaser card), `card-big` (site teaser card), `tags` (linked pills), `badges` (unlinked pills), plus `navdata:navdata-links`.
 - Template overrides: `page.html.twig` (fixed header, offcanvas mobile nav, container, footer), `node.html.twig`, two teaser templates, branding block, breadcrumb, `field--field-tags`.
 - Footer blocks: social media, footer menu (empty), GTranslate widget, theme toggle, image credits (front page only).
@@ -83,128 +83,128 @@ so this doubles as the acceptance checklist.
 
 ### 1.1 Global chrome & layout
 
-| #   | Current feature                                                                 | New stack                                                                 |
-| --- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| G1  | Fixed top header with logo/branding                                             | Astro `<Header>` in base layout                                           |
-| G2  | Inline SVG logo (`logo.svg`), language-suffixed variants                        | Inline SVG component. Language variants unused (single locale) — **drop** |
-| G3  | Site name + slogan ("Ventorelativo" / "Parapendio Club")                        | Site config in `src/consts.ts` + Keystatic `settings` singleton           |
-| G4  | Main nav (5 links, weighted)                                                    | Keystatic `navigation` singleton → `array({label, href})`                 |
-| G5  | Offcanvas mobile nav (Bootstrap `offcanvas-lg`)                                 | Custom CSS/`<dialog>` or Alpine-free vanilla JS drawer                    |
-| G6  | Breadcrumbs (easy_breadcrumb: home icon + title segment, hidden when only home) | `<Breadcrumbs>` component derived from route + entry title                |
-| G7  | Footer: social block, footer menu (empty), GTranslate, theme toggle, legal line | `<Footer>` + Keystatic `footer`/`social` singletons                       |
-| G8  | Image-credits line — **front page only**                                        | Prop on the homepage layout                                               |
-| G9  | Page title block — hidden on front page                                         | Per-page `showTitle` prop                                                 |
-| G10 | Dark/light/auto theme toggle (`data-bs-theme`, localStorage)                    | Inline no-flash script + CSS custom properties + `data-theme`             |
-| G11 | GTranslate widget (it → fr/en/de/es, flag icons, inline)                        | ✅ Rebuilt as a facade — `<LanguageSwitcher>`, see Phase 2 note 9         |
-| G12 | Skip link to `#main-content`                                                    | Astro layout                                                              |
-| G13 | Unused `sidebar_first` / `sidebar_second` regions                               | **Drop** — nothing is placed in them                                      |
+| #   | Current feature                                                                 | New stack                                                                |
+| --- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| G1  | Fixed top header with logo/branding                                             | Astro `<Header>` in base layout                                          |
+| G2  | Inline SVG logo (`logo.svg`), language-suffixed variants                        | Inline SVG component. Language variants unused (single locale): **drop** |
+| G3  | Site name + slogan ("Ventorelativo" / "Parapendio Club")                        | Site config in `src/consts.ts` + Keystatic `settings` singleton          |
+| G4  | Main nav (5 links, weighted)                                                    | Keystatic `navigation` singleton → `array({label, href})`                |
+| G5  | Offcanvas mobile nav (Bootstrap `offcanvas-lg`)                                 | Custom CSS/`<dialog>` or Alpine-free vanilla JS drawer                   |
+| G6  | Breadcrumbs (easy_breadcrumb: home icon + title segment, hidden when only home) | `<Breadcrumbs>` component derived from route + entry title               |
+| G7  | Footer: social block, footer menu (empty), GTranslate, theme toggle, legal line | `<Footer>` + Keystatic `footer`/`social` singletons                      |
+| G8  | Image-credits line: **front page only**                                         | Prop on the homepage layout                                              |
+| G9  | Page title block: hidden on front page                                          | Per-page `showTitle` prop                                                |
+| G10 | Dark/light/auto theme toggle (`data-bs-theme`, localStorage)                    | Inline no-flash script + CSS custom properties + `data-theme`            |
+| G11 | GTranslate widget (it → fr/en/de/es, flag icons, inline)                        | ✅ Rebuilt as a facade: `<LanguageSwitcher>`, see Phase 2 note 9         |
+| G12 | Skip link to `#main-content`                                                    | Astro layout                                                             |
+| G13 | Unused `sidebar_first` / `sidebar_second` regions                               | **Drop**: nothing is placed in them                                      |
 
 ### 1.2 SEO, metadata & feeds
 
-| #       | Current feature                                                                                                                                                                 | New stack                                                                                                                                                                                                                                                                                               |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S1      | Metatag: title pattern `[title] \| [site:name]`, description, canonical                                                                                                         | `<SEO>` component with per-page overrides                                                                                                                                                                                                                                                               |
-| S2      | Open Graph + Twitter cards                                                                                                                                                      | Same component                                                                                                                                                                                                                                                                                          |
-| S3      | **Auto-generated OG images**: title text (Metropolis Bold, uppercase, outlined) composited over `social-card.png`, 1280×640, entropy smart crop (`textimage` + `image_effects`) | `astro-og-canvas` (build-time) or `satori`+`sharp` in an endpoint. Easy to drop by accident — explicitly on the checklist                                                                                                                                                                               |
-| S4      | Article OG image from `field_image` via `social_card_node` style (1280×640, center-bottom crop)                                                                                 | Astro `getImage()` with an equivalent crop                                                                                                                                                                                                                                                              |
-| S5      | Front-page-specific title/description/OG overrides                                                                                                                              | Page-level frontmatter                                                                                                                                                                                                                                                                                  |
-| S6      | Favicons set (16/32/apple-touch/mstile/safari-pinned-tab/webmanifest)                                                                                                           | Copy `favicons/` to `public/` verbatim                                                                                                                                                                                                                                                                  |
-| S7      | `SportsClub` JSON-LD (name, sport, areaServed, sameAs)                                                                                                                          | `<JsonLd>` component in base layout                                                                                                                                                                                                                                                                     |
-| S8      | `simple_sitemap` → `/sitemap.xml` (30 URLs, custom priorities for `/` and `/contatti`)                                                                                          | `@astrojs/sitemap` with a `serialize` for priorities                                                                                                                                                                                                                                                    |
-| S9      | News RSS feed (`news` view `feed_1`, path `rss.xml`) — **defined but not in the static export**                                                                                 | ❌ **Dropped in Phase 2 at the club's request.** It never worked on the old site either, and nothing subscribes to it                                                                                                                                                                                   |
-| S10     | Redirect `/contact/contatti` → `/contatti` (301)                                                                                                                                | `_redirects` / `netlify.toml`                                                                                                                                                                                                                                                                           |
-| S11     | `/home` and `/` both resolve to the same node (duplicate content)                                                                                                               | **Fix**: `/home` → `/` 301                                                                                                                                                                                                                                                                              |
-| S12     | Quicklink prefetch                                                                                                                                                              | Astro `prefetch: { defaultStrategy: 'viewport' }`                                                                                                                                                                                                                                                       |
-| S13     | `minifyhtml`                                                                                                                                                                    | Astro's built-in HTML minification                                                                                                                                                                                                                                                                      |
-| S14     | Long-cache headers for `/themes/*`, `/core/*`, `/sites/default/files/{css,js,styles}/*`                                                                                         | `_headers` for `/_astro/*` (content-hashed)                                                                                                                                                                                                                                                             |
-| S15     | Hero LCP preload hint (`homepage.avif`)                                                                                                                                         | **Not needed.** The hint existed because the hero was a CSS `image-set()` background on `main::before`, invisible to the preload scanner. It is a real `<Picture>` now, first in the markup with `fetchpriority="high"`, so the scanner finds it in the initial HTML                                    |
-| **S17** | _(nothing — the concept did not exist)_                                                                                                                                         | ✅ **Done in Phase 2.** `/llms.txt` (index) and `/llms-full.txt` (every page's text), generated from the collections. Cheap and build-time only; be clear-eyed that it is widely published and rarely fetched — the schema.org graph and semantic HTML are what actually make the site machine-readable |
-| **S16** | _(none today — no analytics module installed)_                                                                                                                                  | **New:** Cloudflare Web Analytics beacon before `</body>`. Works on Netlify-hosted sites with no DNS/proxy change; cookie-free, so no cookie banner. See §6.1                                                                                                                                           |
+| #       | Current feature                                                                                                                                                                 | New stack                                                                                                                                                                                                                                                                                              |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S1      | Metatag: title pattern `[title] \| [site:name]`, description, canonical                                                                                                         | `<SEO>` component with per-page overrides                                                                                                                                                                                                                                                              |
+| S2      | Open Graph + Twitter cards                                                                                                                                                      | Same component                                                                                                                                                                                                                                                                                         |
+| S3      | **Auto-generated OG images**: title text (Metropolis Bold, uppercase, outlined) composited over `social-card.png`, 1280×640, entropy smart crop (`textimage` + `image_effects`) | `astro-og-canvas` (build-time) or `satori`+`sharp` in an endpoint. Easy to drop by accident: explicitly on the checklist                                                                                                                                                                               |
+| S4      | Article OG image from `field_image` via `social_card_node` style (1280×640, center-bottom crop)                                                                                 | Astro `getImage()` with an equivalent crop                                                                                                                                                                                                                                                             |
+| S5      | Front-page-specific title/description/OG overrides                                                                                                                              | Page-level frontmatter                                                                                                                                                                                                                                                                                 |
+| S6      | Favicons set (16/32/apple-touch/mstile/safari-pinned-tab/webmanifest)                                                                                                           | Copy `favicons/` to `public/` verbatim                                                                                                                                                                                                                                                                 |
+| S7      | `SportsClub` JSON-LD (name, sport, areaServed, sameAs)                                                                                                                          | `<JsonLd>` component in base layout                                                                                                                                                                                                                                                                    |
+| S8      | `simple_sitemap` → `/sitemap.xml` (30 URLs, custom priorities for `/` and `/contatti`)                                                                                          | `@astrojs/sitemap` with a `serialize` for priorities                                                                                                                                                                                                                                                   |
+| S9      | News RSS feed (`news` view `feed_1`, path `rss.xml`): **defined but not in the static export**                                                                                  | ❌ **Dropped in Phase 2 at the club's request.** It never worked on the old site either, and nothing subscribes to it                                                                                                                                                                                  |
+| S10     | Redirect `/contact/contatti` → `/contatti` (301)                                                                                                                                | `_redirects` / `netlify.toml`                                                                                                                                                                                                                                                                          |
+| S11     | `/home` and `/` both resolve to the same node (duplicate content)                                                                                                               | **Fix**: `/home` → `/` 301                                                                                                                                                                                                                                                                             |
+| S12     | Quicklink prefetch                                                                                                                                                              | Astro `prefetch: { defaultStrategy: 'viewport' }`                                                                                                                                                                                                                                                      |
+| S13     | `minifyhtml`                                                                                                                                                                    | Astro's built-in HTML minification                                                                                                                                                                                                                                                                     |
+| S14     | Long-cache headers for `/themes/*`, `/core/*`, `/sites/default/files/{css,js,styles}/*`                                                                                         | `_headers` for `/_astro/*` (content-hashed)                                                                                                                                                                                                                                                            |
+| S15     | Hero LCP preload hint (`homepage.avif`)                                                                                                                                         | **Not needed.** The hint existed because the hero was a CSS `image-set()` background on `main::before`, invisible to the preload scanner. It is a real `<Picture>` now, first in the markup with `fetchpriority="high"`, so the scanner finds it in the initial HTML                                   |
+| **S17** | _(nothing: the concept did not exist)_                                                                                                                                          | ✅ **Done in Phase 2.** `/llms.txt` (index) and `/llms-full.txt` (every page's text), generated from the collections. Cheap and build-time only; be clear-eyed that it is widely published and rarely fetched: the schema.org graph and semantic HTML are what actually make the site machine-readable |
+| **S16** | _(none today: no analytics module installed)_                                                                                                                                   | **New:** Cloudflare Web Analytics beacon before `</body>`. Works on Netlify-hosted sites with no DNS/proxy change; cookie-free, so no cookie banner. See §6.1                                                                                                                                          |
 
 ### 1.3 Pages & content
 
-| #   | Current feature                                                                                           | New stack                                                                                                                       |
-| --- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | 8 basic pages (Layout Builder, one-column, body + blocks)                                                 | Purpose-built `.astro` pages, each backed by a Keystatic **singleton** for its editable text                                    |
-| C2  | Homepage: full-bleed hero (`image-set` avif/webp/jpg, 0.8 opacity), centred logo + slogan, 3 CTA buttons  | `index.astro` + `<Hero>`; CTAs become structured data (see §2)                                                                  |
-| C3  | 3 news articles, sticky+date sort, 10/page pager                                                          | `news` collection + `/news` list                                                                                                |
-| C4  | Article: hero image (`wide` style, q40), body, tags, langcode display                                     | `/news/[slug].astro`                                                                                                            |
-| C5  | Article teaser card (image right on ≥md, badges, date, "Leggi tutto")                                     | `<ArticleCard>`                                                                                                                 |
-| C6  | Article summary (`text_summary_or_trimmed`, 100 chars for sites)                                          | Explicit `summary` field                                                                                                        |
-| C7  | Unpublished article (`Volo dei Briganti`)                                                                 | `draft: true`, excluded from build                                                                                              |
-| C8  | 14 flight sites, sticky-first then title sort                                                             | `sites` collection + `/siti`                                                                                                    |
-| C9  | Site teaser card (`card-big`: title, body summary, stretched link)                                        | `<SiteCard>`                                                                                                                    |
-| C10 | Site image gallery (Slick carousel, `wide` style, 16:9, dots)                                             | CSS scroll-snap gallery + dots (no Slick dependency)                                                                            |
-| C11 | Taxonomy tag pages `/tags/<slug>` (4 real + 1 stale `asdasd`)                                             | **Dropped** per D13 (§2.5) — thin archives, no inbound links (D9). News keeps a category badge                                  |
-| C12 | Tag pills — linked (`tags` SDC) vs unlinked badges (`badges` SDC)                                         | One `<Badge>` component. Per D13 the linked variant goes away with the archive pages; news categories render as unlinked badges |
-| C13 | Contact page + Netlify form (name/email/subject/message, honeypot, no captcha)                            | Netlify Forms — see D3 in §6                                                                                                    |
-| C14 | Contact thank-you page `/contatti/messaggio-inviato`                                                      | Static page                                                                                                                     |
-| C15 | 404 page (`/404`)                                                                                         | `src/pages/404.astro`                                                                                                           |
-| C16 | Membership page (`/iscrizioni`) with pricing cards + IBAN                                                 | Structured tiers — see §5                                                                                                       |
-| C17 | Contact info blocks (phone / WhatsApp buttons, inline SVG icons) — 3 near-duplicate block_content entries | One `contacts` singleton, one `<ContactButtons>` component. **Consolidates 3 duplicates into 1**                                |
-| C18 | Social media block (Facebook only)                                                                        | `social` singleton                                                                                                              |
-| C19 | Footer legal line (P.IVA / C.F.)                                                                          | `footer` singleton                                                                                                              |
-| C20 | Body HTML uses raw Bootstrap markup + inline SVG (pricing cards, CTA rows, contact buttons)               | **Not portable as-is.** Must be re-authored as structured fields + components — see §2.4                                        |
+| #   | Current feature                                                                                          | New stack                                                                                                                       |
+| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | 8 basic pages (Layout Builder, one-column, body + blocks)                                                | Purpose-built `.astro` pages, each backed by a Keystatic **singleton** for its editable text                                    |
+| C2  | Homepage: full-bleed hero (`image-set` avif/webp/jpg, 0.8 opacity), centred logo + slogan, 3 CTA buttons | `index.astro` + `<Hero>`; CTAs become structured data (see §2)                                                                  |
+| C3  | 3 news articles, sticky+date sort, 10/page pager                                                         | `news` collection + `/news` list                                                                                                |
+| C4  | Article: hero image (`wide` style, q40), body, tags, langcode display                                    | `/news/[slug].astro`                                                                                                            |
+| C5  | Article teaser card (image right on ≥md, badges, date, "Leggi tutto")                                    | `<ArticleCard>`                                                                                                                 |
+| C6  | Article summary (`text_summary_or_trimmed`, 100 chars for sites)                                         | Explicit `summary` field                                                                                                        |
+| C7  | Unpublished article (`Volo dei Briganti`)                                                                | `draft: true`, excluded from build                                                                                              |
+| C8  | 14 flight sites, sticky-first then title sort                                                            | `sites` collection + `/siti`                                                                                                    |
+| C9  | Site teaser card (`card-big`: title, body summary, stretched link)                                       | `<SiteCard>`                                                                                                                    |
+| C10 | Site image gallery (Slick carousel, `wide` style, 16:9, dots)                                            | CSS scroll-snap gallery + dots (no Slick dependency)                                                                            |
+| C11 | Taxonomy tag pages `/tags/<slug>` (4 real + 1 stale `asdasd`)                                            | **Dropped** per D13 (§2.5): thin archives, no inbound links (D9). News keeps a category badge                                   |
+| C12 | Tag pills: linked (`tags` SDC) vs unlinked badges (`badges` SDC)                                         | One `<Badge>` component. Per D13 the linked variant goes away with the archive pages; news categories render as unlinked badges |
+| C13 | Contact page + Netlify form (name/email/subject/message, honeypot, no captcha)                           | Netlify Forms: see D3 in §6                                                                                                     |
+| C14 | Contact thank-you page `/contatti/messaggio-inviato`                                                     | Static page                                                                                                                     |
+| C15 | 404 page (`/404`)                                                                                        | `src/pages/404.astro`                                                                                                           |
+| C16 | Membership page (`/iscrizioni`) with pricing cards + IBAN                                                | Structured tiers: see §5                                                                                                        |
+| C17 | Contact info blocks (phone / WhatsApp buttons, inline SVG icons): 3 near-duplicate block_content entries | One `contacts` singleton, one `<ContactButtons>` component. **Consolidates 3 duplicates into 1**                                |
+| C18 | Social media block (Facebook only)                                                                       | `social` singleton                                                                                                              |
+| C19 | Footer legal line (P.IVA / C.F.)                                                                         | `footer` singleton                                                                                                              |
+| C20 | Body HTML uses raw Bootstrap markup + inline SVG (pricing cards, CTA rows, contact buttons)              | **Not portable as-is.** Must be re-authored as structured fields + components: see §2.4                                         |
 
 ### 1.4 Maps & geo
 
-| #   | Current feature                                                                                                                                                                    | New stack                                                                                                              |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| M1  | `/siti` overview map: MapTiler SDK, custom style `3d203d09-…`, 3D terrain (exaggeration 1.2, pitch 25°, maxPitch 70), fullscreen + terrain controls, cooperative gestures on touch | MapTiler SDK client island — see §4.2                                                                                  |
-| M2  | Auto fit-bounds over all features with padding                                                                                                                                     | Same                                                                                                                   |
-| M3  | Layer stack: polygon fills → lines → point shadow → other points → landing icons → takeoff icons → labels                                                                          | Ported 1:1 (it's already declarative style JSON)                                                                       |
-| M4  | Custom marker PNGs (`takeoff.png`, `landing.png`)                                                                                                                                  | `public/map/*.png`                                                                                                     |
-| M5  | Click popups with per-type emoji, site link, coordinates, Google Maps + Meteo-Parapente links                                                                                      | Built client-side from feature properties                                                                              |
-| M6  | Basemap style switcher (`#mapstyles` select)                                                                                                                                       | Same control                                                                                                           |
-| M7  | Per-site map (Leaflet via Drupal `leaflet` module, `~Paragliding` basemap from `leaflet_more_maps`, 600px, zoom 14, gesture handling, fullscreen, scale control)                   | **Consolidate onto MapTiler SDK** — one map library instead of two                                                     |
-| M8  | `/api/sites/all/geo.json` — all features as GeoJSON with `name`, `description` (HTML popup), `field_type`, `stroke`, `fill`                                                        | Astro static endpoint from the `mapFeatures` collection                                                                |
-| M9  | `/api/sites/<nid>/geo.json` — per-site GeoJSON (contextual by node)                                                                                                                | ❌ **Dropped** (D5 — confirmed dead, never wired up). Per-site maps inline their GeoJSON instead of fetching it (§4.2) |
-| M10 | Type → colour mapping (takeoff `#1F52A6`, landing `limegreen`, obstacle `magenta`, poi `gold`; obstacle fill transparent)                                                          | **Single shared `featureTypes` module** — currently duplicated across 2 view fields, 1 JS file and 1 PHP class         |
-| M11 | Site features table per site (emoji + name + DMS coords + Google Maps link + Meteo-Parapente link for takeoffs)                                                                    | `<FeatureTable>` component                                                                                             |
-| M12 | DMS coordinate formatting                                                                                                                                                          | Shared `formatDms()` util (also used by the OpenAir export)                                                            |
-| M13 | MapTiler API key `43jtWKU1n6PJru2J0ElA` hardcoded in JS                                                                                                                            | Keep client-side (normal for MapTiler) but **restrict it by domain** and move to `PUBLIC_MAPTILER_KEY`                 |
+| #   | Current feature                                                                                                                                                                    | New stack                                                                                                             |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| M1  | `/siti` overview map: MapTiler SDK, custom style `3d203d09-…`, 3D terrain (exaggeration 1.2, pitch 25°, maxPitch 70), fullscreen + terrain controls, cooperative gestures on touch | MapTiler SDK client island: see §4.2                                                                                  |
+| M2  | Auto fit-bounds over all features with padding                                                                                                                                     | Same                                                                                                                  |
+| M3  | Layer stack: polygon fills → lines → point shadow → other points → landing icons → takeoff icons → labels                                                                          | Ported 1:1 (it's already declarative style JSON)                                                                      |
+| M4  | Custom marker PNGs (`takeoff.png`, `landing.png`)                                                                                                                                  | `public/map/*.png`                                                                                                    |
+| M5  | Click popups with per-type emoji, site link, coordinates, Google Maps + Meteo-Parapente links                                                                                      | Built client-side from feature properties                                                                             |
+| M6  | Basemap style switcher (`#mapstyles` select)                                                                                                                                       | Same control                                                                                                          |
+| M7  | Per-site map (Leaflet via Drupal `leaflet` module, `~Paragliding` basemap from `leaflet_more_maps`, 600px, zoom 14, gesture handling, fullscreen, scale control)                   | **Consolidate onto MapTiler SDK**: one map library instead of two                                                     |
+| M8  | `/api/sites/all/geo.json`: all features as GeoJSON with `name`, `description` (HTML popup), `field_type`, `stroke`, `fill`                                                         | Astro static endpoint from the `mapFeatures` collection                                                               |
+| M9  | `/api/sites/<nid>/geo.json`: per-site GeoJSON (contextual by node)                                                                                                                 | ❌ **Dropped** (D5: confirmed dead, never wired up). Per-site maps inline their GeoJSON instead of fetching it (§4.2) |
+| M10 | Type → colour mapping (takeoff `#1F52A6`, landing `limegreen`, obstacle `magenta`, poi `gold`; obstacle fill transparent)                                                          | **Single shared `featureTypes` module**: currently duplicated across 2 view fields, 1 JS file and 1 PHP class         |
+| M11 | Site features table per site (emoji + name + DMS coords + Google Maps link + Meteo-Parapente link for takeoffs)                                                                    | `<FeatureTable>` component                                                                                            |
+| M12 | DMS coordinate formatting                                                                                                                                                          | Shared `formatDms()` util (also used by the OpenAir export)                                                           |
+| M13 | MapTiler API key `43jtWKU1n6PJru2J0ElA` hardcoded in JS                                                                                                                            | Keep client-side (normal for MapTiler) but **restrict it by domain** and move to `PUBLIC_MAPTILER_KEY`                |
 
 ### 1.5 Airspace / flight-computer data
 
-| #   | Current feature                                                                                                                                                                     | New stack                                                           |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| A1  | `/api/navdata/ventorelativo-airspace.txt` — OpenAir from **Polygon** geometries; landings class `W`, others `Q`; `AL SFC` / `AH 100ft AGL`; DMS coords; header with generation date | Astro static endpoint — see §4.3                                    |
-| A2  | `/api/navdata/ventorelativo-waypoints.cup` — SeeYou CUP from **Point** geometries; styles: landing 21, takeoff 20, obstacle 8, poi 19; `DDMM.mmm` coords; country `IT`              | Astro static endpoint                                               |
-| A3  | Airspace excludes `obstacle`; waypoints exclude `poi` (configured in the `flight_data` view, not in code)                                                                           | Filter constants in the shared `featureTypes` module                |
-| A4  | Download-links block (2 buttons with download icon + editable intro text)                                                                                                           | `<NavdataLinks>` component + Keystatic singleton for the intro copy |
-| A5  | WKT `GEOMETRYCOLLECTION` parsing via geoPHP                                                                                                                                         | **Eliminated** — store GeoJSON natively (see §2.2)                  |
+| #   | Current feature                                                                                                                                                                    | New stack                                                           |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| A1  | `/api/navdata/ventorelativo-airspace.txt`: OpenAir from **Polygon** geometries; landings class `W`, others `Q`; `AL SFC` / `AH 100ft AGL`; DMS coords; header with generation date | Astro static endpoint: see §4.3                                     |
+| A2  | `/api/navdata/ventorelativo-waypoints.cup`, SeeYou CUP from **Point** geometries; styles: landing 21, takeoff 20, obstacle 8, poi 19; `DDMM.mmm` coords; country `IT`              | Astro static endpoint                                               |
+| A3  | Airspace excludes `obstacle`; waypoints exclude `poi` (configured in the `flight_data` view, not in code)                                                                          | Filter constants in the shared `featureTypes` module                |
+| A4  | Download-links block (2 buttons with download icon + editable intro text)                                                                                                          | `<NavdataLinks>` component + Keystatic singleton for the intro copy |
+| A5  | WKT `GEOMETRYCOLLECTION` parsing via geoPHP                                                                                                                                        | **Eliminated**: store GeoJSON natively (see §2.2)                   |
 
 ### 1.6 Flights (XContest)
 
-| #   | Current feature                                                                                                                         | New stack                                                                                                                                            |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| X1  | `/voli` intro text + link to the club XContest search                                                                                   | Static page + Keystatic singleton                                                                                                                    |
-| X2  | 5 XContest search buttons: Recenti / Migliori giornata / mese / anno / sempre, all filtered to `point=7.116547 44.903584, radius=20000` | ✅ **Keeping — first-class feature.** `<XContestLinks>`; URLs built from a shared club-centre constant, date-scoped ones computed at build. See §4.4 |
-| X3  | Scraped flight tables (rank, date, pilot, launch, route icon, distance, points, glider + EN-rating bars, detail link)                   | ❌ **Dropped** (D6). Already dead code — commented out, login blocked by XContest's Cloudflare bot check                                             |
-| X4  | Per-takeoff "Ricerca voli da &lt;name&gt;" XContest links on site pages                                                                 | `<XContestSiteLinks>` — same URL builder, per takeoff coordinate                                                                                     |
-| X5  | Tab-deeplinking via URL hash (`js/global.js`)                                                                                           | Only used by the dead tables. **Drop**                                                                                                               |
+| #   | Current feature                                                                                                                         | New stack                                                                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X1  | `/voli` intro text + link to the club XContest search                                                                                   | Static page + Keystatic singleton                                                                                                                   |
+| X2  | 5 XContest search buttons: Recenti / Migliori giornata / mese / anno / sempre, all filtered to `point=7.116547 44.903584, radius=20000` | ✅ **Keeping: first-class feature.** `<XContestLinks>`; URLs built from a shared club-centre constant, date-scoped ones computed at build. See §4.4 |
+| X3  | Scraped flight tables (rank, date, pilot, launch, route icon, distance, points, glider + EN-rating bars, detail link)                   | ❌ **Dropped** (D6). Already dead code: commented out, login blocked by XContest's Cloudflare bot check                                             |
+| X4  | Per-takeoff "Ricerca voli da &lt;name&gt;" XContest links on site pages                                                                 | `<XContestSiteLinks>`: same URL builder, per takeoff coordinate                                                                                     |
+| X5  | Tab-deeplinking via URL hash (`js/global.js`)                                                                                           | Only used by the dead tables. **Drop**                                                                                                              |
 
 ### 1.7 Editorial / admin
 
-| #   | Current feature                                                                | New stack                                                                                                                                                                                        |
-| --- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| E1  | Drupal admin (Gin) content editing                                             | Keystatic Admin UI at `/keystatic`                                                                                                                                                               |
-| E2  | Editor role (`content_editor`)                                                 | GitHub repo write access (Keystatic GitHub mode requirement)                                                                                                                                     |
-| E3  | GitHub OAuth-free login (Drupal accounts)                                      | GitHub OAuth via a Keystatic GitHub App — **editors now need GitHub accounts** (see D2)                                                                                                          |
-| E4  | CKEditor 5 rich text (`basic_html` / `full_html`), Linkit, media library       | Keystatic `mdx` field + content components                                                                                                                                                       |
-| E5  | Image upload to `public://YYYY-MM/`                                            | Keystatic `image` field → `src/assets/…` (Astro-optimised)                                                                                                                                       |
-| E6  | Alt text required on site images                                               | Keystatic `object({src, alt})` with validation                                                                                                                                                   |
-| E7  | Pathauto slug patterns (`/siti/[title]`, `/news/[title]`, `/tags/[term:name]`) | Keystatic `slug` field with the **existing slugs preserved verbatim** — several are hand-set, not derived from the title (e.g. `volo-dei-briganti-bourcet-2025`), so do not regenerate them (D9) |
-| E8  | Revisions + revision log                                                       | Git history (Keystatic commits per save)                                                                                                                                                         |
-| E9  | Preview mode                                                                   | Netlify/Cloudflare deploy previews on Keystatic's branch commits                                                                                                                                 |
-| E10 | Drupal local dev (`drush rs`, SQLite, `composer install`)                      | `npm run dev`; Keystatic `local` storage for local editing                                                                                                                                       |
+| #   | Current feature                                                                | New stack                                                                                                                                                                                       |
+| --- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E1  | Drupal admin (Gin) content editing                                             | Keystatic Admin UI at `/keystatic`                                                                                                                                                              |
+| E2  | Editor role (`content_editor`)                                                 | GitHub repo write access (Keystatic GitHub mode requirement)                                                                                                                                    |
+| E3  | GitHub OAuth-free login (Drupal accounts)                                      | GitHub OAuth via a Keystatic GitHub App: **editors now need GitHub accounts** (see D2)                                                                                                          |
+| E4  | CKEditor 5 rich text (`basic_html` / `full_html`), Linkit, media library       | Keystatic `mdx` field + content components                                                                                                                                                      |
+| E5  | Image upload to `public://YYYY-MM/`                                            | Keystatic `image` field → `src/assets/…` (Astro-optimised)                                                                                                                                      |
+| E6  | Alt text required on site images                                               | Keystatic `object({src, alt})` with validation                                                                                                                                                  |
+| E7  | Pathauto slug patterns (`/siti/[title]`, `/news/[title]`, `/tags/[term:name]`) | Keystatic `slug` field with the **existing slugs preserved verbatim**: several are hand-set, not derived from the title (e.g. `volo-dei-briganti-bourcet-2025`), so do not regenerate them (D9) |
+| E8  | Revisions + revision log                                                       | Git history (Keystatic commits per save)                                                                                                                                                        |
+| E9  | Preview mode                                                                   | Netlify/Cloudflare deploy previews on Keystatic's branch commits                                                                                                                                |
+| E10 | Drupal local dev (`drush rs`, SQLite, `composer install`)                      | `npm run dev`; Keystatic `local` storage for local editing                                                                                                                                      |
 
 ---
 
 ## 2. Content model mapping
 
 Astro 5 Content Layer. Collections in `src/content.config.ts`, editor schema in
-`keystatic.config.ts`. The two schemas must be kept in sync by hand — Keystatic writes the
+`keystatic.config.ts`. The two schemas must be kept in sync by hand: Keystatic writes the
 files, Zod validates them at build.
 
 ### 2.1 Collections
@@ -214,37 +214,37 @@ src/content/
   news/<slug>.mdx           # 3 entries  (was node:article)
   sites/<slug>.mdx          # 14 entries (was node:sito)
   map-features/<slug>.yaml  # 34 entries (was storage:map_feature)
-  # tags/  — proposed for removal, see §2.5 / D13
+  # tags/ : proposed for removal, see §2.5 / D13
 src/content/pages/          # singletons, one YAML/MDX per fixed page
 ```
 
 **`news`** (Drupal `node:article`)
 
-| Astro/Keystatic field | Type                                        | From                                                                  |
-| --------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
-| `title`               | text                                        | `title`                                                               |
-| `slug`                | slug                                        | `path.alias` — **preserve existing**                                  |
-| `date`                | date                                        | `created`                                                             |
-| `summary`             | text (multiline)                            | `body.summary` (currently empty on all 3 → author it)                 |
-| `image`               | object `{src: image, alt: text}`            | `field_image` (`alt` is required today)                               |
-| `category`            | select `Eventi \| Competizioni \| Hike&Fly` | `field_tags` — **pending D13** (§2.5); was `array(relationship→tags)` |
-| `draft`               | checkbox                                    | `!status`                                                             |
-| `content`             | mdx (contentField)                          | `body.value`                                                          |
+| Astro/Keystatic field | Type                                        | From                                                                 |
+| --------------------- | ------------------------------------------- | -------------------------------------------------------------------- |
+| `title`               | text                                        | `title`                                                              |
+| `slug`                | slug                                        | `path.alias`: **preserve existing**                                  |
+| `date`                | date                                        | `created`                                                            |
+| `summary`             | text (multiline)                            | `body.summary` (currently empty on all 3 → author it)                |
+| `image`               | object `{src: image, alt: text}`            | `field_image` (`alt` is required today)                              |
+| `category`            | select `Eventi \| Competizioni \| Hike&Fly` | `field_tags`: **pending D13** (§2.5); was `array(relationship→tags)` |
+| `draft`               | checkbox                                    | `!status`                                                            |
+| `content`             | mdx (contentField)                          | `body.value`                                                         |
 
 **`sites`** (Drupal `node:sito`)
 
-| Field         | Type                                    | From                                                                                                                                                                                                      |
-| ------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`       | text                                    | `title`                                                                                                                                                                                                   |
-| `slug`        | slug                                    | `path.alias` — **preserve existing**                                                                                                                                                                      |
-| `summary`     | text, **required**                      | `body.summary` (e.g. `"1969m, S-SE, Roure (TO)"`). Per D7 this is the _only_ structured short description — it drives the card, the map popup and the meta description, so it must be populated on all 14 |
-| `featured`    | checkbox                                | `sticky` (only Montoso) — drives sort order                                                                                                                                                               |
-| `images`      | array(object `{src: image, alt: text}`) | `field_images`                                                                                                                                                                                            |
-| ~~`tags`~~    | —                                       | `field_tags` — **dropped pending D13** (§2.5); only Montoso is tagged, and with a news category                                                                                                           |
-| `mapFeatures` | array(relationship→`map-features`)      | `field_map_elements` — **order preserved**                                                                                                                                                                |
-| `content`     | mdx (contentField)                      | `body.value`                                                                                                                                                                                              |
+| Field         | Type                                    | From                                                                                                                                                                                                     |
+| ------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | text                                    | `title`                                                                                                                                                                                                  |
+| `slug`        | slug                                    | `path.alias`: **preserve existing**                                                                                                                                                                      |
+| `summary`     | text, **required**                      | `body.summary` (e.g. `"1969m, S-SE, Roure (TO)"`). Per D7 this is the _only_ structured short description: it drives the card, the map popup and the meta description, so it must be populated on all 14 |
+| `featured`    | checkbox                                | `sticky` (only Montoso): drives sort order                                                                                                                                                               |
+| `images`      | array(object `{src: image, alt: text}`) | `field_images`                                                                                                                                                                                           |
+| ~~`tags`~~    | n/a                                     | `field_tags`: **dropped pending D13** (§2.5); only Montoso is tagged, and with a news category                                                                                                           |
+| `mapFeatures` | array(relationship→`map-features`)      | `field_map_elements`: **order preserved**                                                                                                                                                                |
+| `content`     | mdx (contentField)                      | `body.value`                                                                                                                                                                                             |
 
-**`mapFeatures`** (Drupal `storage:map_feature`) — the important one, see §2.2.
+**`mapFeatures`** (Drupal `storage:map_feature`), the important one, see §2.2.
 
 | Field   | Type                                                           | From                                             |
 | ------- | -------------------------------------------------------------- | ------------------------------------------------ |
@@ -254,7 +254,7 @@ src/content/pages/          # singletons, one YAML/MDX per fixed page
 | `point` | object `{lat: number, lon: number}`                            | Point component of `field_location`              |
 | `shape` | conditional/text (GeoJSON `Polygon` or `LineString`), optional | Polygon/LineString component of `field_location` |
 
-**`tags`** (Drupal `taxonomy_term:tags`) — **proposed for removal, see §2.5 / D13.**
+**`tags`** (Drupal `taxonomy_term:tags`), **proposed for removal, see §2.5 / D13.**
 If D13 is declined and the archive pages stay, this is the shape:
 
 | Field  | Type | From                          |
@@ -272,7 +272,7 @@ the Leaflet formatter's centroid fallback.
 
 Keystatic has **no geo field type**, and there is no documented public custom-field API
 (only document component blocks and content components). So the geometry has to be
-modelled with the primitive fields Keystatic does have. Proposal — split the collection
+modelled with the primitive fields Keystatic does have. Proposal: split the collection
 geometry into two explicit fields:
 
 ```ts
@@ -297,13 +297,13 @@ opaque field but are consumed by completely different code paths (marker/waypoin
 fill/airspace). Splitting them removes the parser, removes the geoPHP dependency, and
 makes "what is this polygon for" legible in the editor.
 
-**Editor ergonomics — the accepted trade-off (D4 resolved in favour of this):**
+**Editor ergonomics, the accepted trade-off (D4 resolved in favour of this):**
 
 - The common editorial action (add a takeoff or a POI) is _two number fields_. Easy, and
   arguably better than today's map-picker-in-a-textarea.
 - Adding or reshaping a **landing polygon** (13 today) or the **power line** (1) means
   pasting coordinates from geojson.io or QGIS. That is worse than today's Leaflet drawing
-  widget, and it is a genuine regression — accepted because these change rarely and the
+  widget, and it is a genuine regression: accepted because these change rarely and the
   metadata stays in Keystatic.
 
 Two things that soften the polygon trade-off, worth building in Phase 4:
@@ -314,7 +314,7 @@ Two things that soften the polygon trade-off, worth building in Phase 4:
   and it makes the occasional polygon edit painless without giving up Keystatic.
 - **Validation at build time.** Zod can check ring closure (first point == last point),
   coordinate bounds, and that landings actually have a polygon. A malformed paste then
-  fails the build rather than silently producing a broken airspace file — which matters,
+  fails the build rather than silently producing a broken airspace file, which matters,
   because this data ends up in flight computers.
 
 ### 2.3 Other things that need explicit handling
@@ -323,12 +323,12 @@ Two things that soften the polygon trade-off, worth building in Phase 4:
 | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Views "Global: custom text" fields with Twig (popup HTML, colour-by-type, Google Maps/Meteo links)                                      | Presentation logic living in config, duplicated 4×                             | One `src/lib/featureTypes.ts`: per type → label, emoji, marker icon, stroke, fill, CUP style, OpenAir class, include-in-airspace, include-in-waypoints |
 | `field_map_elements` reverse relationship (`entity_reverse` + `nid` argument) drives the per-site map, feature table and XContest links | No reverse refs in Keystatic                                                   | Forward `array(relationship)` on the site; build a reverse index once at build time in `src/lib/sites.ts`                                              |
-| Keystatic `relationship` stores a **slug string** and does not update when the target is renamed                                        | Silent broken refs                                                             | Zod `reference()` in the Astro schema fails the build on a dangling ref — treat that as the safety net. Avoid renaming map-feature slugs               |
-| `body.summary` feeds both the teaser and the meta description                                                                           | Implicit, and per D7 it's now the only structured short description on `sites` | Explicit `summary` field, **required** on `sites` and `news`. All 3 articles currently have an empty summary — author them before migrating            |
+| Keystatic `relationship` stores a **slug string** and does not update when the target is renamed                                        | Silent broken refs                                                             | Zod `reference()` in the Astro schema fails the build on a dangling ref: treat that as the safety net. Avoid renaming map-feature slugs                |
+| `body.summary` feeds both the teaser and the meta description                                                                           | Implicit, and per D7 it's now the only structured short description on `sites` | Explicit `summary` field, **required** on `sites` and `news`. All 3 articles currently have an empty summary: author them before migrating             |
 | `sticky` on Montoso                                                                                                                     | Non-obvious                                                                    | `featured: boolean`, documented in the field description                                                                                               |
 | `promote`                                                                                                                               | Unused (false everywhere)                                                      | Drop                                                                                                                                                   |
 | `langcode: it` on everything, single configured language                                                                                | No i18n routing in use                                                         | Single locale; set `<html lang="it">`. GTranslate stays client-side                                                                                    |
-| Layout Builder per-node sections                                                                                                        | 8 pages × ad-hoc block stacks                                                  | Replaced by fixed page components (§3) — do **not** rebuild Layout Builder                                                                             |
+| Layout Builder per-node sections                                                                                                        | 8 pages × ad-hoc block stacks                                                  | Replaced by fixed page components (§3): do **not** rebuild Layout Builder                                                                              |
 | 3 orphaned files (`unep_login_bg.jpg`, `Screenshot 2023-11-23…png`, plus duplicates)                                                    | Dead weight                                                                    | Don't migrate                                                                                                                                          |
 | Stale tag `asdasd` (in the sitemap and build, not in `content/`)                                                                        | Junk URL indexed                                                               | Don't migrate; add a 410/redirect if it has inbound links                                                                                              |
 
@@ -341,18 +341,18 @@ longer ships Bootstrap.
 
 These must be lifted out of prose into structured fields:
 
-| Current raw HTML                                                                | Becomes                                                                                                                                               |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Homepage 3 CTA buttons                                                          | `ctas: array(object({label, href, style: select(primary\|outline)}))`                                                                                 |
-| Iscrizioni pricing cards (€10 Sostenitore, €30 Socio, benefit lists, pay links) | `tiers: array(object({name, price, benefits: array(text), payUrl, highlight: checkbox}))` — this is also exactly the shape the Stripe work needs (§5) |
-| Phone / WhatsApp button rows (×3 near-identical blocks)                         | `contacts: array(object({kind: select(phone\|whatsapp\|email), label, href}))`                                                                        |
-| Social media block                                                              | `social: array(object({network, url}))`                                                                                                               |
-| Bank transfer details (IBAN, association name)                                  | `bankTransfer: object({holder, iban})`                                                                                                                |
+| Current raw HTML                                                                | Becomes                                                                                                                                              |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage 3 CTA buttons                                                          | `ctas: array(object({label, href, style: select(primary\|outline)}))`                                                                                |
+| Iscrizioni pricing cards (€10 Sostenitore, €30 Socio, benefit lists, pay links) | `tiers: array(object({name, price, benefits: array(text), payUrl, highlight: checkbox}))`, this is also exactly the shape the Stripe work needs (§5) |
+| Phone / WhatsApp button rows (×3 near-identical blocks)                         | `contacts: array(object({kind: select(phone\|whatsapp\|email), label, href}))`                                                                       |
+| Social media block                                                              | `social: array(object({network, url}))`                                                                                                              |
+| Bank transfer details (IBAN, association name)                                  | `bankTransfer: object({holder, iban})`                                                                                                               |
 
 Everything else (news bodies, site descriptions) is ordinary prose and converts to MDX
 cleanly.
 
-### 2.5 Tags (D13) — the vocabulary is doing two jobs
+### 2.5 Tags (D13): the vocabulary is doing two jobs
 
 Actual usage, from `content/`:
 
@@ -362,12 +362,12 @@ Actual usage, from `content/`:
 | Competizioni           | `competizioni`           | 2 articles **+ Montoso (site)** |
 | Hike&Fly               | `hikefly`                | 1 article                       |
 | Adatto ai principianti | `adatto-ai-principianti` | **Montoso (site) only**         |
-| ~~asdasd~~             | `asdasd`                 | nothing — stale, in the sitemap |
+| ~~asdasd~~             | `asdasd`                 | nothing: stale, in the sitemap  |
 
 That's why it feels wrong: three of the terms are **news categories** and one is a
 **flying-site attribute**, sharing one vocabulary because Drupal's standard profile ships a
 single `tags` field and it got attached to both content types. Montoso ends up tagged
-"Competizioni" _and_ "Adatto ai principianti" — two unrelated kinds of statement.
+"Competizioni" _and_ "Adatto ai principianti": two unrelated kinds of statement.
 
 Only 1 of 14 sites is tagged at all, and 4 terms across 5 pieces of content does not
 justify five archive pages.
@@ -390,11 +390,11 @@ What stays dropped is the shared vocabulary, the relationship and the archive ro
 
 1. **Drop the shared `tags` collection and the `/tags/*` archive routes entirely.** Five
    thin URLs, no inbound links (D9), nothing lost.
-2. **Keep categories on news only**, as a plain `select` on the `news` collection —
+2. **Keep categories on news only**, as a plain `select` on the `news` collection:
    `Eventi | Competizioni | Hike&Fly`. No relationship, no separate collection, no archive
    page. Rendered as a badge on the card and the article header, which is what they're
    actually for: scanning a news list.
-3. **Drop "Adatto ai principianti" for now.** It's genuinely useful information — but it's
+3. **Drop "Adatto ai principianti" for now.** It's genuinely useful information, but it's
    a _site attribute_, and D7 kept site specs as prose, so it belongs in the site body
    until there's a reason to structure it. Noted in §4.1 as the natural first field if you
    ever do add site attributes (beginner-friendly, hike&fly access, school, winch…).
@@ -403,7 +403,7 @@ Net effect: one collection, one relationship, one route and two components remov
 model, with nothing meaningful lost. If categorisation matters later, it comes back
 deliberately and in the right shape.
 
-**If you'd rather keep the tag archive pages**, they're cheap to restore — say so and the
+**If you'd rather keep the tag archive pages**, they're cheap to restore: say so and the
 `tags` collection stays as originally specced in §2.1.
 
 ---
@@ -416,47 +416,47 @@ public URLs are preserved.**
 | Current URL                                | New file                                               | Data source                                                                        |
 | ------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | `/`                                        | `src/pages/index.astro`                                | `pages/home` singleton                                                             |
-| `/home`                                    | —                                                      | **301 → `/`** (currently duplicate content)                                        |
+| `/home`                                    | n/a                                                    | **301 → `/`** (currently duplicate content)                                        |
 | `/siti`                                    | `src/pages/siti/index.astro`                           | `pages/sites-index` singleton + `sites` + `mapFeatures`                            |
 | `/siti/<slug>` ×14                         | `src/pages/siti/[slug].astro`                          | `sites`                                                                            |
 | `/news`                                    | `src/pages/news/index.astro`                           | `pages/news-index` singleton + `news`                                              |
 | `/news/<slug>` ×2 published                | `src/pages/news/[slug].astro`                          | `news`                                                                             |
-| `/tags/<slug>` ×4                          | —                                                      | **Dropped** (D13, §2.5). News categories become a `select` badge; no archive pages |
+| `/tags/<slug>` ×4                          | n/a                                                    | **Dropped** (D13, §2.5). News categories become a `select` badge; no archive pages |
 | `/voli`                                    | `src/pages/voli.astro`                                 | `pages/flights` singleton                                                          |
 | `/iscrizioni`                              | `src/pages/iscrizioni.astro`                           | `pages/membership` singleton                                                       |
 | `/contatti`                                | `src/pages/contatti.astro`                             | `pages/contact` singleton                                                          |
 | `/contatti/messaggio-inviato`              | `src/pages/contatti/messaggio-inviato.astro`           | static                                                                             |
 | `/404`                                     | `src/pages/404.astro`                                  | static                                                                             |
 | `/api/sites/all/geo.json`                  | `src/pages/api/sites/all/geo.json.ts`                  | `mapFeatures`. Kept as a public file; the maps themselves inline the data (§4.2)   |
-| `/api/sites/<nid>/geo.json`                | —                                                      | **Dropped** (D5: confirmed dead, never wired up)                                   |
+| `/api/sites/<nid>/geo.json`                | n/a                                                    | **Dropped** (D5: confirmed dead, never wired up)                                   |
 | `/api/navdata/ventorelativo-airspace.txt`  | `src/pages/api/navdata/ventorelativo-airspace.txt.ts`  | `mapFeatures`                                                                      |
 | `/api/navdata/ventorelativo-waypoints.cup` | `src/pages/api/navdata/ventorelativo-waypoints.cup.ts` | `mapFeatures`                                                                      |
-| `/sitemap.xml`                             | `@astrojs/sitemap`                                     | —                                                                                  |
+| `/sitemap.xml`                             | `@astrojs/sitemap`                                     | n/a                                                                                |
 | _(new)_ `/rss.xml`                         | `src/pages/rss.xml.ts`                                 | `news`                                                                             |
-| `/contact/contatti`                        | —                                                      | **301 → `/contatti`** (existing redirect, preserve)                                |
-| `/styleguide`                              | `/styleguide/`                                         | Drupal `twbstools` dev page. **Rebuilt and kept** — noindex, not in the sitemap    |
+| `/contact/contatti`                        | n/a                                                    | **301 → `/contatti`** (existing redirect, preserve)                                |
+| `/styleguide`                              | `/styleguide/`                                         | Drupal `twbstools` dev page. **Rebuilt and kept**: noindex, not in the sitemap     |
 | **New:** `/keystatic`, `/api/keystatic/*`  | Keystatic integration                                  | `prerender = false`                                                                |
 
 ### Page composition (mirrors today's Layout Builder stacks)
 
-**`/` (homepage)** — hero background (`image-set` avif/webp/jpg, preloaded), centred logo +
+**`/` (homepage)**: hero background (`image-set` avif/webp/jpg, preloaded), centred logo +
 site name + slogan, CTA row. No page title, no breadcrumbs. Footer shows the image credit.
 
-**`/siti`** — intro prose → **overview map** (all 34 features) → responsive grid of 14 site
+**`/siti`**: intro prose → **overview map** (all 34 features) → responsive grid of 14 site
 cards (featured first, then title) → navdata download links.
 
-**`/siti/[slug]`** — title → tags → **site map** (this site's features only) → body → image
+**`/siti/[slug]`**: title → tags → **site map** (this site's features only) → body → image
 gallery → feature table (Google Maps / Meteo-Parapente links) → XContest per-takeoff links.
 
-**`/news`** — intro prose → article cards (date desc, 10/page).
+**`/news`**: intro prose → article cards (date desc, 10/page).
 
-**`/news/[slug]`** — title → hero image → body → tags.
+**`/news/[slug]`**: title → hero image → body → tags.
 
-**`/voli`** — intro prose → 5 XContest search buttons.
+**`/voli`**: intro prose → 5 XContest search buttons.
 
-**`/iscrizioni`** — intro → pricing tier cards with pay buttons → bank-transfer fallback.
+**`/iscrizioni`**: intro → pricing tier cards with pay buttons → bank-transfer fallback.
 
-**`/contatti`** — intro → contact buttons → Netlify contact form.
+**`/contatti`**: intro → contact buttons → Netlify contact form.
 
 ### Layout structure
 
@@ -493,25 +493,25 @@ handle deliberately:
 1. **`summary` carries more weight.** It's now the only structured short description, and
    it feeds the site card, the map popup and the meta description
    (`Sito di volo: [node:summary]`). It should be **required** in the schema. Existing
-   summaries are already in the right shape — Bourcet's is `"1969m, S-SE, Roure (TO)"` —
+   summaries are already in the right shape: Bourcet's is `"1969m, S-SE, Roure (TO)"`:
    so this is mostly a matter of confirming all 14 are populated.
 2. **The prose formatting should be consistent.** The bodies currently use
-   `<strong>Label:</strong><br>value` — an MDX convention worth settling on during the
+   `<strong>Label:</strong><br>value`, an MDX convention worth settling on during the
    conversion (bold label + line break, or a definition list) so the 14 pages don't drift.
    A small `<Spec>` MDX component would give the same visual result while keeping the
    markup uniform, without turning it into schema.
 
 If you later want to filter or sort sites by altitude or aspect, this is the decision to
-revisit — it's an additive change, not a rewrite.
+revisit: it's an additive change, not a rewrite.
 
 ### 4.2 Maps
 
 **Today, two libraries:**
 
-1. **MapTiler SDK** (`mapper` module) on `/siti` — custom style, 3D terrain, fit-bounds,
+1. **MapTiler SDK** (`mapper` module) on `/siti`: custom style, 3D terrain, fit-bounds,
    6 layers, click popups, style switcher. Fetches `/api/sites/all/geo.json`.
 2. **Leaflet** (contrib `leaflet` + `leaflet_more_maps`, `~Paragliding` basemap) on each
-   `/siti/<slug>` — 600px, zoom 14, gesture handling, fullscreen, scale.
+   `/siti/<slug>`: 600px, zoom 14, gesture handling, fullscreen, scale.
 
 **New:** consolidate on **MapTiler SDK** for both. Reasons: the overview map's terrain and
 custom style are the more distinctive of the two and would be the expensive thing to
@@ -526,48 +526,48 @@ The layer filters currently reference `field_type`; the property name should bec
 in the new GeoJSON, driven by the shared `featureTypes` module.
 
 **Data delivery changes (D5).** Today the overview map does `fetch('/api/sites/all/geo.json')`,
-_then_ computes bounds, _then_ constructs the map — a serial round-trip before anything
+_then_ computes bounds, _then_ constructs the map: a serial round-trip before anything
 paints. Since Astro builds the GeoJSON anyway, **inline it into the page** as a
 `<script type="application/json">` payload and skip the fetch entirely. Bounds can even be
 precomputed at build time.
 
-- `/api/sites/all/geo.json` — **keep emitting it** as a static file. It costs nothing and
+- `/api/sites/all/geo.json`: **keep emitting it** as a static file. It costs nothing and
   it's an existing public URL.
-- `/api/sites/<nid>/geo.json` — **drop** (D5: confirmed dead). Per-site maps get their
+- `/api/sites/<nid>/geo.json`, **drop** (D5: confirmed dead). Per-site maps get their
   features inlined the same way, which is what that endpoint was originally meant to enable.
 
-#### 4.2.1 MapTiler vs MapLibre (D8) — stay, but stay portable
+#### 4.2.1 MapTiler vs MapLibre (D8): stay, but stay portable
 
-Worth knowing: **the MapTiler SDK is built on MapLibre GL JS** — MapTiler's own docs say
+Worth knowing: **the MapTiler SDK is built on MapLibre GL JS**, MapTiler's own docs say
 "the core of MapTiler SDK JS is MapLibre GL JS". So the ~250 lines in `maptiler-map.js`
 (sources, layers, paint expressions, filters, popups, event handlers) are _already_
 MapLibre API and would port to plain MapLibre unchanged.
 
-Which means the switching cost isn't code — it's **data**: the custom style
+Which means the switching cost isn't code, it's **data**: the custom style
 `3d203d09-e79b-4c16-a28d-b9564619b3a7` and the terrain DEM.
 
-**Recommendation: stay on MapTiler.** The terrain isn't decoration on a paragliding site —
-3D relief is how you actually read a flying site — and it plus the custom style are exactly
+**Recommendation: stay on MapTiler.** The terrain isn't decoration on a paragliding site,
+3D relief is how you actually read a flying site, and it plus the custom style are exactly
 the expensive things to replace. Meanwhile the thing MapLibre buys you (no key, no quota)
 solves a problem you don't have.
 
 **But keep the exit cheap.** Write the map component against the MapLibre API surface and
-isolate the MapTiler-only parts — `maptilersdk.config.apiKey`, `MapStyle.*` presets for the
+isolate the MapTiler-only parts: `maptilersdk.config.apiKey`, `MapStyle.*` presets for the
 style switcher, `terrain: true` / `terrainControl` / `terrainExaggeration`, the
-`loadWithTerrain` event, the geocoding control — behind a thin adapter module. Then a future
+`loadWithTerrain` event, the geocoding control: behind a thin adapter module. Then a future
 switch is "swap the adapter, source a style and a DEM", not "rewrite the map".
 
 Two things that could force the question later, worth being aware of rather than acting on:
 
 - MapTiler's free tier is documented as **non-commercial use only**, and requires on-screen
-  MapTiler attribution. The club is an ASD with a P.IVA — probably fine, but worth reading
+  MapTiler attribution. The club is an ASD with a P.IVA: probably fine, but worth reading
   the actual [MapTiler Cloud terms](https://www.maptiler.com/terms/cloud/) once rather than
   assuming. Third-party summaries put the free tier around 100k tile requests / 5k sessions
   per month; verify against MapTiler's own [pricing page](https://www.maptiler.com/cloud/pricing/).
 - The SDK is a meaningfully larger bundle than bare MapLibre, since it carries the extras.
 
 Neither is urgent. Restrict the API key by domain and move it to `PUBLIC_MAPTILER_KEY`
-regardless — it's currently hardcoded and unrestricted in `maptiler-base.js`.
+regardless: it's currently hardcoded and unrestricted in `maptiler-base.js`.
 
 ### 4.3 Airspace generation
 
@@ -581,7 +581,7 @@ view displays and writes two plain-text files:
   obstacle 8 / poi 19; coordinates as `DDMM.mmmN` / `DDDMM.mmmE`; country `IT`; POIs
   excluded by the view filter.
 
-**New.** Two Astro static endpoints. This is the cleanest subsystem to port — it is pure
+**New.** Two Astro static endpoints. This is the cleanest subsystem to port: it is pure
 data→text with no runtime dependency, and the WKT parsing disappears entirely once
 geometry is stored as GeoJSON (§2.2).
 
@@ -600,7 +600,7 @@ place rather than split between a Views UI and a PHP file.
 **Verification:** the current export is committed at
 `html/api/navdata/ventorelativo-airspace.txt` and `…-waypoints.cup`. Diff the new output
 against it byte-for-byte (modulo the generation-date header line) before cutover. This is
-safety-critical data — it goes into people's flight computers.
+safety-critical data: it goes into people's flight computers.
 
 ### 4.4 XContest flights
 
@@ -611,7 +611,7 @@ sortable flight tables is entirely commented out in `xct-tables.html.twig`, and 
 XContest login step in `ScraperBlock::scrape()` is disabled with the note _"Disabled since
 Cloudflare changes"_.
 
-**New (confirmed):** an `<XContestLinks>` component with the same five links — recent,
+**New (confirmed):** an `<XContestLinks>` component with the same five links, recent,
 best of the day, best of the month, best of the year, best overall. These are a
 first-class feature of `/voli` and are being kept as-is.
 
@@ -627,7 +627,7 @@ so they're correct at the moment of the visit rather than the moment of the buil
 lines, no dependencies.
 
 This is strictly better than reinstating the cron: it's always correct rather than up to
-24h stale, and — now that the scraper is gone (D6) — it removes the _only_ remaining reason
+24h stale, and (now that the scraper is gone (D6)) it removes the _only_ remaining reason
 to rebuild the site on a schedule. The new site rebuilds when content changes, and that's
 it.
 
@@ -636,10 +636,10 @@ Site pages additionally get the per-takeoff "Ricerca voli da &lt;name&gt;" links
 component, so they're plain static links.
 
 **The scraped tables are dropped** (D6). If XContest ever exposes an API or a club data
-agreement, that's a new feature to scope then — not a migration task.
+agreement, that's a new feature to scope then, not a migration task.
 
 **On the credentials in `ScraperBlock.php`:** the login was only ever used by the scraper,
-which is gone, so nothing in the new site needs it — no action taken. Noted here only
+which is gone, so nothing in the new site needs it: no action taken. Noted here only
 because the plaintext password for a real XContest account remains in this repo's git
 history independently of whether the site uses it; if that repo is public, or if the
 password is reused anywhere, that's the reason to change it, not the migration.
@@ -666,7 +666,7 @@ and `theme-toggle.js` (localStorage `theme`, `data-bs-theme` on `<html>`, auto/l
 
 Ports to a small inline head script (no-flash) + a `<ThemeToggle>` component + CSS custom
 properties with `[data-theme]` and `prefers-color-scheme`. The markup currently living in a
-`block_content` body should become a real component — it has no business being editable
+`block_content` body should become a real component: it has no business being editable
 content.
 
 ---
@@ -674,7 +674,7 @@ content.
 ## 5. Membership / payments
 
 > **✅ Approved by the committee, 2026-09-03.** The fee is accepted and is borne by the
-> payer. **D10 resolved: Stripe Payment Links, with Satispay enabled inside them** — see
+> payer. **D10 resolved: Stripe Payment Links, with Satispay enabled inside them**, see
 > "The decision" below. The Astro site already ships without it (§7, Phase 5); nothing
 > here blocks the cutover.
 
@@ -683,11 +683,11 @@ content.
 `/iscrizioni` is a static page with two Bootstrap pricing cards linking to **Satispay
 consumer pay links** on shop `1746ccbc-eae4-4ad8-90d8-96712d59e356`:
 
-- Sostenitore — €10 — `?amount=1000&currency=EUR&external_code=Sostenitore`
-- Socio — €30 — `?amount=3000&currency=EUR&external_code=Socio`
+- Sostenitore (€10) `?amount=1000&currency=EUR&external_code=Sostenitore`
+- Socio (€30) `?amount=3000&currency=EUR&external_code=Socio`
 
 plus a bank-transfer fallback (Associazione Sportiva Vento Relativo, IBAN
-`IT67W0326830750052117945240`). There is **no automation today** — every payment is
+`IT67W0326830750052117945240`). There is **no automation today**: every payment is
 reconciled by hand.
 
 ### Planned flow
@@ -698,7 +698,7 @@ Member → Stripe Payment Link (card + Satispay) → Stripe webhook
 Wire transfer → (manual) → Google Sheet
 ```
 
-**Why a Google Sheet and not Airtable** _(revised — the plan previously said Airtable):_
+**Why a Google Sheet and not Airtable** _(revised, the plan previously said Airtable):_
 
 - **No seat limit.** Airtable's free tier caps at 5 editors; a committee changes and
   outgrows that. A Sheet can be shared with as many members as the club has.
@@ -712,68 +712,68 @@ humans wherever possible, and use the Sheet's built-in version history when some
 wrong.
 
 **Privacy.** The Sheet holds member names and emails. Share it with named committee
-accounts only — never "anyone with the link" — and keep it out of this repository, which is
+accounts only (never "anyone with the link") and keep it out of this repository, which is
 public. See the note at the end of §5.
 
 ### Quota amounts (decided 2026-09-03)
 
 **€10 Sostenitore and €30 Socio, for everyone, unchanged.** The committee accepted the
 processing fee and chose not to move the quotas to absorb it. Nothing on the page shows a
-surcharge — see the note on Art. 62 below, which this decision keeps comfortably clear of.
+surcharge: see the note on Art. 62 below, which this decision keeps comfortably clear of.
 
 ### The decision (D10, resolved 2026-09-03)
 
 **Stripe Payment Links, with Satispay enabled as a payment method inside them.** Bank
-transfer stays. Satispay Business direct was considered seriously and rejected — but the
+transfer stays. Satispay Business direct was considered seriously and rejected, but the
 club does not lose Satispay, which is the point.
 
 **Current fees, checked 2026-09-03.** The table this replaces was out of date in both
 columns: Satispay changed its tariff in September 2026, and the flat €0.20 above €10 no
 longer exists.
 
-| Rail                       | Fee                            |   €10 |   €30 |
-| -------------------------- | ------------------------------ | ----: | ----: |
-| Satispay Business, direct  | free under €10, 0.95% from €10 | €0.10 | €0.29 |
-| Stripe — EEA consumer card | 1.5% + €0.25                   | €0.40 | €0.70 |
-| Stripe — Satispay          | 1.8% + €0.25                   | €0.43 | €0.79 |
-| Bank transfer              | —                              | €0.00 | €0.00 |
+| Rail                      | Fee                            |   €10 |   €30 |
+| ------------------------- | ------------------------------ | ----: | ----: |
+| Satispay Business, direct | free under €10, 0.95% from €10 | €0.10 | €0.29 |
+| Stripe: EEA consumer card | 1.5% + €0.25                   | €0.40 | €0.70 |
+| Stripe: Satispay          | 1.8% + €0.25                   | €0.43 | €0.79 |
+| Bank transfer             | n/a                            | €0.00 | €0.00 |
 
 **Why not Satispay-only, when it is three to four times cheaper per payment.** Because the
-difference is not money, it is work. On a club of sixty Soci and twenty Sostenitori the
-whole year's saving is about **€30** — under an hour of anyone's time — and what the club
+difference is not money: it is work. On a club of sixty Soci and twenty Sostenitori the
+whole year's saving is about **€30** (under an hour of anyone's time) and what the club
 is actually buying here is the end of hand-reconciliation.
 
 Satispay cannot deliver that without a server. Its server-to-server callback fires **only
 for payments created through the API** with a `callback_url`; the consumer payment link the
 club uses today sends nothing when someone pays. Automating it means either creating every
 payment through the API or polling the shop's payment list, and both need RSA-signed
-requests — which means a backend. This site deliberately has almost none: two Keystatic
+requests, which means a backend. This site deliberately has almost none: two Keystatic
 admin routes, and every other page prerendered on a CDN (rule 3). Standing up a payment
 service inside it would be the largest thing anyone has proposed here, to save €30 a year.
 
 A Stripe Payment Link is a URL. Its webhook is a checkbox. That asymmetry is the decision.
 
 **Satispay is not lost.** Stripe supports it as a payment method for Italian accounts, in
-EUR, in Payment Links — so a member who wants to pay with the app they already have still
+EUR, in Payment Links, so a member who wants to pay with the app they already have still
 does, at €0.79 on a €30 quota instead of €0.29. That €0.50 is what buys the reconciliation.
 
-**On "the payer pays the fee" — do not render it as a surcharge.** Article 62 of the Codice
+**On "the payer pays the fee": do not render it as a surcharge.** Article 62 of the Codice
 del Consumo, implementing PSD2, forbids charging a consumer a supplement for using a given
 payment instrument, and the AGCM has fined firms for exactly that. Whether a membership
 quota between an ASD and its socio is a consumer contract is genuinely arguable, and this
 plan is not the place to decide it. The risk-free reading is available and costs nothing:
 **a tier has one price, inclusive.** No "+ €0.70 di commissione" line on the page, no second
 number at checkout. If the committee wants the payer to carry the fee, the quota is set at
-a figure that already contains it — a decision about the quota, not about the software.
+a figure that already contains it: a decision about the quota, not about the software.
 
 ### What this means for the build
 
 Nothing on the Astro site. The tiers have been structured content since Phase 2
-(`src/content/pages/iscrizioni.mdx`), so switching rails is editing `payUrl` in Keystatic —
+(`src/content/pages/iscrizioni.mdx`), so switching rails is editing `payUrl` in Keystatic:
 two fields, no deploy, no code. That was the point of modelling them that way.
 
 Everything else lives outside this repository: Stripe, Make.com and a Google Sheet. The
-steps are written down rather than built — [`docs/payments.md`](docs/payments.md) — including
+steps are written down rather than built ([`docs/payments.md`](docs/payments.md)) including
 the trap that a Sheet has no upsert, so the scenario has to branch or a renewing member
 silently gets a second row.
 
@@ -785,21 +785,21 @@ silently gets a second row.
 
 ## 6. Open questions / decisions needed before implementation
 
-| #           | Decision                                                                | Why it matters              | My recommendation                                                                                                                                                                                                                                                                                                                                                                                              |
-| ----------- | ----------------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~**D1**~~  | ~~Netlify or Cloudflare Pages?~~                                        | —                           | ✅ **RESOLVED: Netlify.** See §6.1 for the reasoning and the Cloudflare Web Analytics note.                                                                                                                                                                                                                                                                                                                    |
-| ~~**D2**~~  | ~~Do all editors have GitHub accounts?~~                                | —                           | ✅ **RESOLVED.** One real editor today; future editors will be asked to create GitHub accounts. Keystatic GitHub mode is a clean fit — this is no longer a risk.                                                                                                                                                                                                                                               |
-| ~~**D3**~~  | ~~Contact form backend~~                                                | —                           | ✅ **RESOLVED: Netlify Forms** (follows D1). `data-netlify="true"` + honeypot, no captcha — matching today's `tome_netlify_contact` config. Recipient stays `segreteria@ventorelativo.it`. Free tier is 100 submissions/month.                                                                                                                                                                                 |
-| ~~**D4**~~  | ~~How should landing polygons and the obstacle line be edited?~~        | —                           | ✅ **RESOLVED: split fields in Keystatic** (§2.2). Point as lat/lon numbers, polygon/line as pasted GeoJSON. All 34 features stay in Keystatic with their metadata. Accepted trade-off: reshaping the 13 landing polygons means a trip to geojson.io.                                                                                                                                                          |
-| ~~**D5**~~  | ~~`/api/sites/<nid>/geo.json` — preserve or change?~~                   | —                           | ✅ **RESOLVED: drop it.** Confirmed dead — it was built to reuse the overview MapTiler setup on site pages, but the site pages ended up on Leaflet and the endpoint never got wired up. Nothing consumes it. See §4.2 for what replaces it. The two `/api/navdata/*` files keep their exact URLs.                                                                                                              |
-| ~~**D6**~~  | ~~XContest flight tables — restore or drop?~~                           | —                           | ✅ **RESOLVED: quicklinks only.** The five search links (recent / daily / best month / best year / best overall) are a first-class feature and stay. The scraped tables are dropped — XContest put a Cloudflare bot check in front of the data, and defeating it at build time is not something worth building. See §4.4.                                                                                      |
-| ~~**D7**~~  | ~~Promote `Località / Altitudine / Esposizione` from prose to fields?~~ | —                           | ✅ **RESOLVED: no — keep as prose.** Straight port; the triplet stays as bold labels in the MDX body. Consequence: `summary` becomes the only structured short description, so it carries the cards _and_ the meta description — see §2.3.                                                                                                                                                                     |
-| ~~**D8**~~  | ~~Keep MapTiler or move to MapLibre + free tiles?~~                     | —                           | ✅ **RESOLVED: stay on MapTiler**, free tier, comfortable quota. But build the map component against the **MapLibre API surface** with MapTiler-specific bits isolated in a thin adapter, so switching later stays cheap. See §4.2.1. Restrict the key by domain, move it to `PUBLIC_MAPTILER_KEY`.                                                                                                            |
-| ~~**D9**~~  | ~~Which URLs must be preserved exactly?~~                               | —                           | ✅ **RESOLVED.** No inbound links worth protecting. `/home` → 301 to `/`; `/styleguide`, `/tags/asdasd` and the nid-based geo.json all simply dropped, no redirects needed. All content URLs (`/siti/*`, `/news/*`, `/contatti*`, `/voli`, `/iscrizioni`, `/404`, `/api/navdata/*`) still preserved exactly. Raised **D13** on the tag URLs.                                                                   |
-| ~~**D10**~~ | ~~Stripe vs Satispay Business~~                                         | §5. The committee approved. | ✅ **RESOLVED 2026-09-03: Stripe Payment Links, with Satispay enabled inside them.** The committee accepted the fee, and the payer carries it. Satispay-direct is 3-4x cheaper, but saves ~€30 a year and cannot be automated without a backend — its callback fires only for API-created payments. See §5, and do not render the fee as a surcharge (Art. 62 Cod. Cons.).                                     |
-| ~~**D11**~~ | ~~Design direction~~                                                    | —                           | ✅ **RESOLVED: refined minimal**, _amended in Phase 2 — see the note under §6.2._ Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
-| ~~**D12**~~ | ~~Content freeze / dual-run~~                                           | —                           | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover.                                                                                                                          |
-| ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~                                       | —                           | ✅ **RESOLVED: reshape**, _amended in Phase 2._ `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all** — §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links.                                  |
+| #           | Decision                                                                | Why it matters              | My recommendation                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------- | ----------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~**D1**~~  | ~~Netlify or Cloudflare Pages?~~                                        | n/a                         | ✅ **RESOLVED: Netlify.** See §6.1 for the reasoning and the Cloudflare Web Analytics note.                                                                                                                                                                                                                                                                                                                   |
+| ~~**D2**~~  | ~~Do all editors have GitHub accounts?~~                                | n/a                         | ✅ **RESOLVED.** One real editor today; future editors will be asked to create GitHub accounts. Keystatic GitHub mode is a clean fit: this is no longer a risk.                                                                                                                                                                                                                                               |
+| ~~**D3**~~  | ~~Contact form backend~~                                                | n/a                         | ✅ **RESOLVED: Netlify Forms** (follows D1). `data-netlify="true"` + honeypot, no captcha, matching today's `tome_netlify_contact` config. Recipient stays `segreteria@ventorelativo.it`. Free tier is 100 submissions/month.                                                                                                                                                                                 |
+| ~~**D4**~~  | ~~How should landing polygons and the obstacle line be edited?~~        | n/a                         | ✅ **RESOLVED: split fields in Keystatic** (§2.2). Point as lat/lon numbers, polygon/line as pasted GeoJSON. All 34 features stay in Keystatic with their metadata. Accepted trade-off: reshaping the 13 landing polygons means a trip to geojson.io.                                                                                                                                                         |
+| ~~**D5**~~  | ~~`/api/sites/<nid>/geo.json`: preserve or change?~~                    | n/a                         | ✅ **RESOLVED: drop it.** Confirmed dead, it was built to reuse the overview MapTiler setup on site pages, but the site pages ended up on Leaflet and the endpoint never got wired up. Nothing consumes it. See §4.2 for what replaces it. The two `/api/navdata/*` files keep their exact URLs.                                                                                                              |
+| ~~**D6**~~  | ~~XContest flight tables: restore or drop?~~                            | n/a                         | ✅ **RESOLVED: quicklinks only.** The five search links (recent / daily / best month / best year / best overall) are a first-class feature and stay. The scraped tables are dropped, XContest put a Cloudflare bot check in front of the data, and defeating it at build time is not something worth building. See §4.4.                                                                                      |
+| ~~**D7**~~  | ~~Promote `Località / Altitudine / Esposizione` from prose to fields?~~ | n/a                         | ✅ **RESOLVED: no, keep as prose.** Straight port; the triplet stays as bold labels in the MDX body. Consequence: `summary` becomes the only structured short description, so it carries the cards _and_ the meta description, see §2.3.                                                                                                                                                                      |
+| ~~**D8**~~  | ~~Keep MapTiler or move to MapLibre + free tiles?~~                     | n/a                         | ✅ **RESOLVED: stay on MapTiler**, free tier, comfortable quota. But build the map component against the **MapLibre API surface** with MapTiler-specific bits isolated in a thin adapter, so switching later stays cheap. See §4.2.1. Restrict the key by domain, move it to `PUBLIC_MAPTILER_KEY`.                                                                                                           |
+| ~~**D9**~~  | ~~Which URLs must be preserved exactly?~~                               | n/a                         | ✅ **RESOLVED.** No inbound links worth protecting. `/home` → 301 to `/`; `/styleguide`, `/tags/asdasd` and the nid-based geo.json all simply dropped, no redirects needed. All content URLs (`/siti/*`, `/news/*`, `/contatti*`, `/voli`, `/iscrizioni`, `/404`, `/api/navdata/*`) still preserved exactly. Raised **D13** on the tag URLs.                                                                  |
+| ~~**D10**~~ | ~~Stripe vs Satispay Business~~                                         | §5. The committee approved. | ✅ **RESOLVED 2026-09-03: Stripe Payment Links, with Satispay enabled inside them.** The committee accepted the fee, and the payer carries it. Satispay-direct is 3-4x cheaper, but saves ~€30 a year and cannot be automated without a backend, its callback fires only for API-created payments. See §5, and do not render the fee as a surcharge (Art. 62 Cod. Cons.).                                     |
+| ~~**D11**~~ | ~~Design direction~~                                                    | n/a                         | ✅ **RESOLVED: refined minimal**, _amended in Phase 2, see the note under §6.2._ Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
+| ~~**D12**~~ | ~~Content freeze / dual-run~~                                           | n/a                         | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover.                                                                                                                         |
+| ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~                                       | n/a                         | ✅ **RESOLVED: reshape**, _amended in Phase 2._ `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all**, §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links.                                  |
 
 ### 6.1 Hosting: why Netlify, and where Cloudflare still fits
 
@@ -808,15 +808,15 @@ and Netlify doesn't, and there are two concrete reasons not to move:
 
 1. **Keystatic wants a Node runtime.** Its docs say the admin "needs to run serverside code
    and use Node.js APIs". Netlify Functions _is_ Node. Cloudflare Workers is `workerd`, not
-   Node — `nodejs_compat` covers most built-ins but is a compatibility shim, and if
+   Node: `nodejs_compat` covers most built-ins but is a compatibility shim, and if
    Keystatic hits a gap you get a 500 with no useful error. That's a debugging session you
    don't need on the one part of the stack a non-developer has to log into.
 2. **Netlify Forms would have to be replaced.** The contact form currently works precisely
    because Netlify's build-time form detection exists. On Cloudflare it becomes a Pages
    Function plus a third-party email sender.
 
-Against that, Cloudflare's genuine advantages — unlimited bandwidth, Workers/KV/R2/D1,
-Durable Objects — are all things this site will never touch. A 14-site, 3-article club
+Against that, Cloudflare's genuine advantages: unlimited bandwidth, Workers/KV/R2/D1,
+Durable Objects: are all things this site will never touch. A 14-site, 3-article club
 site sits far inside Netlify's free tier (100 GB bandwidth, 300 build minutes/month; an
 Astro build here will be well under a minute).
 
@@ -824,16 +824,16 @@ So: familiarity is a real reason, and there's no counterweight. Stay.
 
 **The Cloudflare thing you actually want is available anyway.** [Cloudflare Web
 Analytics](https://developers.cloudflare.com/web-analytics/) explicitly supports sites
-"not proxied through Cloudflare" — you add the hostname in the Cloudflare dashboard, copy
+"not proxied through Cloudflare": you add the hostname in the Cloudflare dashboard, copy
 the JS beacon snippet, and drop it before `</body>`. No DNS change, no proxy, no migration.
 Cloudflare markets it as privacy-first and cookie-free, so it should also mean **no cookie
 banner**, which is worth having.
 
-Note that the site has **no analytics at all today** — there's no `google_analytics` or
+Note that the site has **no analytics at all today**: there's no `google_analytics` or
 `matomo` module in `core.extension.yml`. So this is a genuinely new capability, not a
 migration item. Added to the checklist as **S16**.
 
-### 6.2 Design direction spec (D11 — refined minimal)
+### 6.2 Design direction spec (D11: refined minimal)
 
 Enough to start Phase 1 from; not a finished design.
 
@@ -851,11 +851,11 @@ OG card generation (S3) and nothing else.
 **Dropped:** Bootstrap 5.3 and its utility classes, Slick carousel, the `bg-*`/`text-bg-*`
 scheme settings from `vr.settings.yml`, and the two unused sidebar regions.
 
-**Approach:** one small hand-rolled CSS layer — no framework. Design tokens as custom
+**Approach:** one small hand-rolled CSS layer, no framework. Design tokens as custom
 properties on `:root`, dark mode via `light-dark()` with a `[data-theme]` override so the
 toggle still wins in both directions. A fluid type scale with `clamp()`. Cards get spacing
 and a hairline border rather than the current `shadow-sm` + `shadow-hover`. Layout via
-CSS grid and container queries — which is what actually replaces the `col-12 col-lg-3`
+CSS grid and container queries, which is what actually replaces the `col-12 col-lg-3`
 grid, and handles the site cards and feature table better than breakpoints did.
 
 **Restraint rules**, since "not flashy" is the brief: no scroll-triggered animation, no
@@ -863,7 +863,7 @@ parallax, transitions only on interactive state (hover, focus, theme switch), an
 accent colour. The photography and the maps are the visual interest; the chrome shouldn't
 compete with them.
 
-**Accessibility to fix while rebuilding** — the current theme has some avoidable problems:
+**Accessibility to fix while rebuilding**, the current theme has some avoidable problems:
 the mobile nav toggle relies on Bootstrap's offcanvas JS with no `<dialog>` fallback; the
 `.stretched-link` card pattern makes the whole card one big link, which is awkward with a
 screen reader when the card also contains tag links; and several inline SVGs have no
@@ -874,7 +874,7 @@ chrome: pill buttons, a 6/10/16 radius scale, 500-weight nav links on the body
 text ramp. On review the club asked for the old rendering back, so the menu
 (desktop and drawer), the buttons, the badges and the radius scale are now ported
 from the **computed styles of the archived `html/` build** rather than
-reinterpreted — Bootstrap's 4/6/8 radii, `.btn` at 1rem/400 with 6px×12px padding
+reinterpreted: Bootstrap's 4/6/8 radii, `.btn` at 1rem/400 with 6px×12px padding
 and a 6px radius, nav links at 1.1rem/600 uppercase on their own near-black ramp
 with a 3px rule, `--header-height` back to 5.25rem. `npm run shot --computed`
 reads those values out of either site, so this is checkable rather than eyeballed.
@@ -889,8 +889,8 @@ follow `--color-accent` so they lighten in dark mode instead of staying pinned t
 ### Not decisions, but do them anyway
 
 - **Delete the stale `asdasd` taxonomy term** before exporting content.
-- **Author the missing summaries** — all 3 articles have an empty `body.summary`, which is what feeds the meta description (`News: [node:summary]`) and the teaser.
-- **Fix the unpublished article** (`Volo dei Briganti`) — decide whether it ships as a draft or gets published/deleted.
+- **Author the missing summaries**: all 3 articles have an empty `body.summary`, which is what feeds the meta description (`News: [node:summary]`) and the teaser.
+- **Fix the unpublished article** (`Volo dei Briganti`): decide whether it ships as a draft or gets published/deleted.
 
 ---
 
@@ -899,25 +899,25 @@ follow `--color-accent` so they lighten in dark mode instead of staying pinned t
 Each phase ends in something deployable and reviewable. Nothing is thrown away between
 phases.
 
-### Phase 0 — Freeze & setup _(no code)_
+### Phase 0: Freeze & setup _(no code)_
 
 Only **D13** (tags) is still open, and it only affects Phase 2. Housekeeping:
 
 - **Freeze Drupal editing now** (D12). Little is in flight, and double-entry is the
   fallback if something must go out mid-migration. Doing this first means the content
-  export is taken once and never re-synced — it removes a whole class of drift.
+  export is taken once and never re-synced: it removes a whole class of drift.
 - Author the missing `summary` on all 3 articles; confirm it on all 14 sites (load-bearing
   per D7).
 - Delete the stale `asdasd` tag.
 - Register the hostname in Cloudflare Web Analytics; keep the beacon snippet (S16).
 - Archive the current `html/` build as the byte-level reference for Phase 4 diffing.
 
-No XContest credential rotation — the login was scraper-only (§4.4).
+No XContest credential rotation: the login was scraper-only (§4.4).
 **Exit:** content frozen and exported; reference build archived.
 
-### Phase 1 — Skeleton & design system ✅ DONE
+### Phase 1: Skeleton & design system ✅ DONE
 
-Astro 7.2.10 (not 5 — the plan was written before checking; the config API used here is
+Astro 7.2.10 (not 5: the plan was written before checking; the config API used here is
 unchanged), `output: 'static'`. Base layout, header, nav, footer, breadcrumbs, theme
 toggle. Design tokens, fluid type scale, dark mode, container queries (§6.2). Homepage
 hero built with real content; `/styleguide` added as a temporary design reference.
@@ -926,11 +926,11 @@ hero built with real content; `/styleguide` added as a temporary design referenc
 
 1. **The Netlify adapter is deferred to Phase 3.** Adding it flips the build to
    `mode:"server"` and emits a ~3.6 MB SSR function even when every route is prerendered
-   — dead weight on every deploy. Nothing needs on-demand rendering until Keystatic, so
+   : dead weight on every deploy. Nothing needs on-demand rendering until Keystatic, so
    it goes in there, with the two admin routes that carry `prerender = false`.
 2. **Redirects moved from `astro.config.mjs` to `netlify.toml`.** Astro's `redirects`
    option only produces real 301s when an adapter is present to translate them.
-   Adapter-less it emits _meta-refresh HTML pages_ — a client-side hop that passes no
+   Adapter-less it emits _meta-refresh HTML pages_: a client-side hop that passes no
    ranking signal, which defeats the entire point of the `/home` → `/` redirect (S11).
    `netlify.toml` gives a true edge 301 with no adapter and no function.
 
@@ -942,7 +942,7 @@ third-party origin and a render-blocking stylesheet). Metropolis Bold is OG-card
 
 The hero is treated **differently per scheme, by decision**:
 
-- **Light** keeps the Drupal look — a pale, hazy wash with dark text. The photo is a dusk
+- **Light** keeps the Drupal look: a pale, hazy wash with dark text. The photo is a dusk
   shot, so the white scrim that makes dark text legible also bleaches the mountains; that
   softness is wanted, and it reads as more legible.
 - **Dark** uses a much lighter scrim so the photograph stays intact behind light text.
@@ -954,22 +954,22 @@ is still one place to tune each stop. The light values fold in what the old them
 opacity in both modes and only the scrim differs.
 
 _(An earlier attempt forced `color-scheme: dark` on the hero to make it a dark photographic
-panel in both modes. Rejected on review — light mode was less readable that way.)_
+panel in both modes. Rejected on review: light mode was less readable that way.)_
 
 **Exit met:** `astro check` clean (0 errors/warnings/hints), build clean, 532 KB output,
 homepage and interior page verified in light and dark at desktop and mobile widths.
-The Astro dev toolbar is disabled (`devToolbar: false`) — it floated over the hero CTAs,
+The Astro dev toolbar is disabled (`devToolbar: false`), it floated over the hero CTAs,
 which made phone review awkward.
 **Covers:** G1–G13, S6, S10, S11, S12, C2 (partial).
 
-### Phase 2 — Static pages & editorial content ✅ DONE
+### Phase 2: Static pages & editorial content ✅ DONE
 
 `news`, `sites` and `pages` collections; 3 articles and 14 sites migrated, bodies converted
 from `full_html`; the raw-HTML blocks lifted into structured fields (§2.4); `/voli`,
 `/iscrizioni`, `/contatti` + form + thank-you, `/404`; SEO, generated social cards,
 schema.org, sitemap, redirects, analytics; Keystatic in local storage.
 
-**Exit met, and exceeded:** every URL the old site had is built — `/siti` included — and
+**Exit met, and exceeded:** every URL the old site had is built (`/siti` included) and
 diffed against the `path_alias` entities. The only absences are deliberate: `/home` (301),
 `/tags/*` (D13) and the one unpublished article, which the old build did not contain either.
 
@@ -977,11 +977,11 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
 
 1. **`/siti` shipped here, not in Phase 4.** Its overview map is the risky part and stays
    deferred; the card grid needs none of it, and "Siti" is the most prominent link in the
-   nav. The map drops in above the grid later — the page carries a `TODO(Phase 4)`.
+   nav. The map drops in above the grid later: the page carries a `TODO(Phase 4)`.
 2. **A URL in this plan was wrong.** `/siti/il-podio` came from the node's own `path` field,
    which is stale. `path_alias`, `sitemap.xml` and the archived build all say `/siti/podio`.
    On a migration about preserving URLs, `path_alias` is the authority.
-3. **Site tags are kept** — see the correction under §2.5. Five sites are tagged, not one.
+3. **Site tags are kept**: see the correction under §2.5. Five sites are tagged, not one.
 4. **Five sites are `sticky`**, not "only Montoso": also Monte Cucetto, Roletto, Sarsenà and
    Sea di Torre.
 5. **RSS (S9) dropped** at the club's request. Nothing subscribes to it and it never worked
@@ -991,11 +991,11 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
 7. **Content bodies carry no `import` statements**, and body components are handed to
    `<Content components={…}>`. Keystatic refuses to open an entry containing an import.
 8. **`b, strong` needs an explicit weight.** With a 300 body, the UA's relative `bolder`
-   resolves to 400 — the old theme set 600 for exactly this reason.
+   resolves to 400: the old theme set 600 for exactly this reason.
 9. **GTranslate (G11) is a facade, not the widget.** "Portable as-is" was true and still
    wrong: the module's `flags.js` is a third-party script on every page, for a feature few
    visitors of an Italian club site touch. `<LanguageSwitcher>` draws the same five flags
-   as static HTML and loads Google's translate element on hover or click — the same
+   as static HTML and loads Google's translate element on hover or click: the same
    mechanism the old widget used underneath (`url_structure: none`, the hidden
    `goog-te-combo`, the `googtrans` cookie), so a chosen language still survives
    navigation. Costs 1.3 kB on the wire. Shipped 2026-09-03, closing the last Phase 2
@@ -1004,13 +1004,13 @@ diffed against the `path_alias` entities. The only absences are deliberate: `/ho
 **Covers:** C1–C20, S1–S8, S10–S16, E4–E8, X1–X2, D13. (S9 dropped; S3 done with satori;
 X4 needs takeoff coordinates and moves to Phase 4.)
 
-### Phase 3 — Keystatic GitHub mode ✅ DONE
+### Phase 3: Keystatic GitHub mode ✅ DONE
 
 GitHub App, OAuth env vars, `/keystatic` + `/api/keystatic/*` with `prerender = false`,
-auto-deploy on push. Low risk now that D2 is settled — you're the only editor, and adding
+auto-deploy on push. Low risk now that D2 is settled: you're the only editor, and adding
 someone later is "create a GitHub account, get repo write access".
 **Exit:** a news post created and published end-to-end through `/keystatic` on the deployed
-site, without touching a terminal. **Passed 2026-09-02** — `/news/a-test-news/`,
+site, without touching a terminal. **Passed 2026-09-02**: `/news/a-test-news/`,
 written from the deployed CMS, image upload and event fields included.
 **Covers:** E1–E3, E9–E10.
 
@@ -1025,7 +1025,7 @@ Runbook: [`docs/deploying.md`](docs/deploying.md).
 1. **The Astro build gets its own Netlify project.** `ventorelativo` already exists and
    serves the live `ventorelativo.it`; this build deploys to `ventorelativo-astro` and the
    domain moves at cutover (Phase 5). Meanwhile `robots.txt` disallows crawling on any host
-   that is not the apex, so the staging copy cannot compete with the site it replaces — and
+   that is not the apex, so the staging copy cannot compete with the site it replaces, and
    it re-opens by itself when the domain arrives.
 2. **D9's open question is settled:** the canonical origin is the apex, `ventorelativo.it`.
    The live Netlify project's primary URL says so; nothing in the Drupal repo did.
@@ -1033,11 +1033,11 @@ Runbook: [`docs/deploying.md`](docs/deploying.md).
 **Editing workflow to set up with it:**
 
 - **Netlify builds `main` only.** Keystatic can work on a branch, so an editor makes a
-  batch of changes and merges once — one production build per session rather than one per
+  batch of changes and merges once: one production build per session rather than one per
   save, and half-finished edits never reach the public site.
 - **Branch deploys on**, so the author can see their work: Netlify gives each branch a URL,
   and Keystatic's `previewUrl` puts a Preview button on every entry, e.g.
-  `https://{branch}--<site>.netlify.app/news/{slug}/` — it substitutes `{branch}` and
+  `https://{branch}--<site>.netlify.app/news/{slug}/`, it substitutes `{branch}` and
   `{slug}` from wherever the editor currently is. Note that Netlify sanitises branch names
   in subdomains, so keep branch names free of slashes or the templated URL will not match.
 - **`/admin` → `/keystatic`** (already in `netlify.toml`) starts working here.
@@ -1046,12 +1046,12 @@ Runbook: [`docs/deploying.md`](docs/deploying.md).
 without it `/contatti` would have accepted submissions and stored nothing (D3). Still to
 verify by actually submitting the deployed form.
 
-### Phase 4 — Map & flight-data subsystems _(the risky part, deliberately last)_
+### Phase 4: Map & flight-data subsystems _(the risky part, deliberately last)_
 
 **Flight data is done and gated (2026-09-02).** `/api/navdata/*.cup` and `*.txt` are
 prerendered again and `npm run verify` fails unless they match the archive: the CUP is
 byte-for-byte identical (same md5 as the Drupal build), the OpenAir identical but for its
-`* Generated:` date. Both corrections below proved necessary — the counts are 29 and 13.
+`* Generated:` date. Both corrections below proved necessary; the counts are 29 and 13.
 
 Three details worth keeping, all read off `NavdataController.php` rather than inferred:
 
@@ -1062,20 +1062,20 @@ Three details worth keeping, all read off `NavdataController.php` rather than in
   newline through the join. Nothing is appended after it.
 - **Sort is `name ASC`** from the view's default display. Codepoint order, `localeCompare`
   and `localeCompare('it')` all agree on the current 29 names, so the choice is not
-  load-bearing today — `it` was taken as the one that stays right if a name changes.
+  load-bearing today: `it` was taken as the one that stays right if a name changes.
 
-**The rest landed 2026-09-02/03, and Phase 4 is done.** The maps (M-series) as a facade
-— poster and feature table at build, MapLibre on interaction — with 3D terrain, the KK7
+**The rest landed 2026-09-02/03, and Phase 4 is done.** The maps (M-series) as a facade:
+poster and feature table at build, MapLibre on interaction, with 3D terrain, the KK7
 thermal layers, the Tracestrack topo base, the overview map on `/siti`, XContest links per
 takeoff (X4), and `geo:export`/`geo:import` for round-tripping features through GeoJSON.
 `/api/sites/all/geo.json` was dropped along the way: it existed to feed the old MapTiler
 block, the maps inline their data now, and nothing else consumed it.
 
-#### Phase 4b — the map, and how it stays off the critical path
+#### Phase 4b: the map, and how it stays off the critical path
 
 _Proposed 2026-09-02. Needs sign-off on the dependency (rule 6)._
 
-**MapTiler and MapLibre are not alternatives — the map needs both.** MapTiler is the
+**MapTiler and MapLibre are not alternatives: the map needs both.** MapTiler is the
 service: tiles, the club's style, the elevation data. MapLibre is the renderer that draws
 them in the browser. The old site used `maptiler-sdk`, which is MapLibre with MapTiler's
 conveniences wrapped around it, loaded from `cdn.maptiler.com` on every page carrying a
@@ -1083,15 +1083,15 @@ map.
 
 **What the old site already had, recovered 2026-09-02 and verified live:**
 
-| Thing   | Value                                                                                                             |
-| ------- | ----------------------------------------------------------------------------------------------------------------- |
-| API key | hardcoded in `mapper/js/maptiler-base.js`; now `PUBLIC_MAPTILER_KEY` in `.env`                                    |
-| Style   | `3d203d09-e79b-4c16-a28d-b9564619b3a7` — the club's own "TopoPG", 132 layers, contours + hillshade + openmaptiles |
-| Camera  | `center [7.18, 44.88]`, `zoom 10.5`, fitted to bounds, `easeTo({ pitch: 25 })`                                    |
-| Terrain | on, `terrainExaggeration: 1.2`, with the terrain control                                                          |
+| Thing   | Value                                                                                                            |
+| ------- | ---------------------------------------------------------------------------------------------------------------- |
+| API key | hardcoded in `mapper/js/maptiler-base.js`; now `PUBLIC_MAPTILER_KEY` in `.env`                                   |
+| Style   | `3d203d09-e79b-4c16-a28d-b9564619b3a7`: the club's own "TopoPG", 132 layers, contours + hillshade + openmaptiles |
+| Camera  | `center [7.18, 44.88]`, `zoom 10.5`, fitted to bounds, `easeTo({ pitch: 25 })`                                   |
+| Terrain | on, `terrainExaggeration: 1.2`, with the terrain control                                                         |
 
 The key, the custom style and `terrain-rgb-v2` all still answer 200. So the look is not a
-design question — it exists, and the job is to reproduce it.
+design question: it exists, and the job is to reproduce it.
 
 **Use MapLibre directly rather than the SDK.** Measured brotli: `maptiler-sdk` 264 kB
 against `maplibre-gl` 225 kB. The SDK's `terrain: true` is a few lines of `setTerrain`
@@ -1110,17 +1110,17 @@ renderer.
 
 OpenLayers costs the same and cannot do it; Leaflet and Protomaps are six to fifteen times
 lighter and cannot either. CesiumJS is the only other 3D option and is far bigger. So the
-cost is the requirement, not the library — which makes the question "when is it paid",
+cost is the requirement, not the library, which makes the question "when is it paid",
 not "which library".
 
 **Nobody pays it on load.** The facade pattern, which is Google's own recommendation for
 heavy embeds: the page ships a static poster, and the real map replaces it on interaction.
-Lighthouse measures page load, so a module fetched on click never enters the audit — the
+Lighthouse measures page load, so a module fetched on click never enters the audit: the
 100/100 target survives intact, and a visitor who never opens the map never downloads a
 byte of it.
 
 1. **Poster: an inline SVG, zero JS, zero third-party.** Drawn at build from the geometry
-   already in `map-features` — the takeoff point and the landing polygon, in theme tokens.
+   already in `map-features`: the takeoff point and the landing polygon, in theme tokens.
    About 1 kB, correct offline, and it cannot 404. MapTiler's Static Maps API was the
    obvious alternative and is **paid-plan only** (checked); a real basemap poster is still
    possible later by rendering one in headless Chrome at build with the existing
@@ -1131,16 +1131,16 @@ byte of it.
    the click lands.
 3. **Protect INP, which is the only vital genuinely at risk.** LCP and TBT are already
    settled by the time anyone clicks; INP is not. The click handler must paint a loading
-   state and nothing else, then `await import()` — no synchronous work before the frame.
+   state and nothing else, then `await import()`: no synchronous work before the frame.
 4. **The CSS needs the third route.** Importing it dynamically hits the documented trap
    (Astro inlines the small stylesheet, Vite preloads the file it never wrote, the
    rejected import takes the feature down). Importing it in frontmatter puts 8 kB on all
    fourteen site pages for a map most visitors never open. So: copy `maplibre-gl.css` into
-   `public/` — verbatim, unprocessed, no Vite involvement — and inject a `<link>` at click
+   `public/` (verbatim, unprocessed, no Vite involvement) and inject a `<link>` at click
    time.
 5. **Tiles outweigh the library.** A pitched terrain view pulls vector tiles _and_
    terrain-RGB DEM tiles: several MB on mountain data, and the thing that will actually
-   hurt. Bound it — `maxBounds` to the club's valleys, a sane `maxZoom`, modest terrain
+   hurt. Bound it: `maxBounds` to the club's valleys, a sane `maxZoom`, modest terrain
    exaggeration, `cooperativeGestures` so a scroll does not hijack the page.
 6. **The MapTiler key is public by necessity.** Restrict it by domain in MapTiler's
    settings, and remember `PUBLIC_MAPTILER_KEY` must join `SECRETS_SCAN_OMIT_KEYS` in
@@ -1150,7 +1150,7 @@ byte of it.
 8. **No WebGL2 → keep the poster** and show the feature table. The data is readable
    without a renderer, which is the point of having it in a collection.
 
-**Order:** (a) feature tables + poster SVG — useful on their own, zero JS; (b) the facade
+**Order:** (a) feature tables + poster SVG, useful on their own, zero JS; (b) the facade
 and MapLibre on click; (c) 3D terrain and the overview map; (d) `geo:export`/`geo:import`
 and the XContest links.
 
@@ -1163,13 +1163,13 @@ of JavaScript; measured on the built page with the map auto-opening, **LCP 220 m
 Four bugs, none of which the code review would have caught:
 
 1. **`load` never fires.** It waits for the style _and_ every tile of the opening view.
-   `style.load` is what adding layers actually needs, and it fires sooner — which matters
+   `style.load` is what adding layers actually needs, and it fires sooner, which matters
    most to the person on mountain data.
 2. **The worker is not bundled.** MapLibre builds its worker URL beside its own module, so
    Vite emitted none; the worker also imports `maplibre-gl-shared.mjs`, so copying it alone
    fixed nothing. Only vector tiles are parsed there, so the failure showed as a perfect
    raster hillshade with no roads, labels or markers at all.
-3. **`getPropertyValue` returns the declaration, not the colour** — the literal string
+3. **`getPropertyValue` returns the declaration, not the colour**: the literal string
    `light-dark(#1f52a6, #7997ca)`, which MapLibre cannot parse, so no markers drew.
    Resolved now by painting it on a throwaway element and reading `color` back, which also
    makes the map follow the visitor's theme.
@@ -1186,7 +1186,7 @@ table of its points; `/siti` links the two navdata downloads. Measured: a site p
 **1.5 kB of JavaScript**, the theme toggle and nothing else, and `/siti` is 62.0 kB against
 its 61 kB budget. Three things worth keeping:
 
-- **A migration bug surfaced.** Montoso's seven `field_map_elements` had been dropped — it
+- **A migration bug surfaced.** Montoso's seven `field_map_elements` had been dropped: it
   would have rendered an empty diagram. Every site was then cross-checked against the
   Drupal nodes: 14/14 match, 43/43 links, which the archived `geo.json` independently
   confirms at 43 entries.
@@ -1204,17 +1204,17 @@ the map's cost is measured separately, as the price of opening it.
 **Two corrections found while migrating the geometry (2026-09-02):**
 
 1. **§2.2's "point is always present" is wrong.** The obstacle is a bare `LINESTRING`, so
-   it has no point — which is precisely why it does not appear in the archived waypoint
+   it has no point, which is precisely why it does not appear in the archived waypoint
    file. `point` is optional; the rules that matter are per type.
 2. **What goes into each navdata file is decided by the `flight_data` view, not by the
    controller's constants.** Reading the constants alone would produce 34 waypoints and 14
    airspace blocks, and fail the byte-diff gate. The archived output and
    `views.view.flight_data.yml` together give the real rule:
 
-   | File                          | View filter       | Also requires | Result                                                         |
-   | ----------------------------- | ----------------- | ------------- | -------------------------------------------------------------- |
-   | `ventorelativo-waypoints.cup` | type ≠ `poi`      | a point       | **29** — 16 takeoffs + 13 landings (the obstacle has no point) |
-   | `ventorelativo-airspace.txt`  | type ≠ `obstacle` | a polygon     | **13** — the landings only                                     |
+   | File                          | View filter       | Also requires | Result                                                        |
+   | ----------------------------- | ----------------- | ------------- | ------------------------------------------------------------- |
+   | `ventorelativo-waypoints.cup` | type ≠ `poi`      | a point       | **29**: 16 takeoffs + 13 landings (the obstacle has no point) |
+   | `ventorelativo-airspace.txt`  | type ≠ `obstacle` | a polygon     | **13**: the landings only                                     |
 
    Formats to reproduce exactly: CUP is `DDMM.mmm` / `DDDMM.mmm` with styles landing 21,
    takeoff 20; OpenAir is `AC W`, `AL SFC`, `AH 100ft AGL` and
@@ -1227,11 +1227,11 @@ component against the MapLibre API with the MapTiler adapter isolated (§4.2.1).
 overview map + site grid; per-site maps with inlined GeoJSON; feature tables;
 `/api/sites/all/geo.json`; the OpenAir and CUP endpoints.
 **Exit:** the new `.txt` and `.cup` outputs diff clean against the Phase 0 reference build
-(modulo the date header) — this is the gate, it's flight-computer data. Maps verified on
+(modulo the date header): this is the gate, it's flight-computer data. Maps verified on
 desktop and mobile.
 **Covers:** M1–M13, A1–A5.
 
-### Phase 5 — Cutover _(next; runbook written, not executed)_
+### Phase 5: Cutover _(next; runbook written, not executed)_
 
 Point the domain at this build. The runbook is [`docs/cutover.md`](docs/cutover.md);
 what follows is what changed about this phase since it was written.
@@ -1239,11 +1239,11 @@ what follows is what changed about this phase since it was written.
 **URL preservation is now a gate, not a review.** `scripts/check-urls.mjs` runs in
 `npm run verify` and fails unless every URL in the archived Drupal build is built,
 redirected, or listed as deliberately dropped with the decision that dropped it. On its
-first run it found `/contact` — a real page in the old build, with no redirect — which is
+first run it found `/contact` (a real page in the old build, with no redirect) which is
 now one (`/contact/contatti` had one; the bare path did not).
 
 **The two map keys are set** (2026-09-03): before that the deployed map built a style URL
-ending in a bare `?key=` and got a 403 back — it opened, drew nothing and reported nothing.
+ending in a bare `?key=` and got a 403 back: it opened, drew nothing and reported nothing.
 `PUBLIC_CF_BEACON_TOKEN` is still unset, so there are no analytics; that is a decision to
 take rather than an omission (`docs/cutover.md` step 2).
 
@@ -1254,36 +1254,36 @@ layer on the live site until the new key's referrer list caught up, and nothing 
 on the account. `docs/cutover.md`, "Still open".
 
 **Test content has to come out first:** the `a-test-news` post written to prove Phase 3.
-`/styleguide` **stays** (decided 2026-09-03) — it is `noindex` and out of the sitemap, and
+`/styleguide` **stays** (decided 2026-09-03): it is `noindex` and out of the sitemap, and
 the club wants it as a reference for both people and AI agents. Amends §3, which had it
 down to drop.
 
-Archive the Drupal repo read-only — do not delete it. Two gates in `npm run verify` read
+Archive the Drupal repo read-only: do not delete it. Two gates in `npm run verify` read
 it by path, and it stays the reference for anything found missing later.
 
-### Phase 6 — Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
+### Phase 6: Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
 
 `/iscrizioni` already shipped in Phase 2 with the **existing Satispay links and bank
 transfer**, so the site is complete and live without this. **D10 is resolved** (§5): Stripe
 Payment Links, with Satispay enabled inside them.
 
 None of what remains is code. It is account work in Stripe, Make.com and a Google Sheet,
-followed by editing two `payUrl` fields in Keystatic — which is why it is written as a
+followed by editing two `payUrl` fields in Keystatic, which is why it is written as a
 runbook rather than built: [`docs/payments.md`](docs/payments.md).
 
 **Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
 the same member updates that row rather than adding another.
 **Covers:** §5, D10.
 
-### Phase 7 — Beyond parity _(items 1-8 done; 9 dropped)_
+### Phase 7: Beyond parity _(items 1-8 done; 9 dropped)_
 
 Everything above restores what the Drupal site did. These are things it never did, prompted
 by a look at what Astro themes ship (Stardrive's feature list in particular). Recorded here
 with the decision already taken, so none of it gets rediscovered as a "good idea" later.
 
 **1. Events on news posts, with `.ics`.** ✅ _Done in Phase 2._ Not a separate collection: a news
-post _is_ the announcement, so it gains optional `event` fields — start date, optional end
-date, location — and is an event when they are filled in. That buys three things from one
+post _is_ the announcement, so it gains optional `event` fields: start date, optional end
+date, location, and is an event when they are filled in. That buys three things from one
 change: a "Aggiungi al calendario" `.ics` download, the **`Event` node in the schema.org
 graph that §S7 deliberately left out** because the dates only existed in prose
 (`src/lib/schema.ts` records exactly this), and a "prossimi eventi" block if one is ever
@@ -1294,7 +1294,7 @@ Half a day. The biggest genuine capability gain on this list.
 and nothing catches style. Development-only, so no cost to a visitor, and it matters more
 now that club members may point AI agents at this repository. An hour.
 
-**3. WebMCP — the site exposing callable tools to a visitor's AI assistant.** ✅ _Built
+**3. WebMCP: the site exposing callable tools to a visitor's AI assistant.** ✅ _Built
 2026-09-03, at the club's request, once the cost could be made small enough._
 
 Three tools in `src/lib/webmcp.ts`: `find_flight_sites` (by attribute, free text, or
@@ -1317,7 +1317,7 @@ in `public/vendor/` has a stable URL, so the guard can name it in three inline l
 nothing is fetched unless `modelContext` exists. `scripts/build-webmcp.mjs` compiles the
 TypeScript into it before each build, so the source stays type-checked.
 
-**The API is still moving** — Chrome shipped it under `navigator.modelContext` and
+**The API is still moving**: Chrome shipped it under `navigator.modelContext` and
 deprecated that for `document.modelContext` in Chrome 150; it remains a W3C Community Group
 draft, not a standard. Both spellings are accepted. When it changes again, that file is
 where to look.
@@ -1326,18 +1326,18 @@ Note what did _not_ need building: `/llms-full.txt` (S17) and the schema.org gra
 answered most of these questions for an assistant, and each flight site now emits a
 `SportsActivityLocation` with its coordinates.
 
-**4. View transitions.** ✅ _Done 2026-09-03 — and not the way this entry assumed._
+**4. View transitions.** ✅ _Done 2026-09-03, and not the way this entry assumed._
 
 Astro's `<ClientRouter />` was measured first, as required: **5.3 kB gzipped and two extra
 requests on every page**, taking `/` from 71.9 kB to 77.4 kB. It also broke the map,
-silently — `SiteMap`'s script binds once at module scope, so after a client-side swap the
+silently: `SiteMap`'s script binds once at module scope, so after a client-side swap the
 "Apri la mappa" button was still there and did nothing. Every module-scope script becomes a
 rebinding bug that looks like working code.
 
 The platform now does the same job: `@view-transition { navigation: auto; }` in
 `global.css`, **0.1 kB**, no JavaScript, navigations stay real so nothing has to re-bind.
 Verified with a `pagereveal` probe that a transition actually runs, and that the map still
-opens on the page it lands on. Chrome/Edge 126+ and Safari 18.2+ animate — about 85% of
+opens on the page it lands on. Chrome/Edge 126+ and Safari 18.2+ animate: about 85% of
 browsers; Firefox has not shipped it and gets the ordinary navigation it gets today. Off
 under `prefers-reduced-motion`.
 
@@ -1345,11 +1345,11 @@ The lesson is worth keeping: the framework's answer and the platform's answer we
 same size.
 
 **5. GDPR.** ✅ _Done 2026-09-03, at the club's request._ The site had no privacy notice
-at all — the Drupal one did not either. `/privacy` now says, in plain Italian, what happens
+at all: the Drupal one did not either. `/privacy` now says, in plain Italian, what happens
 to a visitor's data, and most of it is a list of things that do not happen: opening a page
 fetches nothing third-party and stores no cookie. The map, the translator and their tile
 providers load only on interaction, which is what lets the site work without a consent
-banner. The contact form carries the Art. 13 notice at the point of collection — a line and
+banner. The contact form carries the Art. 13 notice at the point of collection: a line and
 a link, not a checkbox, because answering a message someone chose to send does not rest on
 consent.
 
@@ -1367,12 +1367,12 @@ decisions the plan had made:
 
 - **A card primitive.** Six components draw one, so the surface lives once in
   `global.css`. Unifying them found that both teasers claimed in a comment to be
-  fully clickable and neither was — the stretching pseudo-element had no
+  fully clickable and neither was: the stretching pseudo-element had no
   `z-index`, so the paragraph below the heading took the click.
 - **The contour texture** from the old theme, on the footer and the site cards,
   arriving on the diagonal as it did there. 91.6 kB of path data rounded to
   46.6 kB with no visible change (`scripts/optimise-svg.py`).
-- **`/stampa`** — the press kit: five logo variants, each generated as SVG and
+- **`/stampa`**, the press kit: five logo variants, each generated as SVG and
   PNG at build from one source drawing, plus brand guidelines the club can edit.
 - **`/privacy`** and the third-party gate, see item 5.
 - **`/sitemap.xml` is one file again.** `@astrojs/sitemap` always writes an index
@@ -1382,7 +1382,7 @@ decisions the plan had made:
   integration.
 - **Events look like events** (Phase 7 item 1 shipped the data; this shipped the
   design), and **`/siti`, `/voli` and `/contatti` gained the words they never
-  had** — `/siti` in particular opened with a map and fourteen names and nothing
+  had**: `/siti` in particular opened with a map and fourteen names and nothing
   a search engine could read about the valleys.
 - **Two view transitions**: the news teaser's photograph into the article hero,
   and the flight-site card's title into the site page's `h1`.
@@ -1392,28 +1392,28 @@ request, after item 6._ Mostly corrections to work item 6 had just shipped,
 which is the point of recording them:
 
 - **The outward mark.** Every link that leaves the site now carries the same
-  glyph — cards, buttons, table cells, and links an editor writes in a
+  glyph: cards, buttons, table cells, and links an editor writes in a
   paragraph. The prose case cannot use the component (markdown renders no
   components), so it is the same drawing as a CSS mask; `:not(:has(.external))`
   keeps the two from both firing on one link. Deliberately unmarked: the
   footer's social icons, which have no text, and the map's tile attribution.
 - **The homepage's social card was wrong, and had been.** `home` and `siti` were
-  each listed twice in `/og/[...route].jpg`'s `getStaticPaths` — once by hand,
-  once from the `pages` collection — so Astro warned about a conflicting path
+  each listed twice in `/og/[...route].jpg`'s `getStaticPaths`: once by hand,
+  once from the `pages` collection, so Astro warned about a conflicting path
   and kept one arbitrarily. The one it kept printed the club's name twice.
   The card now builds on the homepage's own photograph, washed into the brand
   blue at 0.58 with the scrim moved beside the text rather than under it, and
   the lockup went from 300px to 440px on every card so the name is legible at
   the size a preview is actually shown.
 - **Four calendar destinations, not one file.** An event offers Google Calendar
-  and Outlook as pre-filled URLs built at build time, and the `.ics` twice —
+  and Outlook as pre-filled URLs built at build time, and the `.ics` twice:
   once without `download` (the phone opens Calendar) and once with it (the
   browser saves the file). All anchors; nothing is fetched from Google or
   Microsoft until somebody picks one.
 - **`.field` joined `.card` as a global primitive**, because `/styleguide`
   could not show a form control that matched the one the contact form renders
   while the rules lived inside that component.
-- **The tier cards line up** head and foot, via `grid-template-rows: subgrid` —
+- **The tier cards line up** head and foot, via `grid-template-rows: subgrid`,
   equal heights alone were not enough once the highlighted tier's badge made
   its header band taller than the other's.
 - **Meta descriptions were rewritten against what the pages now say**, and
@@ -1441,7 +1441,7 @@ corrections, and one measurement that turned out to matter:
   concluso" in place of the calendar menu. A static page cannot know today's
   date, so the build renders whichever state is right when it runs and three
   lines in the script the page already inlines correct it for anyone arriving
-  later — without the second half a May event would still be offering
+  later, without the second half a May event would still be offering
   "aggiungi al calendario" in September. Not a disabled button: there is no
   action to disable, and a disabled control is skipped by the screen reader
   that would otherwise read the one thing it says.
@@ -1450,7 +1450,7 @@ corrections, and one measurement that turned out to matter:
   `public/` for the worker, and the bundler was inlining it into the page's
   chunk as well. Marking it external and pointing both at one URL took a map
   from **326 kB brotli to 239**. The plan's stated figure of 970 kB was the
-  uncompressed chunk, which no visitor ever paid — `docs/performance.md` now
+  uncompressed chunk, which no visitor ever paid: `docs/performance.md` now
   carries the transferred number and what else was tried.
 - **The footer is a grid**, `1fr auto 1fr` while the three groups fit and one
   centred column below 46rem. `space-between` on a wrapping row never actually
@@ -1465,7 +1465,7 @@ corrections, and one measurement that turned out to matter:
 **9. Table of contents on articles.** ❌ _Not wanted._ Posts are a few hundred words.
 
 **Not on this list, and deliberately:** Tailwind (the CSS layer is 3.6 kB hand-rolled),
-i18n routing (single locale — GTranslate covers the rest, G11), and anything requiring edge
+i18n routing (single locale: GTranslate covers the rest, G11), and anything requiring edge
 compute. Every page here is prerendered HTML on a CDN; there is no per-request work for a
 Worker to do, and the only server-rendered routes the site will ever have are Keystatic's
 admin, used by one or two people.

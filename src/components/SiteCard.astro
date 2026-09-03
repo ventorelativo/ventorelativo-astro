@@ -12,7 +12,7 @@
  *
  * Only the title is an anchor, stretched over the card by `.card__stretch`, so
  * the whole card is clickable without the summary being read out as link text.
- * The comment said that before the rule existed — the stretch was never
+ * The comment said that before the rule existed: the stretch was never
  * written, and fourteen cards had a clickable heading and a dead body.
  */
 import type { CollectionEntry } from 'astro:content';
@@ -28,7 +28,7 @@ const href = `/siti/${entry.id}/`;
 ---
 
 <article class="card card--link">
-  {/* The other half of the morph into the site page's h1 — see global.css. */}
+  {/* The other half of the morph into the site page's h1: see global.css. */}
   <h2 class="card__title" style={`view-transition-name: site-${entry.id}`}>
     <a class="card__stretch" href={href}>{title}</a>
   </h2>
@@ -56,8 +56,8 @@ const href = `/siti/${entry.id}/`;
     overflow: hidden;
     /*
       Makes the card a stacking context, which is what lets the texture below
-      sit at `z-index: -1` — above the card's own background, beneath every
-      child — without escaping to an ancestor.
+      sit at `z-index: -1`, above the card's own background, beneath every
+      child, without escaping to an ancestor.
 
       The alternative, positioning each child to lift it over the texture, is
       what was here before, and it silently broke the stretched link: a
@@ -70,7 +70,7 @@ const href = `/siti/${entry.id}/`;
   /*
     The same contour pattern as the footer, and for the same reason it belongs
     here: these fourteen cards are places on a mountainside. Masked rather than
-    painted so it follows the colour scheme — see Footer.astro.
+    painted so it follows the colour scheme: see Footer.astro.
 
     Each card takes a different corner of the tile. With one position they all
     showed the same three contour lines and the grid read as a printing error
@@ -86,7 +86,7 @@ const href = `/siti/${entry.id}/`;
       pattern arrives gradually out of the bottom-right corner instead of
       filling the card evenly.
 
-      The old theme did it the other way round — it painted a
+      The old theme did it the other way round: it painted a
       `linear-gradient(315deg, transparent 0%, var(--bs-card-bg) 70%)` *over*
       the pattern, which needs the card's own background colour repeated in the
       gradient. Masking needs no colour at all, so it keeps working when the
@@ -140,7 +140,7 @@ const href = `/siti/${entry.id}/`;
   }
 
   /*
-    The summary is the "1969m, S-SE, Roure (TO)" triplet — specification, not
+    The summary is the "1969m, S-SE, Roure (TO)" triplet, specification, not
     prose, so it is set as data: tabular figures, muted.
   */
   .card__summary {
@@ -150,8 +150,8 @@ const href = `/siti/${entry.id}/`;
 
   /*
     Pushed to the foot of the card. With equal-height cards the pills would
-    otherwise float wherever the summary happened to end — one line on Podio,
-    two on Montoso — and read as misaligned.
+    otherwise float wherever the summary happened to end: one line on Podio,
+    two on Montoso, and read as misaligned.
   */
   .card__tags {
     display: flex;

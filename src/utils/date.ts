@@ -12,8 +12,8 @@ const FORMATTER = new Intl.DateTimeFormat('it-IT', {
   year: 'numeric',
 });
 
-/** "26 ottobre 2025" — the human-facing form. */
+/** "26 ottobre 2025", the human-facing form. */
 export const formatDate = (date: Date) => FORMATTER.format(date);
 
-/** "2025-10-26" — for <time datetime>, sitemaps and RSS. */
+/** "2025-10-26", for <time datetime>, sitemaps and RSS. */
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);

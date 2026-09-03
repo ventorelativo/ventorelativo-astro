@@ -26,7 +26,7 @@ interface Props {
 const { features } = Astro.props;
 
 /*
-  Takeoffs first, then landings, then the rest — the order a pilot reads them
+  Takeoffs first, then landings, then the rest: the order a pilot reads them
   in, rather than alphabetical. Within a group, by name.
 */
 const ORDER: FeatureType[] = ['takeoff', 'landing', 'poi', 'obstacle'];
@@ -41,7 +41,7 @@ const sorted = [...features].sort(
     <section class="features">
       <h2>Punti di volo</h2>
 
-      {/* Scrolls itself rather than the page — AGENTS.md, wide content. */}
+      {/* Scrolls itself rather than the page: AGENTS.md, wide content. */}
       <div class="features__scroll">
         <table>
           <thead>
@@ -70,7 +70,7 @@ const sorted = [...features].sort(
                   {feature.point ? (
                     /*
                       The coordinates are the link, as they are in the map's
-                      popups — same destination, same decimal degrees, so a
+                      popups: same destination, same decimal degrees, so a
                       pilot gets the same thing whichever they happen to be
                       looking at. Still selectable for copying into an
                       instrument: the outward mark is an SVG, so it carries no
@@ -97,7 +97,7 @@ const sorted = [...features].sort(
                     Takeoffs only, as in the map's popups: Meteo-Parapente
                     answers "can I fly from here", which is a question about the
                     hill you launch from. The cell is left empty rather than
-                    dashed — a column of dashes says nothing and reads as
+                    dashed: a column of dashes says nothing and reads as
                     missing data.
                   */}
                   {feature.type === 'takeoff' && feature.point && (
@@ -133,14 +133,14 @@ const sorted = [...features].sort(
     over its shadow and hides it; scroll away from an edge and the cover goes
     with the content, uncovering the shadow.
 
-    The point is that it needs no JavaScript and no media query — the hint
+    The point is that it needs no JavaScript and no media query: the hint
     appears precisely when there is something to scroll to, on exactly the
     edges that have more table behind them, and disappears on a wide screen
     where the table fits.
 
     Deviation from the original: its covers fade from the first pixel, which
     leaves about a seventh of the shadow showing at rest. Ours holds the page
-    colour solid for 20px — wider than the shadow — before it starts to fade,
+    colour solid for 20px (wider than the shadow) before it starts to fade,
     so at rest there is nothing to see at all.
   */
   .features__scroll {
@@ -197,7 +197,7 @@ const sorted = [...features].sort(
   /*
     Sized to the cap height of the label beside it, so the two align.
 
-    `display: inline-block` undoes global.css, which makes every svg a block —
+    `display: inline-block` undoes global.css, which makes every svg a block,
     right for figures and diagrams, wrong for a glyph sitting in a line of text,
     where it pushed the label onto its own row.
   */
@@ -247,7 +247,7 @@ const sorted = [...features].sort(
 
   /*
     These are links and have to look like it. Muted and undecorated was tried
-    and read as plain text — nobody clicks what looks like a number. The link
+    and read as plain text: nobody clicks what looks like a number. The link
     colour carries it; the underline is faint so a column of seven does not
     turn into stripes, and it firms up on hover.
   */

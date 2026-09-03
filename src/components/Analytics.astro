@@ -2,7 +2,7 @@
 /**
  * Cloudflare Web Analytics (S16).
  *
- * The old site had no analytics at all — this is new. Cloudflare's beacon was
+ * The old site had no analytics at all: this is new. Cloudflare's beacon was
  * chosen because it stores nothing on the visitor's device, which is what the
  * consent rules turn on: no cookie, no localStorage, no identifier, therefore
  * no banner. A banner would be a bigger imposition than the measurement is
@@ -18,7 +18,7 @@
  * server-side analytics (Netlify's, paid) which costs the visitor nothing at
  * all. Worth revisiting if the numbers are never actually read.
  *
- * The token is public by nature — it ends up in the HTML — but it is read from
+ * The token is public by nature (it ends up in the HTML) but it is read from
  * the environment rather than committed, so a fork or a deploy preview does not
  * report into the club's dashboard. Set PUBLIC_CF_BEACON_TOKEN in Netlify's UI.
  * Absent, this renders nothing, which is what happens locally.

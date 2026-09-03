@@ -25,7 +25,7 @@ interface Props {
 
 const { title, labels = {} } = Astro.props;
 
-// Shared with the BreadcrumbList structured data — see src/lib/breadcrumbs.ts.
+// Shared with the BreadcrumbList structured data: see src/lib/breadcrumbs.ts.
 const crumbs = crumbsFor(Astro.url.pathname, title, labels);
 
 // hide_single_home_item: on the front page there is nothing but Home.

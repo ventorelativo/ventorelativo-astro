@@ -37,8 +37,8 @@ export async function contentSections(site: URL): Promise<Section[]> {
         .map((entry) => ({
           title: entry.data.title,
           href: url(`/siti/${entry.id}/`),
-          // The tags are real site attributes — "Adatto ai principianti",
-          // "Hike&Fly" — and are exactly the kind of thing a question is
+          // The tags are real site attributes: "Adatto ai principianti",
+          // "Hike&Fly", and are exactly the kind of thing a question is
           // asked about, so they go in the one-line description.
           description: [entry.data.summary, ...entry.data.tags].join(', '),
           body: entry.body ?? '',

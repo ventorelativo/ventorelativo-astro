@@ -2,7 +2,7 @@
 /**
  * The when and where of a news post that announces an event.
  *
- * Replaces the `<Facts>` blocks the two event posts wrote by hand — same
+ * Replaces the `<Facts>` blocks the two event posts wrote by hand: same
  * information, but from structured fields, so the date shown here, the date in
  * the `.ics` and the date in the structured data are one value rather than
  * three copies that can drift.
@@ -12,7 +12,7 @@
  * A pilot reading this is deciding whether to be somewhere on a morning. The
  * day and the takeoff are the two facts that decide it, and prose buries them.
  * So the day is a tear-off-calendar block and the rest is a short labelled
- * list, each row with the icon that already means that thing on this site —
+ * list, each row with the icon that already means that thing on this site:
  * the takeoff and landing glyphs from the maps, not a generic pin.
  *
  * A post with no `event` renders none of this and reads as a plain article,
@@ -63,7 +63,7 @@ const calendarEvent = {
 
   The last two rows are the same file and differ only in `download`, which is
   the whole point of listing both. Without it the OS hands the file to whatever
-  app understands it — on an iPhone, Calendar opens with the event ready to
+  app understands it, on an iPhone, Calendar opens with the event ready to
   add. With it the browser saves it, which is what somebody who picked "scarica
   il file" asked for.
 */
@@ -81,7 +81,7 @@ const DESTINATIONS = [
 
   The same exclusive end every calendar format here uses: the day *after* the
   last day, so an event is still current all through its final day. Emitted
-  into the markup because a static page cannot know today's date — the build
+  into the markup because a static page cannot know today's date: the build
   renders whichever state is right at build time, and three lines of inline
   script correct it for anyone who arrives after an event has passed but
   before the site is next deployed. Without that, a post announcing a May
@@ -272,7 +272,7 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
   /*
     Label above value, not beside it. Side by side, "Decollo" and "Montoso
     (Bagnolo Piemonte)" split a phone's width in half and the place name wrapped
-    into a three-line column — the one fact the panel exists to show.
+    into a three-line column: the one fact the panel exists to show.
   */
   .event__row {
     display: grid;
@@ -421,7 +421,7 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
     <details> has no light-dismiss of its own. Written out here rather than
     imported from a shared helper, which the theme toggle and the language
     switcher also want: Astro inlines a component's script only while it has no
-    imports, and adding one cost 2.0 kB and three requests on *every* page —
+    imports, and adding one cost 2.0 kB and three requests on *every* page:
     see docs/performance.md. Ten lines, three times, is the cheaper trade.
 
     The listeners are never removed. Navigation is cross-document

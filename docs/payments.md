@@ -5,7 +5,7 @@ stops being reconciled by hand.
 
 **None of this is code.** The Astro site's whole part in it is two URLs in
 Keystatic. Everything else is account setup in Stripe, Make.com and a Google
-Sheet — which is why it is written down here rather than built, and why the
+Sheet, which is why it is written down here rather than built, and why the
 steps are in the order that avoids doing any of them twice.
 
 ## What was decided, and what it costs
@@ -14,12 +14,12 @@ steps are in the order that avoids doing any of them twice.
 Bank transfer stays. Decided 2026-09-03 (MIGRATION-PLAN.md §5, D10); the
 committee accepted the fee and the payer carries it.
 
-| Rail                       | Fee                            |   €10 |   €30 |
-| -------------------------- | ------------------------------ | ----: | ----: |
-| Satispay Business, direct  | free under €10, 0.95% from €10 | €0.10 | €0.29 |
-| Stripe — EEA consumer card | 1.5% + €0.25                   | €0.40 | €0.70 |
-| Stripe — Satispay          | 1.8% + €0.25                   | €0.43 | €0.79 |
-| Bank transfer              | —                              | €0.00 | €0.00 |
+| Rail                      | Fee                            |   €10 |   €30 |
+| ------------------------- | ------------------------------ | ----: | ----: |
+| Satispay Business, direct | free under €10, 0.95% from €10 | €0.10 | €0.29 |
+| Stripe: EEA consumer card | 1.5% + €0.25                   | €0.40 | €0.70 |
+| Stripe: Satispay          | 1.8% + €0.25                   | €0.43 | €0.79 |
+| Bank transfer             | n/a                            | €0.00 | €0.00 |
 
 Satispay direct is three to four times cheaper and was rejected anyway, because
 on a club this size the difference is about **€30 a year** and it cannot be
@@ -28,7 +28,7 @@ through its API, never for the consumer link the club uses today. This site has
 almost no server on purpose. A Payment Link is a URL and its webhook is a
 checkbox.
 
-Members who want to pay with Satispay still do — inside Stripe's checkout.
+Members who want to pay with Satispay still do: inside Stripe's checkout.
 
 ## The shape of it
 
@@ -46,7 +46,7 @@ bonifico → (by hand) → same Sheet
 
 Register as the ASD, not as a person: legal name **Associazione Sportiva Vento
 Relativo**, its codice fiscale / P.IVA, and the club's IBAN for payouts. Stripe
-asks for a representative — that is a named person, and it is not the same thing
+asks for a representative: that is a named person, and it is not the same thing
 as the account holder.
 
 Set the **public details** (Settings → Public details) before creating any link:
@@ -60,7 +60,7 @@ Dashboard → **Settings → Payment methods** → enable **Satispay**. Nothing 
 needed: Payment Links show whichever methods the account has enabled and the
 payer's country supports.
 
-Cards are on by default. Leave them on — Satispay is the common case here, but
+Cards are on by default. Leave them on: Satispay is the common case here, but
 not everyone has it.
 
 ### 3. Create two Payment Links
@@ -81,7 +81,7 @@ For each link, under **Options**:
 - **Collect customers' names** → individual name, required. Use this, not a
   custom field: Stripe's own guidance is not to collect personal data through
   custom fields, and the name has a proper home in the session object.
-- Leave the email alone — Stripe always collects it, and it is the key the Sheet
+- Leave the email alone: Stripe always collects it, and it is the key the Sheet
   is matched on.
 - **After payment** → **Redirect customers to your website** →
   `https://ventorelativo.it/iscrizioni/grazie` (that page exists and is
@@ -101,7 +101,7 @@ Data | Nome | Email | Tier | Importo | Rail | Stripe ID | Note
 ```
 
 `Rail` is `stripe` or `bonifico`, so a hand-entered transfer looks the same as an
-automated row. `Stripe ID` is the checkout session id — it is what lets anyone
+automated row. `Stripe ID` is the checkout session id: it is what lets anyone
 find the payment again in the dashboard.
 
 Share it with **named committee accounts only**. Never "anyone with the link":
@@ -131,7 +131,7 @@ with its Stripe URL. Two fields, no deploy needed beyond the usual one Keystatic
 triggers itself.
 
 While you are there, the page's body still says the payment goes through
-Satispay. It still can — but it is no longer the only way, and the copy should
+Satispay. It still can, but it is no longer the only way, and the copy should
 say so.
 
 ### 7. Test it, with real money
@@ -141,7 +141,7 @@ real test is a real payment:
 
 1. Pay the €10 Sostenitore link yourself.
 2. Check the Sheet grew exactly one row, with your name, email and the session id.
-3. Pay it **again**. Check the Sheet still has one row for you, updated — not two.
+3. Pay it **again**. Check the Sheet still has one row for you, updated, not two.
 4. Refund both from the Stripe dashboard. Satispay refunds are asynchronous and
    take up to five minutes; the window is 180 days.
 
@@ -169,7 +169,7 @@ di commissione" anywhere.
   When the domain moves at cutover, both links need editing.
 - **No member PII in this repository.** It is public, and Keystatic writes to it.
   Names and emails belong in the Sheet and nowhere else.
-- **Disputes exist on Satispay too** — 120 days, handled through Stripe like a
+- **Disputes exist on Satispay too**: 120 days, handled through Stripe like a
   card dispute.
 - **Keep the bank transfer visible.** It is the zero-fee route and the one that
   still works when a provider is between contracts.

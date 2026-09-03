@@ -1,17 +1,17 @@
 ---
 /**
- * A site's map — as a facade (MIGRATION-PLAN.md Phase 4b).
+ * A site's map, as a facade (MIGRATION-PLAN.md Phase 4b).
  *
  * The page ships the poster and a button. MapLibre is 240 kB brotli'd and does
  * not exist until someone asks for it, so a visitor who never opens a map pays
- * nothing, and Lighthouse — which measures page load — never sees it. That is
+ * nothing, and Lighthouse (which measures page load) never sees it. That is
  * how a 240 kB dependency and a 100/100 target live on the same page.
  *
  * The interaction is shaped around INP, the one Core Web Vital genuinely at
  * risk here. LCP and TBT are settled long before anyone clicks; INP is not, and
  * a handler that blocks while a quarter-megabyte parses is a bad interaction by
- * definition. So the click does two cheap things — flip a class and start an
- * async import — and the next paint happens without waiting for the library.
+ * definition. So the click does two cheap things: flip a class and start an
+ * async import, and the next paint happens without waiting for the library.
  * Hover and focus start the fetch even earlier, so by the time the click lands
  * the download is usually already running.
  */
@@ -24,12 +24,12 @@ import { MAPTILER_KEY } from '../lib/mapConfig';
 
   `?url&no-inline`, and the `no-inline` is not decoration. Both files are under
   Vite's 4 kB inline threshold, so by default they become data: URIs compiled
-  into the page — 4,166 bytes of base64 in every site page's HTML, a tenth of
+  into the page: 4,166 bytes of base64 in every site page's HTML, a tenth of
   its weight, carried by everyone including the visitors on a metered
   connection who never open a map at all. As files they are fetched only when
   one is opened, and Astro fingerprints them so they cache forever.
 
-  MapLibre cannot take SVG directly — `addImage` wants pixels — so these are
+  MapLibre cannot take SVG directly (`addImage` wants pixels) so these are
   rasterised in the browser at the device's own resolution. That is the whole
   advantage over shipping PNGs: one drawing, sharp on a phone and on a 5K
   display, instead of a bitmap that was only ever right at one size.
@@ -60,7 +60,7 @@ interface Feature {
   shape?: { discriminant: 'polygon' | 'line'; value: [number, number][] };
   /**
    * The site this belongs to, on the overview map only. A site's own map has
-   * no use for it — the link would point at the page it is already on.
+   * no use for it: the link would point at the page it is already on.
    */
   site?: { title: string; href: string };
 }
@@ -121,7 +121,7 @@ const geojson = {
 };
 
 // Without a key there is nothing to load, so the button would lie. The poster
-// stands on its own — it is a drawing, not a placeholder for one.
+// stands on its own: it is a drawing, not a placeholder for one.
 const interactive = features.length > 0 && MAPTILER_KEY !== '';
 
 const typeColours = Object.fromEntries(
@@ -134,7 +134,7 @@ const icons = { takeoff: takeoffIcon, landing: landingIcon };
 
 /*
   What the popup calls each kind. From FEATURE_TYPES, so the map, the table and
-  the poster cannot drift apart on the wording — and the glyphs are the ones the
+  the poster cannot drift apart on the wording, and the glyphs are the ones the
   old site's popups used, so a pilot who knew that map recognises this one.
 */
 const typeNames = Object.fromEntries(
@@ -162,7 +162,7 @@ const typeNames = Object.fromEntries(
           <span data-map-label>Apri la mappa</span>
         </button>
         <div class="map__canvas" data-map-canvas hidden />
-        {/* Data, not modules — is:inline keeps Astro from trying to bundle them. */}
+        {/* Data, not modules, is:inline keeps Astro from trying to bundle them. */}
         <script
           is:inline
           type="application/json"
@@ -198,21 +198,21 @@ const typeNames = Object.fromEntries(
     /*
       On the block, not on the poster. The poster is hidden the moment the map
       opens, and with it went the only thing separating the frame from whatever
-      followed — the site grid on /siti ran straight into the map's bottom edge.
+      followed: the site grid on /siti ran straight into the map's bottom edge.
     */
     margin-block-end: var(--space-md);
   }
 
   /*
     One height for the poster and the map, so swapping one for the other shifts
-    nothing — the whole reason CLS stays at zero.
+    nothing: the whole reason CLS stays at zero.
 
     600 px at every width, as the old site had it: the frame keeps its height
     and lets its aspect follow the container, which reads far better than a
     frame that grows and shrinks with the window.
 
     On a phone that is a tall portrait frame, and the poster's 16:9 drawing sits
-    in the middle of it with bands above and below — which is why the poster
+    in the middle of it with bands above and below, which is why the poster
     paints its own background across the whole frame, so the bands are not
     visible as bands.
   */
@@ -258,7 +258,7 @@ const typeNames = Object.fromEntries(
 
   /*
     The canvas replaces the poster in the same box, so nothing on the page moves
-    when the map arrives — the layout shift a facade would otherwise cause is
+    when the map arrives: the layout shift a facade would otherwise cause is
     the reason to size it here rather than let MapLibre size itself.
   */
   .map__canvas {
@@ -281,7 +281,7 @@ const typeNames = Object.fromEntries(
 
   /*
     MapLibre builds these buttons itself, so its classes are the only handle on
-    them and the rules have to be :global — nothing here carries this
+    them and the rules have to be :global, nothing here carries this
     component's scope attribute.
 
     Each control has two states and each state its own drawing. MapLibre names
@@ -450,7 +450,7 @@ const typeNames = Object.fromEntries(
     The two controls this component builds, coloured to match the ones MapLibre
     builds beside them.
 
-    `color`, not `fill`: both icons paint with `currentColor` — the reset glyph
+    `color`, not `fill`: both icons paint with `currentColor`, the reset glyph
     carries `fill="currentColor"` as an attribute, which a `fill` declaration on
     the parent svg cannot override, and the layers icon strokes with it. Left to
     inherit, they took the page's text colour and turned pale grey on a white
@@ -520,7 +520,7 @@ const typeNames = Object.fromEntries(
 
       /*
         Everything before the await is what INP measures. Paint a busy state and
-        stop — the import is a promise, and the browser gets its frame.
+        stop: the import is a promise, and the browser gets its frame.
       */
       button.disabled = true;
       label.textContent = 'Caricamento…';
@@ -531,7 +531,7 @@ const typeNames = Object.fromEntries(
   }
 
   /**
-   * Open the map without being asked — but late, and only when it is worth it.
+   * Open the map without being asked, but late, and only when it is worth it.
    *
    * Four gates, and every one of them exists to keep a 240 kB download off
    * somebody's critical path:
@@ -543,7 +543,7 @@ const typeNames = Object.fromEntries(
    *  - **When the browser is idle**, so it never delays an interaction.
    *  - **Not on a metered or slow connection.** Save-Data and
    *    `prefers-reduced-data` are explicit requests not to do this, and 2G is
-   *    a mountain valley — the audience this site is actually built for. Those
+   *    a mountain valley: the audience this site is actually built for. Those
    *    visitors keep the poster and the button, which is the honest trade: they
    *    can still have the map, but they choose to spend the bytes.
    */
@@ -572,7 +572,7 @@ const typeNames = Object.fromEntries(
         if (!entries.some((entry) => entry.isIntersecting)) return;
         observer.disconnect();
         // Through the button, so the automatic path and the manual one are the
-        // same code — including the busy state and every failure route.
+        // same code: including the busy state and every failure route.
         whenIdle(() => button.click());
       },
       { rootMargin: '200px' },
@@ -609,7 +609,7 @@ const typeNames = Object.fromEntries(
     }
 
     try {
-      // The stylesheet is a plain file in public/ — see scripts/sync-vendor-css.mjs
+      // The stylesheet is a plain file in public/: see scripts/sync-vendor-css.mjs
       // for why it is not imported here.
       await loadStylesheet('/vendor/maplibre-gl.css');
 
@@ -636,9 +636,9 @@ const typeNames = Object.fromEntries(
       setWorkerUrl('/vendor/maplibre-gl-worker.mjs');
 
       /*
-        Start the worker before the map asks for it. The gain here is modest —
+        Start the worker before the map asks for it. The gain here is modest:
         the map is constructed a few lines below, so there is little for it to
-        overlap with — but it costs nothing and takes the worker's own startup
+        overlap with, but it costs nothing and takes the worker's own startup
         off the critical path of the first tile.
       */
       prewarm();
@@ -654,7 +654,7 @@ const typeNames = Object.fromEntries(
       const map = new Map({
         container: canvas,
         style: config.styleUrl(),
-        // Keeps a stray drag inside the club's valleys — see MAX_BOUNDS.
+        // Keeps a stray drag inside the club's valleys, see MAX_BOUNDS.
         maxBounds: config.MAX_BOUNDS,
         // Scrolling the page must not zoom the map out from under the reader.
         cooperativeGestures: true,
@@ -683,7 +683,7 @@ const typeNames = Object.fromEntries(
         `style.load`, not `load`.
 
         `load` waits for the style *and* every tile of the opening view, and if
-        one of those never resolves it never fires — which is what happened
+        one of those never resolves it never fires, which is what happened
         here: the style arrived, the basemap drew, and the features and framing
         were never added, leaving a map of the whole world. Adding sources and
         layers needs the style parsed and nothing more, which is exactly what
@@ -693,7 +693,7 @@ const typeNames = Object.fromEntries(
       /*
         The two icons have to be registered before a layer names them, and
         loading them is asynchronous, so this is where `style.load` earns its
-        keep — everything below runs once, in order, after the style is parsed.
+        keep: everything below runs once, in order, after the style is parsed.
       */
       const iconsReady = Promise.all(
         Object.entries(icons).map(async ([kind, url]) => {
@@ -780,7 +780,7 @@ const typeNames = Object.fromEntries(
         });
 
         const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
-        // ['match', kind, 'takeoff', <colour>, …, <fallback>] — one paint
+        // ['match', kind, 'takeoff', <colour>, …, <fallback>]: one paint
         // expression fed from the CSS tokens, so map and poster stay in step.
         const colourExpression: unknown[] = ['match', ['get', 'kind']];
         for (const kind of kinds) colourExpression.push(kind, colourFor(kind));
@@ -812,7 +812,7 @@ const typeNames = Object.fromEntries(
           },
         });
         /*
-          Dots for whatever has no icon — points of interest, and everything if
+          Dots for whatever has no icon: points of interest, and everything if
           the icons failed to load.
         */
         map.addLayer({
@@ -851,7 +851,7 @@ const typeNames = Object.fromEntries(
                 /*
                   A takeoff and its landing can be a few hundred metres apart,
                   and MapLibre hides colliding symbols by default. These are the
-                  reason the map exists — none of them may be dropped.
+                  reason the map exists: none of them may be dropped.
                 */
                 'icon-allow-overlap': true,
                 'icon-ignore-placement': true,
@@ -870,7 +870,7 @@ const typeNames = Object.fromEntries(
               Borrow whatever face the style itself labels with.
 
               Without this MapLibre falls back to its own default, Open Sans
-              plus Arial Unicode — a second font stack, so a second glyph
+              plus Arial Unicode: a second font stack, so a second glyph
               request, and marker labels set in a different typeface from every
               other label on the map. Reading it from the style rather than
               naming it means the club can change the font in MapTiler and
@@ -890,7 +890,7 @@ const typeNames = Object.fromEntries(
 
           Fenced because elevation is a second service that can fail on its own,
           and a renderer without the support for it throws where a flat map
-          would have been fine — the worst that may cost is the third dimension.
+          would have been fine: the worst that may cost is the third dimension.
 
           Before, because whether it worked decides how far to tilt, and the
           tilt decides the camera. A flat map that is tilted anyway just skews
@@ -905,7 +905,7 @@ const typeNames = Object.fromEntries(
           });
           /*
             Starts flat. The camera is framed at its final tilt a few lines
-            below, and then the ground rises into it — the same ramp the button
+            below, and then the ground rises into it: the same ramp the button
             runs, so arriving at the map and switching terrain back on look
             like one another rather than two unrelated behaviours.
           */
@@ -920,8 +920,8 @@ const typeNames = Object.fromEntries(
 
           Fitting flat and tilting afterwards was wrong: `fitBounds` frames the
           bounds for the camera it is given, and pitching afterwards swings the
-          view towards the horizon and pushes the near edge — the takeoffs, at
-          the bottom of the frame — straight out of it. `fitBounds` takes a
+          view towards the horizon and pushes the near edge: the takeoffs, at
+          the bottom of the frame: straight out of it. `fitBounds` takes a
           `pitch`, so the fit is solved once for the view actually used and
           everything stays inside.
 
@@ -936,7 +936,7 @@ const typeNames = Object.fromEntries(
           trapezoid, and that approximation is fine over kilometres and wrong
           over hundreds of metres. Podio's two points are 900 m apart, and at
           that extent the tilted camera came out pointing at empty ground with
-          both markers off frame — whatever zoom cap it was given.
+          both markers off frame, whatever zoom cap it was given.
 
           A site spanning less than this is a takeoff and its landing in one
           valley, where there is no relief to show at that scale anyway, so it
@@ -956,7 +956,7 @@ const typeNames = Object.fromEntries(
 
         /*
           A popup per marker, as the old map had: what it is, where it is, and
-          the two links a pilot actually wants from a point on a map — driving
+          the two links a pilot actually wants from a point on a map: driving
           directions, and the flight forecast for that spot.
 
           Built as DOM rather than an HTML string. The old site stored rendered
@@ -1012,7 +1012,7 @@ const typeNames = Object.fromEntries(
         /*
           The terrain button, once the tilt it restores is known. It replaces
           MapLibre's own so that turning the relief off also takes the camera
-          back to straight down — and so the ground rises and falls instead of
+          back to straight down, and so the ground rises and falls instead of
           snapping between the two.
         */
         if (tilted) {
@@ -1031,7 +1031,7 @@ const typeNames = Object.fromEntries(
             And then check the framing again, once the ground has actually
             risen.
 
-            `fitBounds` solves for a flat world — it knows the rectangle, not
+            `fitBounds` solves for a flat world: it knows the rectangle, not
             the altitudes inside it. So a takeoff a thousand metres above its
             landing is projected further up the screen than the fit allowed
             for, and on the steepest sites (Prali, Le Grange) it left the frame
@@ -1181,7 +1181,7 @@ const typeNames = Object.fromEntries(
     actions.className = 'map-popup__links';
     /*
       The forecast is offered on takeoffs only. Meteo-Parapente answers "can I
-      fly from here", which is a question about the hill you launch from — on a
+      fly from here", which is a question about the hill you launch from, on a
       landing field or a car park it is noise dressed as information.
     */
     const destinations: [string, string][] = [
@@ -1209,7 +1209,7 @@ const typeNames = Object.fromEntries(
    * The marker's own drawing, so the popup matches the thing it points at.
    *
    * Takeoffs and landings have artwork and use it, from the sprite the page
-   * already renders. The obstacle keeps its warning glyph — a hazard should
+   * already renders. The obstacle keeps its warning glyph: a hazard should
    * read as one, and there is no drawing for it. Anything else takes the
    * coloured dot the table and the poster give it. Decorative in every case:
    * the written label sits beside it.
@@ -1269,7 +1269,7 @@ const typeNames = Object.fromEntries(
    * instant and reversible.
    *
    * And the kk7 filters change the source's tile URLs in place rather than
-   * adding a layer per combination — there are forty of them, and MapLibre
+   * adding a layer per combination: there are forty of them, and MapLibre
    * refetches on `setTiles` anyway.
    */
   class LayersControl {
@@ -1369,7 +1369,7 @@ const typeNames = Object.fromEntries(
       toggle.addEventListener('click', () => setOpen(!open));
 
       /*
-        Anywhere else closes it — the map included, which is the usual way out
+        Anywhere else closes it: the map included, which is the usual way out
         of a panel that sits over one. The listener is on the document rather
         than the map so a click on the page around it counts too, and Escape is
         there because a keyboard user has no "outside" to click.
@@ -1509,7 +1509,7 @@ const typeNames = Object.fromEntries(
       const button = document.createElement('button');
       button.type = 'button';
       // MapLibre puts the icon on a child span and the state on the button,
-      // which is what its stylesheet — and ours — selects on.
+      // which is what its stylesheet (and ours) selects on.
       button.append(
         Object.assign(document.createElement('span'), {
           className: 'maplibregl-ctrl-icon',
@@ -1694,7 +1694,7 @@ const typeNames = Object.fromEntries(
    * A custom property's *used* colour, as `rgb(...)`.
    *
    * `getPropertyValue('--color-map-takeoff')` hands back the declaration
-   * verbatim — here that is the string `light-dark(#1f52a6, #7997ca)`, which
+   * verbatim: here that is the string `light-dark(#1f52a6, #7997ca)`, which
    * means nothing to a renderer that is not a browser. MapLibre took it,
    * failed to parse it, and drew no markers at all.
    *

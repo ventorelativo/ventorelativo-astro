@@ -1,7 +1,7 @@
 /**
  * The tools this site offers a visitor's AI assistant (WebMCP).
  *
- * Loaded only by browsers that have the API — see `WebMcp.astro`, which does
+ * Loaded only by browsers that have the API: see `WebMcp.astro`, which does
  * the feature check before importing this file. Everyone else downloads
  * nothing from here.
  *
@@ -15,7 +15,7 @@
  *
  * They are the questions the club's data can answer honestly. Altitude and
  * exposure are prose inside `summary` and are returned as written rather than
- * offered as filters — a `maxAltitude` parameter would have to parse
+ * offered as filters: a `maxAltitude` parameter would have to parse
  * "1581m/1276m" and would be quietly wrong on the sites with two takeoffs.
  *
  * Everything a tool returns is public content already on the page. Nothing

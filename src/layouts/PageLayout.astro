@@ -3,7 +3,7 @@
  * Standard interior page: breadcrumbs, h1, content.
  *
  * Equivalent to the Drupal one-column Layout Builder stack with the page-title
- * and breadcrumb blocks placed — which was every page except the front (where
+ * and breadcrumb blocks placed, which was every page except the front (where
  * `vr_page_title` was hidden by a request_path visibility condition, G9).
  */
 import BaseLayout from './BaseLayout.astro';
@@ -18,7 +18,7 @@ interface Props {
   breadcrumbLabels?: Record<string, string>;
   /** Route of this page's generated social card (S3). */
   ogRoute?: string;
-  /** Keep out of search results — see BaseLayout. */
+  /** Keep out of search results, see BaseLayout. */
   noindex?: boolean;
 }
 

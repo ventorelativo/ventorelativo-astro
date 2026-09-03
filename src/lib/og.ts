@@ -1,25 +1,25 @@
 /**
  * Social card generation (S3).
  *
- * The Drupal site composited the page title — Metropolis Bold, uppercase,
- * outlined — over `social-card.png` with the `textimage` module. Same idea,
+ * The Drupal site composited the page title: Metropolis Bold, uppercase,
+ * outlined: over `social-card.png` with the `textimage` module. Same idea,
  * better inputs: where a page has its own photograph, the card is built on
  * that, with the club logo laid over it and a scrim so the title reads. Where
- * there is no photograph — twelve of the fourteen sites, and every fixed page —
+ * there is no photograph: twelve of the fourteen sites, and every fixed page:
  * it is a plain brand-blue card with the mark and the title, which is cleaner
  * than darkening the club's logo card and then setting a second logo on top of
  * it.
  *
  * How it is drawn: satori turns a small element tree into SVG with the text
  * already converted to paths (so no font is needed at raster time), and sharp
- * rasterises that to PNG. Both are devDependencies — this runs at build, and
+ * rasterises that to PNG. Both are devDependencies: this runs at build, and
  * not one byte of it reaches a visitor.
  *
  * ## Caching
  *
  * Rendering ~25 cards costs a couple of seconds, and almost none of them change
  * between builds. Every card is therefore keyed by a hash of everything that
- * affects its pixels — title, kind, source image bytes, and TEMPLATE_VERSION —
+ * affects its pixels: title, kind, source image bytes, and TEMPLATE_VERSION:
  * and written to `.astro/og-cache/`. A hit is a file read.
  *
  * That makes a local rebuild instant. A cold CI build has no cache and renders
@@ -49,7 +49,7 @@ const font = await readFile('src/assets/fonts/Metropolis-Bold.ttf');
 
 /*
   The branding on every card is one asset: `src/assets/og-logo.svg`, the mark on
-  an oval plate. It is drawn as-is — no recolouring, no plate assembled here —
+  an oval plate. It is drawn as-is: no recolouring, no plate assembled here,
   so replacing that file with a designed one restyles every card at once.
   Bump TEMPLATE_VERSION when you do, or the cached cards keep the old lockup.
 */
@@ -57,8 +57,8 @@ const LOGO_SVG = await readFile('src/assets/og-logo.svg', 'utf8');
 const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString('base64')}`;
 /*
   440, not the 300 this started at. At 300 the oval read as a decoration in the
-  corner and the word inside it — which is the club's name, and the only place
-  the name appears on a card whose title is something else — was too small to
+  corner and the word inside it, which is the club's name, and the only place
+  the name appears on a card whose title is something else: was too small to
   read at the size a preview is actually shown in a chat.
 */
 const LOGO_WIDTH = 440;
@@ -66,7 +66,7 @@ const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 486) / 1078); // the asset's ratio
 
 export interface CardOptions {
   title: string;
-  /** Shown small above the title — "Siti di volo", "News", … */
+  /** Shown small above the title, "Siti di volo", "News", … */
   kind?: string;
   /**
    * Set the title as a wordmark: uppercase, with the header's tracking.
@@ -129,7 +129,7 @@ function card(
 
           The brand veil below is heaviest at the top, where this photograph's
           sky is a flat bleached grey worth losing, and fades to almost nothing
-          at the foot, where the ridge line is — the reason for using a
+          at the foot, where the ridge line is: the reason for using a
           photograph at all.
 
           The words then need protection the veil cannot give them: measured
@@ -296,7 +296,7 @@ export async function renderCard({
     Not PNG, which is what the old cards were: these are photographs, and the
     same card is 1.2 MB as a PNG against ~75 kB here.
 
-    Not WebP either, though it would be another ~35% smaller — because nothing
+    Not WebP either, though it would be another ~35% smaller, because nothing
     a visitor loads is ever this file. Only link scrapers fetch it, and their
     WebP support is uneven (Facebook and WhatsApp, which is where this club
     shares things, have a long history of not rendering WebP cards). Trading a

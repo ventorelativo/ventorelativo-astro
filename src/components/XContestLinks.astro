@@ -2,13 +2,13 @@
 /**
  * The five XContest searches on /voli (X2).
  *
- * These are kept as-is from the Drupal block — same five, same order, same
- * emoji — with one fix (MIGRATION-PLAN.md §4.4).
+ * These are kept as-is from the Drupal block: same five, same order, same
+ * emoji, with one fix (MIGRATION-PLAN.md §4.4).
  *
  * The date-scoped URLs were built with PHP's `date()` at build time, so
  * "Migliori giornata" froze to whenever the site was last deployed. A daily
  * rebuild used to hide that; it was switched off, and the archived build shows
- * `filter[date]=2026-07-10` — seven weeks stale at the time of writing.
+ * `filter[date]=2026-07-10`, seven weeks stale at the time of writing.
  *
  * So: the build-time date goes into the markup as a floor, and a few lines of
  * script correct it to the actual date on load. Someone without JavaScript gets
@@ -32,7 +32,7 @@ interface Link {
 
 /*
   The same five searches the Drupal block had, in the same order and with the
-  same emoji — the club chose them and pilots know them. What is new is a line
+  same emoji: the club chose them and pilots know them. What is new is a line
   under each saying what it returns: the labels alone made you open all five to
   learn the difference between "giornata" and "sempre".
 */

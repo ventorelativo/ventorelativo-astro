@@ -4,7 +4,7 @@ Instructions for AI coding agents working on this repository. This is the
 canonical file; `CLAUDE.md` and `.github/copilot-instructions.md` point here so
 there is one source of truth rather than three that drift.
 
-Humans: read [`docs/`](docs/) instead — same material, more explanation.
+Humans: read [`docs/`](docs/) instead, same material, more explanation.
 
 ## What this project is
 
@@ -17,23 +17,23 @@ Netlify, replacing a Drupal 11 + Tome site that still lives, read-only, in
 Editors are club volunteers, not developers. Changes must survive being made by
 someone who does not read code.
 
-## Current state — read before planning anything
+## Current state: read before planning anything
 
-Phases 1 to 4 are complete. **Phase 5 — the cutover — is next.** As of the
+Phases 1 to 4 are complete. **Phase 5 (the cutover) is next.** As of the
 last update to this file:
 
 **Built:** every URL the old site had. `/`, `/news/` and its articles, `/siti/`
 and all fourteen flight sites, `/voli`, `/iscrizioni`, `/contatti` with a
 Netlify form and its thank-you page, `/404`, plus `/styleguide`.
-Four collections — `news`, `sites`, `pages`, `settings` — in
+Four collections (`news`, `sites`, `pages`, `settings`) in
 `src/content.config.ts`, with MDX bodies in `src/content/`.
 
 Also built: the SEO layer (sitemap, robots, per-page generated social cards,
 schema.org, cookie-free analytics, `llms.txt`); **Keystatic in GitHub mode**,
-deployed with the site — editors work on a `modifiche-` branch and merge once,
+deployed with the site: editors work on a `modifiche-` branch and merge once,
 and each entry carries a preview link to that branch's Netlify deploy (see
 [`docs/deploying.md`](docs/deploying.md)); the **flight-data files**, byte-gated
-against the Drupal archive; the **map** — MapLibre behind a facade, with 3D
+against the Drupal archive; the **map**: MapLibre behind a facade, with 3D
 terrain, the KK7 thermal layers, the Tracestrack topo base, per-site and
 overview; the **XContest links** per takeoff; the **language switcher**, a
 facade over GTranslate; and `geo:export`/`geo:import` for round-tripping map
@@ -52,12 +52,12 @@ features through GeoJSON.
 - RSS: dropped by decision, not oversight (MIGRATION-PLAN.md S9).
 - A cookie banner. There is nothing to consent to: **nothing is ever stored on
   the visitor's device**, which is what the consent rules are about, so no
-  banner is required. Exactly one third-party request fires unasked — the
-  cookieless analytics beacon — and `npm run privacy:check` fails if a second
+  banner is required. Exactly one third-party request fires unasked, the
+  cookieless analytics beacon, and `npm run privacy:check` fails if a second
   one appears. The map, the translator and their tile providers load only on
-  interaction. `/privacy` says exactly this — keep the three in step: the
+  interaction. `/privacy` says exactly this, keep the three in step: the
   notice, the gate's allowlist, and what the pages actually do.
-- `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it —
+- `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it,
   the maps inline their data.
 - Membership payments (Phase 6) wait on the committee (D10). `/iscrizioni`
   ships today with the existing Satispay links and bank transfer.
@@ -77,7 +77,7 @@ npm install
 npm run dev       # dev server on http://localhost:4321 (background-managed)
 npm run build     # static build into dist/
 npm run preview   # serve the built output
-npm run check     # astro check — types and template diagnostics
+npm run check     # astro check: types and template diagnostics
 npm run verify    # check + lint + build + four gates. Run before claiming done.
 npm run navdata:check  # flight files vs the archived Drupal build (needs a build first)
 npm run urls:check     # every URL the old site served still resolves
@@ -109,7 +109,7 @@ something real.
    CDN and onto a cold start.
 4. **Colours are defined once, in `src/styles/tokens.css`, as `light-dark()`
    pairs.** Never hardcode a hex in a component, and never add a
-   `prefers-color-scheme` or `[data-theme]` block to get a dark variant — the
+   `prefers-color-scheme` or `[data-theme]` block to get a dark variant: the
    only thing the theme toggle changes is `color-scheme`, and every colour
    follows from that.
 5. **Spacing, type sizes, radii and shadows come from tokens too.** If you need a
@@ -118,14 +118,14 @@ something real.
    Bootstrap and jQuery were removed deliberately; the CSS layer is hand-rolled
    and small. This especially means no CSS framework, no component library, no
    icon package. When proposing one, state its **gzipped** size, whether it can
-   be loaded lazily, and what breaks without it — see Performance below.
+   be loaded lazily, and what breaks without it: see Performance below.
 7. **Never edit `dist/` or `.astro/`.** Both are generated and git-ignored.
 8. **Never modify or delete `../ventorelativo-drupal`.** It is the read-only
    reference for anything found missing later, and the byte-level source for the
    Phase 4 flight-data files.
 9. **Flight-computer data (`/api/navdata/*`) is safety-critical.** Pilots load it
    into their instruments. `npm run verify` fails unless both files still match
-   the archived Drupal output, and that gate is the point — if it goes red, fix
+   the archived Drupal output, and that gate is the point: if it goes red, fix
    the generator, do not update the reference. It is the evidence of what pilots
    already have loaded. Do not improvise the format: it was ported from
    `NavdataController.php`, and `src/lib/navdata.ts` records why each rule is
@@ -156,10 +156,10 @@ phone on mountain data.
   cannot work without it. Today: the theme toggle, the nav drawer, the gallery,
   the language switcher, the map, and a three-line WebMCP guard that fetches
   its module only if the browser has the API.
-- **Load it only where it is used** — an import in a component's client
+- **Load it only where it is used**: an import in a component's client
   `<script>` reaches only pages rendering that component; one in a layout
   reaches every page.
-- **Load it only when it is needed** — anything not required for first render
+- **Load it only when it is needed**: anything not required for first render
   goes behind a dynamic `import()` fired by interaction.
 - **Nothing render-blocking from a third party.** Fonts are self-hosted. No
   script tags pointing at other people's servers.
@@ -171,7 +171,7 @@ phone on mountain data.
   `<dialog>`, `Intl`, CSS scroll-snap and container queries between them remove
   most of the reasons to reach for a library.
 
-Measure, do not estimate — and measure the **build**, never the dev server,
+Measure, do not estimate, and measure the **build**, never the dev server,
 which ships ~400 kB of Vite machinery that never reaches production:
 
 ```
@@ -182,9 +182,9 @@ npm run weight -- http://localhost:4399/siti/
 Current budget, at 390x844: `/` 91 kB; `/siti/` 97 kB; a photo-heavy site page
 99 kB above the fold and ~350 kB scrolled, almost all of it photographs. Every
 page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
-the footer's contour texture — the biggest non-photograph item on the site, and
+the footer's contour texture: the biggest non-photograph item on the site, and
 the first thing to attack if the budget has to come down. `/siti/` and the site
-pages add the map's facade — not MapLibre, which is 239 kB brotli across three
+pages add the map's facade, not MapLibre, which is 239 kB brotli across three
 files and arrives only when a map is opened. Translation is a facade too: nothing from Google loads until a
 visitor asks for it. Details and the reasoning behind each rule:
 [`docs/performance.md`](docs/performance.md).
@@ -193,11 +193,11 @@ visitor asks for it. Details and the reasoning behind each rule:
 
 - **One change per commit, with a brief message.** A subject line and at most a
   short paragraph. Split unrelated fixes even when they were made in the same
-  session — a commit that mixes topics cannot be reverted cleanly. The detailed
+  session: a commit that mixes topics cannot be reverted cleanly. The detailed
   reasoning belongs in code comments and `docs/`, which is where this project
   keeps it.
 - **Comments explain _why_, not _what_.** This codebase documents decisions and
-  the traps behind them — match that. A comment that restates the code is noise;
+  the traps behind them: match that. A comment that restates the code is noise;
   one that records why the obvious approach failed is why the file is readable.
 - **Component styles stay scoped** inside the `.astro` file. Only genuinely
   global primitives (`.container`, `.prose`, `.button`, `.card`, resets) live in
@@ -209,7 +209,7 @@ visitor asks for it. Details and the reasoning behind each rule:
 - **Prefer native elements over JavaScript.** The mobile menu is a `<dialog>`
   precisely so the browser supplies the focus trap, Escape handling and
   inert-ing rather than hand-rolled JS.
-- **Every interactive control needs an accessible name** — visible text, or
+- **Every interactive control needs an accessible name**: visible text, or
   visually-hidden text plus `aria-hidden` on the icon.
 - **This site ships no client JS by default.** Two small inline scripts exist (the
   theme no-flash script and the nav drawer). Adding a framework island is a
@@ -217,7 +217,7 @@ visitor asks for it. Details and the reasoning behind each rule:
 
 ## Definition of done
 
-1. `npm run verify` passes — 0 errors, 0 warnings, build completes.
+1. `npm run verify` passes: 0 errors, 0 warnings, build completes.
 2. No page got heavier without a reason you can state. `npm run weight -- <url>`
    against the build.
 3. For any visual change, measure it: `npm run shot -- <url> --measure "<sel>"`
@@ -233,14 +233,14 @@ visitor asks for it. Details and the reasoning behind each rule:
   this, both seen here. A style edit that does not appear: the Vite transform
   cache did not invalidate, so the markup is fresh and the stylesheet is not.
   And, worse because it looks like broken code: after `astro.config.mjs`
-  changes — an integration or an adapter — the server can keep serving pages
+  changes (an integration or an adapter) the server can keep serving pages
   built before them, with whole new components silently missing. A page that
   renders correctly in `dist/` and not at `:4321` is this, every time.
   `npx astro dev stop`, start it again, hard-reload; a server started by hand
   rather than with `--background` has to be stopped in its own terminal.
   Between them these have cost two debugging sessions. When in doubt,
   `npm run build && npm run preview` is authoritative.
-- **`chrome --headless --window-size=390,844` lies on macOS** — the window is
+- **`chrome --headless --window-size=390,844` lies on macOS**: the window is
   clamped to a 500px minimum width, so you get a 500px layout cropped to 390 and
   every narrow media query is wrong. Use `npm run shot`, which emulates device
   metrics over the DevTools Protocol instead.
@@ -251,18 +251,18 @@ visitor asks for it. Details and the reasoning behind each rule:
   write, and the rejected import takes the whole feature down. Import
   third-party CSS in the component frontmatter instead.
 - **`vite.optimizeDeps.include`** is required for a dependency reached only
-  through a dynamic import inside a client script — without it the feature works
+  through a dynamic import inside a client script, without it the feature works
   in the build and silently does nothing in `astro dev`.
 - **The Netlify adapter replaces the image pipeline unless you stop it.**
   `imageCDN` defaults to `true`, which swaps `astro:assets` for
-  `/.netlify/images?url=…` URLs — no build-time optimisation, no immutable
+  `/.netlify/images?url=…` URLs: no build-time optimisation, no immutable
   `_astro/*.avif`, a cold resize in front of the LCP image, and a metered
   resource. `netlify({ imageCDN: false })` keeps the build-time pipeline. Check
   it the way it was caught: grep the built HTML for `/.netlify/images`.
 - **A bundled library that loads its own worker will lose it.** MapLibre finds
   its worker with `new URL('./maplibre-gl-worker.mjs', import.meta.url)`, which
   no bundler can see through: Vite hashes the main chunk and emits no worker
-  beside it. The 404 is silent and the symptom is misleading — only _vector_
+  beside it. The 404 is silent and the symptom is misleading: only _vector_
   tiles are parsed in the worker, so a raster basemap draws perfectly while
   every road, label and marker is missing. `scripts/sync-vendor.mjs` copies the
   worker **and the `maplibre-gl-shared.mjs` it imports** into `public/`, and
@@ -276,7 +276,7 @@ visitor asks for it. Details and the reasoning behind each rule:
   `<picture>` wrapper. Positioning the wrapper needs `:global(picture)`.
 - **A page's `:global()` cannot override a component's own scoped rule.** Astro
   compiles the component's `.header` to `.header[data-astro-cid-…]`, one
-  specificity point above the bare `.header` that `:global(.header)` emits — so
+  specificity point above the bare `.header` that `:global(.header)` emits, so
   the page's rule loses silently and the style looks like it was ignored. Put
   the exception in the component, next to whatever else already varies by the
   same prop.
@@ -284,7 +284,7 @@ visitor asks for it. Details and the reasoning behind each rule:
   The script becomes an external module and drags a shared chunk along with it.
   Factoring ten lines of `<details>` dismissal out of two components cost 2.0 kB
   and three requests on _every_ page. Inside a client script, prefer duplication
-  to a shared helper — and if you do import, measure `/` before and after.
+  to a shared helper, and if you do import, measure `/` before and after.
 - **Two `getStaticPaths` entries can claim the same path.** Astro keeps one,
   warns, and carries on; the card the `/og/` route built for the homepage was
   wrong for weeks because the entry that won was not the one that looked

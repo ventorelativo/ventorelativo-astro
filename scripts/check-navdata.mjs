@@ -6,7 +6,7 @@
  * the built output has to equal what the old site served, with the single
  * exception of the OpenAir `* Generated:` line, which is the build date.
  *
- * Run after a build — it reads `dist/`, not the dev server. Wired into
+ * Run after a build: it reads `dist/`, not the dev server. Wired into
  * `npm run verify`.
  *
  * If this fails, the answer is almost never to update the reference. It is the
@@ -25,7 +25,7 @@ const FILES = [
   { name: 'ventorelativo-airspace.txt', exact: false },
 ];
 
-/** First differing line, with a little context — enough to see what moved. */
+/** First differing line, with a little context: enough to see what moved. */
 function firstDifference(expected, actual) {
   const a = expected.split('\n');
   const b = actual.split('\n');

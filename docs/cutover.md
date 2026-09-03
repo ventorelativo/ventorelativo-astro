@@ -12,11 +12,11 @@ not strand anyone mid-way.
 
 ## Before the domain moves
 
-### 1. Set the two map keys in Netlify — done 2026-09-03
+### 1. Set the two map keys in Netlify: done 2026-09-03
 
 `PUBLIC_MAPTILER_KEY` and `PUBLIC_TRACESTRACK_KEY` are set in Netlify → **Site
 configuration → Environment variables**. Before that the deployed bundle carried
-a style URL ending in a bare `?key=`, which returns 403 — the map opened, drew
+a style URL ending in a bare `?key=`, which returns 403: the map opened, drew
 nothing and reported no error.
 
 `netlify.toml` lists both in `SECRETS_SCAN_OMIT_KEYS`, so the build does not
@@ -48,7 +48,7 @@ checking their own branch.
 
 ### 4. Take the test content out
 
-- **`/news/a-test-news/`** — written from the CMS to prove Phase 3 worked. It is
+- **`/news/a-test-news/`**: written from the CMS to prove Phase 3 worked. It is
   lorem ipsum, and it is currently the newest post, so it is the first card on
   `/news/` and would be the first thing a visitor sees. Delete it in Keystatic.
   It is already out of the sitemap and out of search, but after the move it would
@@ -90,7 +90,7 @@ curl -sI https://ventorelativo.it/contact | head -1     # expect 301 → /contat
 ```
 
 - `robots.txt` should now read `Allow: /` with a `Sitemap:` line. If it still
-  says _Anteprima_, `Astro.site` is not what you think it is — check the
+  says _Anteprima_, `Astro.site` is not what you think it is: check the
   `CONTEXT` and `URL` variables Netlify sets.
 - The two navdata files are the ones that matter most. Pilots have them loaded
   in their instruments and the URLs are load-bearing (AGENTS.md rule 9).
@@ -99,7 +99,7 @@ curl -sI https://ventorelativo.it/contact | head -1     # expect 301 → /contat
 
 Then:
 
-- **Google Search Console** — submit `https://ventorelativo.it/sitemap-index.xml`.
+- **Google Search Console**, submit `https://ventorelativo.it/sitemap-index.xml`.
   Until now the site has been asking not to be crawled at all.
 - **Archive the Drupal repository read-only.** Do not delete it: it is the
   evidence the navdata and URL gates compare against, and both fail without it.
@@ -120,14 +120,14 @@ Then:
   the live site until the new key's referrer list caught up, and there is no
   money on the account. But the old value was hard-coded in
   `src/lib/mapConfig.ts` and committed, so it is in this repository's history
-  and in every public bundle built from it — moving it to an environment
+  and in every public bundle built from it: moving it to an environment
   variable stopped the next build leaking it, not the ones already published.
   After the move: issue a new key at tracestrack.com with `ventorelativo.it` and
   `https://*--ventorelativo-astro.netlify.app` on its referrer list, put it in
   `.env` and in Netlify, redeploy, open a map, then revoke the old key.
 
 - Phase 6 (payments) is documented in [payments.md](payments.md) and not
-  executed. Nothing about it blocks the cutover — `/iscrizioni` works today with
+  executed. Nothing about it blocks the cutover: `/iscrizioni` works today with
   the existing Satispay links and the bank transfer.
 - If payments do go live first, the Stripe Payment Links' redirect URL has to be
   changed from the `*.netlify.app` address to `https://ventorelativo.it/iscrizioni/grazie`.

@@ -8,7 +8,7 @@
  * The one thing that *is* needed is the longitude squeeze. A degree of
  * longitude at 44.8°N is about 71% of a degree of latitude, so plotting raw
  * lon/lat stretches every landing field sideways. Multiplying longitude by
- * `cos(latitude)` fixes it — that is a local equirectangular projection, and at
+ * `cos(latitude)` fixes it: that is a local equirectangular projection, and at
  * this scale it is indistinguishable from anything more expensive.
  */
 export interface LatLon {
@@ -42,7 +42,7 @@ export function boundsOf(points: LatLon[]): Bounds {
  * A viewBox 1000 units wide, and functions putting a coordinate inside it.
  *
  * Width is fixed so the emitted path data is short, readable integers rather
- * than sixteen-digit fractions of a degree — the same SVG, several kB smaller.
+ * than sixteen-digit fractions of a degree: the same SVG, several kB smaller.
  */
 export interface Projection {
   width: number;

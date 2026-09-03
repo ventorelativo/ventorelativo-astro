@@ -22,7 +22,7 @@ consequences worth internalising:
   the browser.** Secrets, file reads and heavy computation are all fine there.
 - **There is no server to hold state.** Contact form submissions go to Netlify
   Forms; nothing else needs a backend. (The CMS is the exception, and it stores
-  nothing — it reads and writes GitHub.)
+  nothing: it reads and writes GitHub.)
 
 Astro's other mode (`server`, with an _adapter_) renders per request. This site
 has the Netlify adapter but **keeps `output: 'static'`**, which is not a
@@ -33,7 +33,7 @@ while all 25 pages are still files on a CDN.
 
 The adapter was kept out until Phase 3 because with nothing to render on demand
 it uploaded a multi-megabyte function that answered no requests. Adding a
-`prerender = false` to a content page would undo the arrangement — that page
+`prerender = false` to a content page would undo the arrangement: that page
 would leave the CDN for a cold start.
 
 ## 2. Routing is the file tree
@@ -48,23 +48,23 @@ Every file in `src/pages/` becomes a URL. No router to configure.
 
 `build.format: 'directory'` makes Astro write `styleguide/index.html` rather than
 `styleguide.html`, so the URL is `/styleguide/`. That exactly matches what the
-old Drupal/Tome export produced — which is why the config comment tells you not
+old Drupal/Tome export produced, which is why the config comment tells you not
 to change it. URLs are the one thing a migration cannot silently alter.
 
 Files in `public/` are copied to the site root untouched (favicons, the social
-card). Files in `src/` are processed. That distinction matters — see §5.
+card). Files in `src/` are processed. That distinction matters: see §5.
 
 ## 3. Anatomy of an `.astro` file
 
 ```astro
 ---
-// FRONTMATTER — JavaScript/TypeScript. Runs at build time, on the server.
+// FRONTMATTER: JavaScript/TypeScript. Runs at build time, on the server.
 // Never shipped to the browser.
 import Logo from '../components/Logo.astro';
 const items = ['a', 'b'];
 ---
 
-<!-- TEMPLATE — HTML with {expressions}. -->
+<!-- TEMPLATE: HTML with {expressions}. -->
 <ul>{items.map((i) => <li>{i}</li>)}</ul>
 
 <style>
@@ -85,7 +85,7 @@ The exceptions are [`ThemeToggle.astro`](../src/components/ThemeToggle.astro),
 [`Nav.astro`](../src/components/Nav.astro),
 [`LanguageSwitcher.astro`](../src/components/LanguageSwitcher.astro),
 [`Gallery.astro`](../src/components/Gallery.astro) and
-[`SiteMap.astro`](../src/components/SiteMap.astro) — and the last three load
+[`SiteMap.astro`](../src/components/SiteMap.astro), and the last three load
 their heavy part only on interaction.
 
 ### Scoped styles, and the trap in them
@@ -96,13 +96,13 @@ elements _this file_ writes, and rewriting selectors to match. Two things follow
 - Styling something rendered by another component does not work by default. Use
   `:global(selector)` to opt out of scoping deliberately.
 - When you put `class="x"` on a _component_, that class is forwarded to whatever
-  that component treats as its root element — which may not be the element you
+  that component treats as its root element, which may not be the element you
   pictured.
 
 That second point caused a real bug: `<Picture class="hero__bg">` puts the class
 on the inner `<img>`, so `position: absolute` never reached the wrapping
 `<picture>`, which stayed in flow as an extra grid row and pushed the hero
-content downward. The fix is `.hero :global(picture) { position: absolute }` —
+content downward. The fix is `.hero :global(picture) { position: absolute }`,
 see the comment in [`index.astro`](../src/pages/index.astro).
 
 ## 4. Layouts and slots
@@ -141,14 +141,14 @@ appear on all pages, it goes in a layout, not copied into pages.
 
 `astro:assets` (`<Image>`, `<Picture>`) processes images imported from `src/`:
 it generates modern formats (avif/webp), resizes to the widths you ask for,
-fingerprints the filename for permanent caching, and — importantly — writes
+fingerprints the filename for permanent caching, and (importantly) writes
 `width`/`height` into the markup so the browser reserves space and the page does
 not jump as images load.
 
 ```astro
 ---
 import { Picture } from 'astro:assets';
-// An import, not a path string — that is what makes the pipeline run.
+// An import, not a path string: that is what makes the pipeline run.
 import { HERO } from '../assets/hero';
 ---
 
@@ -173,13 +173,13 @@ picture has no credit to render, and the two cannot drift apart.
 
 There is no CSS framework. Bootstrap was removed on purpose.
 
-- [`tokens.css`](../src/styles/tokens.css) — every colour, space, size, radius and
+- [`tokens.css`](../src/styles/tokens.css): every colour, space, size, radius and
   duration, as custom properties.
-- [`global.css`](../src/styles/global.css) — reset, base element styles, and the
+- [`global.css`](../src/styles/global.css): reset, base element styles, and the
   primitives: `.container`, `.prose`, `.button`, `.card`, `.field`,
   `.visually-hidden`. A rule earns a place here when a second component needs
   it, or when `/styleguide` has to be able to show the same thing the site
-  renders — `.field` moved out of `ContactForm.astro` for exactly that reason.
+  renders: `.field` moved out of `ContactForm.astro` for exactly that reason.
 - Everything else is scoped to its component.
 
 **Dark mode is one line of thinking.** Each colour is a `light-dark(a, b)` pair,
@@ -205,7 +205,7 @@ stay inline and synchronous to work.
 React _is_ installed, but only because Keystatic's admin is a React app. It
 runs inside the serverless function; no page of the site ships a byte of it.
 
-Astro _can_ run React/Vue/Svelte components as "islands" — interactive
+Astro _can_ run React/Vue/Svelte components as "islands": interactive
 components hydrated individually while the rest stays static HTML. This site has
 no islands and needs none; the two interactive pieces are a `<dialog>` and three
 radio buttons.

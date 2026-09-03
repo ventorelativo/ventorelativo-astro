@@ -2,7 +2,7 @@
 /**
  * Image gallery with a zoomable lightbox (C10).
  *
- * The Drupal version was a Slick carousel — jQuery, a fixed 16:9 crop, dots.
+ * The Drupal version was a Slick carousel, jQuery, a fixed 16:9 crop, dots.
  * MIGRATION-PLAN.md C10 proposed a CSS scroll-snap strip; the club asked for a
  * lightbox, and chose Bigger Picture after trying it: ~8.4 KB gzipped, click /
  * wheel / pinch to zoom, keyboard navigation, focus management, and it respects
@@ -11,7 +11,7 @@
  * Weight discipline (see AGENTS.md, "Performance"):
  *  - The grid is plain HTML and needs no JavaScript at all.
  *  - The import lives in the client <script>, so the bundle reaches only pages
- *    that render a gallery — two of the twenty today.
+ *    that render a gallery: two of the twenty today.
  *  - The library is behind a dynamic import fired on first click, so opening
  *    the page costs 2 kB of listener; the 21 kB library lands only if someone
  *    actually opens an image.
@@ -26,7 +26,7 @@ import { Image, getImage } from 'astro:assets';
 /*
   The lightbox's stylesheet is imported here, not alongside the dynamic import
   of the library. Astro's `inlineStylesheets: 'auto'` inlines a stylesheet this
-  small into the page — but Vite still emits a preload for the file it no longer
+  small into the page, but Vite still emits a preload for the file it no longer
   wrote, so `import('bigger-picture/css')` rejected on a 404 and took the whole
   Promise.all, and the lightbox, down with it. As page CSS it is simply inlined,
   costs no request, and cannot fail at runtime.
@@ -67,7 +67,7 @@ const full = await Promise.all(
           {/*
             The link is named, the image inside it is not.
 
-            `alt=""` on the thumbnail is deliberate — the caption below carries
+            `alt=""` on the thumbnail is deliberate: the caption below carries
             the same words and a screen reader would otherwise announce them
             twice. But an empty alt inside an anchor leaves the anchor with no
             accessible name at all, which is what Lighthouse caught here: three
@@ -85,7 +85,7 @@ const full = await Promise.all(
             {/*
               The thumbnail is a 4:3 crop shown at ~20rem, so 640px covers a
               2x screen. quality 70 is indistinguishable at this size and cuts
-              the grid's weight by more than half — the full-resolution frame
+              the grid's weight by more than half: the full-resolution frame
               is one click away in the lightbox.
             */}
             <Image
@@ -135,7 +135,7 @@ const full = await Promise.all(
     display: block;
     width: 100%;
     /* A fixed ratio keeps a row of mixed portrait and landscape shots tidy.
-       Nothing is lost — the lightbox shows the whole frame. */
+       Nothing is lost, the lightbox shows the whole frame. */
     aspect-ratio: 4 / 3;
     object-fit: cover;
     transition: scale var(--transition);

@@ -5,7 +5,7 @@
  * MIGRATION-PLAN.md schedules /siti for Phase 4, because its composition is
  * intro → overview map → card grid → navdata links and the map is the risky
  * part. The grid needs none of that, and without this page the "Siti" nav item
- * — the site's most prominent link — points at a 404. So it ships now and the
+ * (the site's most prominent link) points at a 404. So it ships now and the
  * map drops in above the grid in Phase 4.
  *
  * Sort: featured first, then alphabetical, as the Drupal view did (`sticky`
@@ -27,8 +27,8 @@ const sites = (await getCollection('sites')).sort((a, b) => {
   Every feature of every site, each carrying the site it belongs to so the map's
   popups can offer a way through to it.
 
-  Deduplicated by id: several sites share a landing — Atterraggio Beba serves
-  three — and drawing it three times would stack three identical markers and
+  Deduplicated by id: several sites share a landing, Atterraggio Beba serves
+  three, and drawing it three times would stack three identical markers and
   three identical popups on one spot. The first site to claim it wins, which is
   the alphabetical one, and the others still list it in their own tables.
 */
@@ -37,7 +37,7 @@ const sites = (await getCollection('sites')).sort((a, b) => {
 
   It had none: an h1, a map and a grid of names. That reads as a directory
   rather than a place, and it gives a search engine nothing to index about the
-  area beyond fourteen site names — which is the one thing someone searching
+  area beyond fourteen site names, which is the one thing someone searching
   "parapendio val chisone" would not type.
 */
 const page = await getEntry('pages', 'siti');
@@ -84,7 +84,7 @@ const overview = (
   .site-grid {
     display: grid;
     /* 20rem is the largest minimum that still fits three columns in the 68rem
-       container — the three-across, ~350px card the old site had. */
+       container: the three-across, ~350px card the old site had. */
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
     /*
       Stretch, which is the grid default: every card in a row is as tall as the

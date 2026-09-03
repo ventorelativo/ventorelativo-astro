@@ -3,14 +3,14 @@
  * The press kit's download grid.
  *
  * Each tile previews its artwork with an `<img>` pointing at the SVG the page
- * is offering, so what you look at is literally the file you get — no
+ * is offering, so what you look at is literally the file you get: no
  * possibility of a preview that has drifted from the download, which is a
  * mistake this component has already made once.
  *
  * The PNGs are 1-2 MB of 2000px artwork between them and are never loaded
  * here; the vectors are 2-3 kB each on the wire and cached.
  *
- * The list is `src/lib/press.ts`, which is also what generates the files — one
+ * The list is `src/lib/press.ts`, which is also what generates the files: one
  * definition, so a tile cannot advertise something the build did not write.
  */
 import sharp from 'sharp';
@@ -113,7 +113,7 @@ const tiles = await Promise.all(
   }
 
   /*
-    A checkerboard for the files with a transparent ground — the only way to
+    A checkerboard for the files with a transparent ground: the only way to
     show "transparent" that does not read as "white".
   */
   .press__preview--check {
@@ -131,7 +131,7 @@ const tiles = await Promise.all(
       -8px 0;
   }
 
-  /* `height: auto` so each drawing keeps its own proportions — three of the
+  /* `height: auto` so each drawing keeps its own proportions, three of the
      five are not the same shape. */
   .press__logo {
     width: auto;

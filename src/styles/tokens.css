@@ -1,10 +1,10 @@
 /*
- * Design tokens — MIGRATION-PLAN.md §6.2 (D11, "refined minimal").
+ * Design tokens: MIGRATION-PLAN.md §6.2 (D11, "refined minimal").
  *
  * Colour strategy: every semantic token is a `light-dark()` pair, and the only
  * thing the theme toggle changes is `color-scheme`. That means one definition
  * per colour instead of three (`:root`, a prefers-color-scheme block, and a
- * [data-theme] block), and it keeps the auto/light/dark toggle honest — "auto"
+ * [data-theme] block), and it keeps the auto/light/dark toggle honest: "auto"
  * is genuinely the absence of an override rather than a third set of values.
  */
 
@@ -18,7 +18,7 @@
   --brand-blue: #1f52a6;
   /*
     The dark-mode link colour, read out of the old site's compiled CSS
-    (`--bs-link-color:rgb(120.6,151.2,201.6)`) — Bootstrap 5.3's dark-mode
+    (`--bs-link-color:rgb(120.6,151.2,201.6)`), Bootstrap 5.3's dark-mode
     treatment of $primary. MIGRATION-PLAN.md recorded #668adc for this; that
     value appears nowhere in the built site.
   */
@@ -26,7 +26,7 @@
   --brand-yellow: #fabd14;
   /*
     Bootstrap's `$success`, which is what the old theme used for the WhatsApp
-    button. Tried WhatsApp's own #25d366 first — more recognisable, but bright
+    button. Tried WhatsApp's own #25d366 first: more recognisable, but bright
     enough that white text fails contrast on it, and a green button with black
     text reads as a different component from every other button on the site.
 
@@ -47,7 +47,7 @@
   --color-bg-raised: light-dark(#ffffff, #21262b);
 
   /* --------------------------------------------------------------- text */
-  /* The old theme ran body text at rgb(105,117,134) — quite light. Nudged
+  /* The old theme ran body text at rgb(105,117,134): quite light. Nudged
      darker here for contrast; headings get the stronger tone. */
   --color-text: light-dark(#43505f, #d4dae1);
   --color-text-strong: light-dark(#1d2836, #f2f5f8);
@@ -70,12 +70,12 @@
   --color-header-border: light-dark(#dee2e6, #495057);
 
   /* Nav links ran on their own near-black/near-white ramp rather than the body
-     text colours — `rgba(0,0,0,.65)` rising to solid black when current. */
+     text colours: `rgba(0,0,0,.65)` rising to solid black when current. */
   --color-nav: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.65));
   --color-nav-hover: light-dark(rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.8));
   --color-nav-active: light-dark(#000000, #ffffff);
   /* Bootstrap's $gray-400, which the old theme used for the hover rule in both
-     schemes — measured identical in light and dark. */
+     schemes: measured identical in light and dark. */
   --color-nav-rule-hover: #ced4da;
 
   /* ---------------------------------------------------------- interactive */
@@ -93,7 +93,7 @@
     The category badge's text.
 
     `--color-accent` is tuned to sit on the page background. The badge puts it
-    on a 10% wash of itself, which lifts the background under it — and in dark
+    on a 10% wash of itself, which lifts the background under it, and in dark
     mode that took the contrast to 4.43:1, just under the 4.5 the text's size
     requires. A step brighter restores it to 5.7:1. Light mode was never close
     to the line, so it keeps the brand blue.
@@ -105,7 +105,7 @@
   --color-badge-text: light-dark(var(--brand-blue), var(--color-accent-hover));
 
   /*
-    A tick, a confirmation — green that reads on either ground.
+    A tick, a confirmation: green that reads on either ground.
 
     Not `--brand-success` directly: that is Bootstrap's `$success`, tuned as a
     button fill under white text, and at 3.37:1 on a dark card it is the dimmest
@@ -118,15 +118,15 @@
     What sits on a solid brand-blue surface. White in both schemes, for the
     reason `.button` records: the primary button keeps `--brand-blue` in dark
     mode rather than following `--color-accent`, and white on it is legible
-    either way. Anything that has to read as the same object — the highlighted
-    pricing card's header band — uses this pair rather than inventing one.
+    either way. Anything that has to read as the same object: the highlighted
+    pricing card's header band: uses this pair rather than inventing one.
   */
   --color-on-brand: #ffffff;
 
   /*
     The contour lines behind the footer and the flight-site cards.
 
-    Faint on purpose — it is texture, not decoration you should notice. Lighter
+    Faint on purpose: it is texture, not decoration you should notice. Lighter
     in dark mode than the arithmetic suggests, because thin lines lose more to
     a dark ground than a solid block would.
   */
@@ -135,14 +135,14 @@
   /* ------------------------------------------------------------------ map */
   /*
     One colour per feature type, ported from the archived
-    `/api/sites/all/geo.json` — the only surviving record of what the old map
+    `/api/sites/all/geo.json`: the only surviving record of what the old map
     looked like. Takeoff blue is already --brand-blue, which is why the brand
     note above says the two must stay coherent.
 
     The light value is the archived colour exactly. The dark one is lifted, the
     same treatment --brand-blue-bright gives links: the old markers sat on a
     light topographic basemap, so they never had to survive a dark background.
-    The one deliberate departure is `poi` — archived gold is close to invisible
+    The one deliberate departure is `poi`: archived gold is close to invisible
     on white, so light mode darkens it. When the real map arrives it draws on
     MapTiler's basemap rather than the page, and uses the archived values as-is.
   */
@@ -161,7 +161,7 @@
 
   /* ---------------------------------------------------------- typography */
   /* Outfit is the current site face (loaded in the old theme's _common.scss).
-     Self-hosted in Phase 1 rather than pulled from fonts.googleapis.com — one
+     Self-hosted in Phase 1 rather than pulled from fonts.googleapis.com: one
      less third-party origin, no render-blocking stylesheet, and it removes a
      GDPR wrinkle that a cookie-free analytics choice implies caring about. */
   /* 'Outfit Variable' is the family name @fontsource-variable/outfit registers;
@@ -214,7 +214,7 @@
   /*
     The header and the footer cast into the content between them, so the page
     reads as a sheet under the chrome rather than three panels butted together.
-    Same weight as a resting card — this is a seam, not a floating element.
+    Same weight as a resting card: this is a seam, not a floating element.
 
     Two tokens because the direction differs and a `box-shadow` cannot be
     flipped by the consumer; the colour and blur stay in one place.
@@ -223,7 +223,7 @@
   --shadow-chrome-up: 0 -2px 6px light-dark(#0f172a14, #0000004d);
 
   /*
-    The veil at the edge of a box that has more content out of sight — the
+    The veil at the edge of a box that has more content out of sight: the
     scroll hint on a wide table, drawn as a gradient rather than a `box-shadow`.
 
     Light and dark are not the same colour with a different alpha, because a
@@ -234,7 +234,7 @@
   --color-scroll-edge: light-dark(#0f172a40, #ffffff26);
 
   /* --------------------------------------------------------------- layout */
-  /* 5.25rem — the old `--header-height`, measured at 84px. */
+  /* 5.25rem: the old `--header-height`, measured at 84px. */
   --header-height: 5.25rem;
   --content-width: 68rem;
   --prose-width: 42rem;

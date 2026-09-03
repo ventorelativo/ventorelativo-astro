@@ -161,8 +161,8 @@ class CDP {
 // ------------------------------------------------------- in-page measurement
 
 /**
- * Runs inside the page. Reports the two things that actually go wrong —
- * unintended scrolling and elements escaping the viewport — plus the boxes of
+ * Runs inside the page. Reports the two things that actually go wrong:
+ * unintended scrolling and elements escaping the viewport: plus the boxes of
  * whatever selectors were asked for.
  */
 function measureInPage(selectors, computedSelectors) {
@@ -183,7 +183,7 @@ function measureInPage(selectors, computedSelectors) {
   for (const el of document.querySelectorAll('body *')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
-    // Overlays legitimately park content off-screen — a lightbox's adjacent
+    // Overlays legitimately park content off-screen: a lightbox's adjacent
     // slides, a drawer waiting to slide in. Only flow content can "overflow".
     if (el.closest('[role="dialog"], dialog, [aria-modal="true"]')) continue;
     /*
@@ -279,8 +279,8 @@ function measureInPage(selectors, computedSelectors) {
 const opts = parseArgs(process.argv.slice(2));
 const profile = join(tmpdir(), `vr-shot-${process.pid}`);
 /*
-  `--disable-gpu` is right for screenshots — it is faster and its output is
-  deterministic — but it also means no WebGL context at all, so anything drawn
+  `--disable-gpu` is right for screenshots: it is faster and its output is
+  deterministic, but it also means no WebGL context at all, so anything drawn
   with one comes out as an empty rectangle. `--webgl` swaps it for SwiftShader,
   Chrome's software renderer, which is slow and entirely enough to prove that a
   map renders. Opt-in, because every shot would otherwise pay for it.
@@ -356,7 +356,7 @@ try {
       Page weight, measured rather than assumed. This site's budget is small
       and deliberate (see AGENTS.md); the only way to keep it that way is to
       be able to see it. `encodedDataLength` is bytes on the wire, so
-      compression counts — which is what a visitor actually pays.
+      compression counts, which is what a visitor actually pays.
     */
     const weight = new Map();
     if (opts.weight || opts.requests) {
@@ -406,7 +406,7 @@ try {
     );
     /*
       Light is emulated as explicitly as dark. Left unset, Chrome follows the
-      host OS — so on a Mac in dark appearance every "light" screenshot this
+      host OS, so on a Mac in dark appearance every "light" screenshot this
       script has ever produced was in fact a dark one, silently, while the
       filename said otherwise.
     */
@@ -451,8 +451,8 @@ try {
     }
 
     /*
-      Hover states cannot be read from a stylesheet with any confidence — a
-      cascade can carry several competing :hover rules — and getComputedStyle
+      Hover states cannot be read from a stylesheet with any confidence, a
+      cascade can carry several competing :hover rules, and getComputedStyle
       will not report one that is not actually active. So dispatch a real mouse
       move over the element and measure what the browser settles on.
     */
@@ -552,7 +552,7 @@ try {
 
     if (opts.shot) {
       /*
-        A page running a continuous animation — a lightbox mid-transition, say —
+        A page running a continuous animation: a lightbox mid-transition, say:
         can leave captureScreenshot waiting for a stable frame indefinitely.
         Time it out and carry on: the measurements above are the part that
         matters, and losing the PNG should not lose them too.
@@ -565,7 +565,7 @@ try {
       /*
         The default capture reads the compositor surface, which never settles
         while something animates. `fromSurface: false` renders straight from the
-        renderer instead and does settle — a little less faithful, but a picture
+        renderer instead and does settle: a little less faithful, but a picture
         beats none.
       */
       const shot = (await capture({})) ?? (await capture({ fromSurface: false }));

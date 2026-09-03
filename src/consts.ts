@@ -10,7 +10,7 @@
 export const SITE = {
   /**
    * system.site.yml recorded this as 'Ventorelativo', but the club writes it
-   * with the internal capital — as the article bodies and the logo artwork do.
+   * with the internal capital, as the article bodies and the logo artwork do.
    * Deliberate divergence from the Drupal value, not a transcription slip.
    */
   name: 'VentoRelativo',
@@ -26,7 +26,7 @@ export const SITE = {
 } as const;
 
 /**
- * Main navigation — from the 5 `menu_link_content` entities in the `main` menu,
+ * Main navigation, from the 5 `menu_link_content` entities in the `main` menu,
  * in their Drupal weight order (Siti -49, Voli -48, News -47, Iscrizioni -46,
  * Contatti 50).
  *
@@ -48,6 +48,6 @@ export const NAV = [
 export const CLUB_CENTRE = {
   lat: 44.903584,
   lon: 7.116547,
-  /** metres — XContest `filter[radius]` */
+  /** metres, XContest `filter[radius]` */
   radius: 20000,
 } as const;

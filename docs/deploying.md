@@ -3,7 +3,7 @@
 Phase 3. Two things arrive together, because one needs the other: the site
 starts deploying to Netlify, and Keystatic starts writing to GitHub instead of
 to a working copy. The admin needs two server-rendered routes, which is why the
-Netlify adapter — banned until now — is allowed from this phase on.
+Netlify adapter (banned until now) is allowed from this phase on.
 
 ## The shape of it
 
@@ -31,7 +31,7 @@ There are two, on purpose.
 
 The domain moves to the new project at go-live (Phase 5), once the Phase 4
 flight data has been diffed against the archive. Repointing it earlier would
-put an unfinished site in front of the club for no gain — and the old project
+put an unfinished site in front of the club for no gain, and the old project
 keeps serving from its own deploy until we say otherwise.
 
 ## Steps only a human can do
@@ -50,7 +50,7 @@ Netlify → **Add new project** → **Import an existing project** → GitHub �
 
 The build command and publish directory are already in `netlify.toml`, so the
 form should prefill them; if it does not, they are the values above. Leave
-branch deploys enabled — that is what gives an editor a preview of their own
+branch deploys enabled: that is what gives an editor a preview of their own
 branch. Note the URL it hands you.
 
 ### 2. Let Keystatic create its GitHub App
@@ -64,8 +64,8 @@ npm run dev
 Open <http://localhost:4321/keystatic>. It shows a **Keystatic Setup** screen
 rather than the editor, because the app does not exist yet. Fill in:
 
-- **Deployed App URL** — the Netlify URL from step 1.
-- **GitHub organization** — `ventorelativo`.
+- **Deployed App URL**: the Netlify URL from step 1.
+- **GitHub organization**: `ventorelativo`.
 
 Click through to GitHub, name the app (`ventorelativo-cms` reads well), create
 it, then **install it on the `ventorelativo-astro` repository**. Creating an app
@@ -77,7 +77,7 @@ Keystatic writes the credentials into `.env` for you. Four values:
 | Variable                           | What it is                         |
 | ---------------------------------- | ---------------------------------- |
 | `KEYSTATIC_GITHUB_CLIENT_ID`       | the app's identity                 |
-| `KEYSTATIC_GITHUB_CLIENT_SECRET`   | its password — a real secret       |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET`   | its password: a real secret        |
 | `KEYSTATIC_SECRET`                 | signs the editor's session cookie  |
 | `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | the app's URL name; safe to expose |
 
@@ -87,14 +87,14 @@ Keystatic writes the credentials into `.env` for you. Four values:
 
 Project → **Site configuration** → **Environment variables** → add all four,
 exactly as `.env` has them. The deployed admin cannot authenticate without them,
-and there is no error message that says so plainly — it simply shows the setup
+and there is no error message that says so plainly: it simply shows the setup
 screen again.
 
 ## The App's callback URLs
 
 Keystatic's setup flow runs on localhost, so the GitHub App it creates registers
 only `http://127.0.0.1:4321/…`. Logging in on the deployed site then fails with
-_"The `redirect_uri` is not associated with this application"_ — the App is
+_"The `redirect_uri` is not associated with this application"_: the App is
 correct, it simply has never been told about the deployed origin.
 
 In the App's settings (**GitHub → Settings → Developer settings → GitHub Apps →
@@ -124,7 +124,7 @@ branch URL only ever serves the preview of a page.
 | deployed      | `github` | GitHub | a commit on a `modifiche-` branch |
 
 Vite replaces `import.meta.env.DEV` with a literal `false` when building, so the
-deployed admin cannot take the local branch — which matters, because a
+deployed admin cannot take the local branch, which matters, because a
 serverless filesystem is discarded after each request and every edit would
 vanish silently.
 
@@ -133,7 +133,7 @@ vanish silently.
 Every build scans the output for the value of every environment variable, and
 fails if it finds one. That is right for a credential and wrong for anything
 Astro prefixes `PUBLIC_`, which by definition is compiled into the pages and
-sent to visitors — being in the output is the whole point.
+sent to visitors: being in the output is the whole point.
 
 The failure names the file and line, which makes it look like a leak:
 
@@ -143,7 +143,7 @@ Secret env var "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG"'s value detected:
 ```
 
 `netlify.toml` lists the offenders by name in `SECRETS_SCAN_OMIT_KEYS`. **Add
-any new `PUBLIC_` variable to that list**, rather than switching the scan off —
+any new `PUBLIC_` variable to that list**, rather than switching the scan off:
 `KEYSTATIC_GITHUB_CLIENT_SECRET` and `KEYSTATIC_SECRET` carry no prefix and must
 stay scanned.
 
@@ -151,7 +151,7 @@ stay scanned.
 
 An editor opens `/keystatic` on the deployed site, logs in with GitHub, and
 edits. Saving commits. If Keystatic is configured with a branch prefix they work
-on a branch, Netlify builds a preview of it, and merging publishes — otherwise a
+on a branch, Netlify builds a preview of it, and merging publishes: otherwise a
 save goes straight to `main` and the site rebuilds within a couple of minutes.
 
 Each collection carries a `previewUrl`, so an entry has a **Preview** link

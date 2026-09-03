@@ -1,19 +1,19 @@
 /**
- * Keystatic — the editing UI for people who do not open a code editor.
+ * Keystatic: the editing UI for people who do not open a code editor.
  *
  * ## The two schemas
  *
  * This file and `src/content.config.ts` describe the same data twice, on
  * purpose and by necessity: Keystatic decides what an editor can type, Zod
  * decides what the build will accept. **Change one and change the other.** Zod
- * is the backstop — if these drift, the build fails with a useful message
+ * is the backstop: if these drift, the build fails with a useful message
  * rather than a page rendering wrong.
  *
  * ## Storage: local, for now
  *
  * `kind: 'github'` means the UI reads and writes this repository through the
  * GitHub API: a save is a commit, and Netlify rebuilds from it. Who may edit is
- * decided by GitHub — anyone with write access to the repo, nobody else.
+ * decided by GitHub: anyone with write access to the repo, nobody else.
  *
  * It still runs under `npm run dev`, and it also ships with the deployed site,
  * which is why the Netlify adapter arrives in the same phase: the admin needs
@@ -33,7 +33,7 @@ import { block } from '@keystatic/core/content-components';
  * The components a body may contain.
  *
  * This list must match `MDX_COMPONENTS` in src/components/mdx/components.ts:
- * that one decides what renders, this one decides what an editor can insert —
+ * that one decides what renders, this one decides what an editor can insert:
  * and what Keystatic will accept when reading an existing file. An entry using
  * a component missing from here fails to open at all.
  */
@@ -133,7 +133,7 @@ const imageWithAlt = (directory: string, publicPath: string) =>
  *
  *  - **Netlify sanitises branch names into subdomains**, turning anything that
  *    is not alphanumeric into a dash. A branch called `modifiche/estate` is
- *    served at `modifiche-estate--…`, which `{branch}` would not produce — so
+ *    served at `modifiche-estate--…`, which `{branch}` would not produce, so
  *    BRANCH_PREFIX below ends in a dash rather than a slash.
  *  - **The project name**, not the domain. This stays correct after go-live
  *    moves ventorelativo.it to this project, because branch deploys keep their
@@ -144,7 +144,7 @@ const PREVIEW_BASE = 'https://{branch}--ventorelativo-astro.netlify.app';
 /**
  * Every edit happens on a branch named `modifiche-…`.
  *
- * Without this a save commits straight to `main` and rebuilds the public site —
+ * Without this a save commits straight to `main` and rebuilds the public site:
  * once per save, with half-finished work visible in between. With it an editor
  * makes a batch of changes, previews them, and merges once.
  *
@@ -179,7 +179,7 @@ function BrandMark() {
 export default config({
   /*
     Deployed: GitHub mode. The club edits from a browser and every save is a
-    commit, which Netlify builds. Requires the four KEYSTATIC_* variables — see
+    commit, which Netlify builds. Requires the four KEYSTATIC_* variables: see
     .env.example; without them /keystatic shows its setup screen.
 
     Local: the working copy, and no login at all. A developer running
@@ -188,8 +188,8 @@ export default config({
 
     `import.meta.env.DEV` and not a variable of our own, because Vite replaces
     it with a literal `false` when building. The dangerous direction is a
-    deployed admin that thinks it is local — it would write to a serverless
-    filesystem and lose every edit — and a compile-time constant makes that
+    deployed admin that thinks it is local: it would write to a serverless
+    filesystem and lose every edit, and a compile-time constant makes that
     unreachable rather than merely unlikely.
   */
   storage: import.meta.env.DEV
@@ -203,7 +203,7 @@ export default config({
   ui: {
     /*
       The club's mark in the admin's corner, so an editor can see whose site
-      they are in — Keystatic looks identical for every project otherwise, and
+      they are in: Keystatic looks identical for every project otherwise, and
       the club will have more than one thing on GitHub eventually.
 
       `createElement` rather than JSX because this file is `.ts`, and renaming
@@ -226,7 +226,7 @@ export default config({
       previewUrl: `${PREVIEW_BASE}/news/{slug}/`,
       format: { contentField: 'content' },
       /*
-        The slug is the URL. Existing posts keep theirs — these URLs are live
+        The slug is the URL. Existing posts keep theirs: these URLs are live
         and preserved from the Drupal site (D9), so renaming one is a
         deliberate act, not a side effect of editing a title.
       */
@@ -390,7 +390,7 @@ export default config({
   singletons: {
     /*
       Site-wide, belonging to no page. The network is a choice rather than a
-      free-text name because the icon is an SVG path in Footer.astro — one that
+      free-text name because the icon is an SVG path in Footer.astro: one that
       is not in that list would render a hole, so the schema refuses it.
     */
     organizzazione: singleton({

@@ -41,7 +41,7 @@ function read() {
       const unknown = Object.keys(data).filter((key) => !KNOWN.has(key));
       if (unknown.length) {
         throw new Error(
-          `${file}: unhandled field(s) ${unknown.join(', ')} — teach geo.mjs about them first`,
+          `${file}: unhandled field(s) ${unknown.join(', ')}, teach geo.mjs about them first`,
         );
       }
       return { id, data };
@@ -158,7 +158,7 @@ function importGeo() {
 
   console.log(
     changed === 0
-      ? 'No changes — the file round-tripped exactly.'
+      ? 'No changes, the file round-tripped exactly.'
       : `${changed} file(s) changed. Run \`npm run verify\`: it diffs the flight-computer output against the archive.`,
   );
 }

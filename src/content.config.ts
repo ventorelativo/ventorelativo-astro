@@ -3,7 +3,7 @@
  *
  * Astro's Content Layer: a `loader` says where entries come from, a `schema`
  * says what shape they must have. The schema is enforced at build time, so a
- * malformed entry fails the build rather than rendering a broken page — which
+ * malformed entry fails the build rather than rendering a broken page, which
  * is the whole point when the people editing are volunteers, not developers.
  *
  * In Phase 3 Keystatic writes these same files through a web UI. Its field
@@ -18,7 +18,7 @@ import { glob } from 'astro/loaders';
 
 /**
  * Keystatic writes a conditional field as `{ discriminant, value }`; a file
- * written by hand says what it means — `event: { start, location }`. Both are
+ * written by hand says what it means, `event: { start, location }`. Both are
  * accepted, and both arrive at the schema below as the plain object.
  *
  * The alternative was to put Keystatic's wrapper in the content files, and
@@ -40,7 +40,7 @@ function unwrapConditional(value: unknown): unknown {
  *
  * `image` uses the `image()` helper rather than a plain string: it resolves the
  * path relative to the entry file and hands the page an image *object* that
- * `<Image>` can process — dimensions, avif/webp variants, content hash. A
+ * `<Image>` can process: dimensions, avif/webp variants, content hash. A
  * string would only give us a URL, and with it layout shift and full-size JPEGs.
  */
 const news = defineCollection({
@@ -51,7 +51,7 @@ const news = defineCollection({
       /**
        * From Drupal `created`. Drives ordering and the visible date.
        * `coerce` because YAML hands us a Date for a bare 2024-09-24 but a
-       * string once it is quoted — which is how Keystatic will write it.
+       * string once it is quoted, which is how Keystatic will write it.
        */
       date: z.coerce.date(),
       /**
@@ -68,13 +68,13 @@ const news = defineCollection({
       /**
        * D13: the Drupal `tags` vocabulary was doing two unrelated jobs, so the
        * shared taxonomy and its archive routes are gone. What remains is a
-       * single news category, rendered as a badge — which is what these terms
+       * single news category, rendered as a badge, which is what these terms
        * were actually for.
        */
       category: z.enum(['Eventi', 'Competizioni', 'Hike&Fly']),
       /**
-       * Present when the post announces an event — a hike & fly, a competition
-       * round — and absent when it is just news.
+       * Present when the post announces an event: a hike & fly, a competition
+       * round, and absent when it is just news.
        *
        * On the post rather than in a collection of its own: the announcement
        * *is* the event here. A second collection would mean writing the thing
@@ -94,11 +94,11 @@ const news = defineCollection({
             start: z.coerce.date(),
             /** Only for events spanning days; omit for a single day. */
             end: z.coerce.date().optional(),
-            /** Where you turn up: the takeoff. Free text — "Montoso (Bagnolo P.)". */
+            /** Where you turn up: the takeoff. Free text, "Montoso (Bagnolo P.)". */
             location: z.string(),
             /**
              * The landing. Optional, and specific to this club rather than a
-             * generic calendar field — for a hike & fly the two ends of the day
+             * generic calendar field, for a hike & fly the two ends of the day
              * are the two things a pilot needs to know, and both posts that
              * announce events spelled them out by hand.
              */
@@ -115,7 +115,7 @@ const news = defineCollection({
  * Flight sites (Drupal `node:sito`).
  *
  * The map features each site references (`field_map_elements`, 34 of them
- * across the 14 sites) are Phase 4 — they need the WKT → GeoJSON migration and
+ * across the 14 sites) are Phase 4: they need the WKT → GeoJSON migration and
  * the map component. A `mapFeatures` relationship joins this schema then.
  */
 const sites = defineCollection({
@@ -126,11 +126,11 @@ const sites = defineCollection({
       /**
        * Required, per D7: the site specs stay as prose in the body, so this is
        * the only structured short description there is. It carries the card,
-       * the meta description and — in Phase 4 — the map popup.
+       * the meta description and (in Phase 4) the map popup.
        */
       summary: z.string(),
       /**
-       * The site's windgram and forecast page — today the club's own on
+       * The site's windgram and forecast page: today the club's own on
        * paragliding-kubernetes.web-forge.info.
        *
        * On the site rather than on each takeoff: those guides describe a flying
@@ -142,13 +142,13 @@ const sites = defineCollection({
       /**
        * From Drupal `sticky`. Sorts to the top of /siti.
        *
-       * MIGRATION-PLAN.md §2.1 says "only Montoso"; the export has five —
+       * MIGRATION-PLAN.md §2.1 says "only Montoso"; the export has five:
        * Montoso, Monte Cucetto, Roletto, Sarsenà and Sea di Torre.
        */
       featured: z.boolean().default(false),
       /**
-       * The map features that belong to this site — takeoffs, landings, the
-       * obstacle, meeting points — in the order Drupal held them.
+       * The map features that belong to this site: takeoffs, landings, the
+       * obstacle, meeting points, in the order Drupal held them.
        *
        * `reference()` makes the build fail on a slug that does not exist, which
        * is the whole point of storing a relationship rather than free text: a
@@ -156,14 +156,14 @@ const sites = defineCollection({
        */
       mapFeatures: z.array(reference('mapFeatures')).default([]),
       /**
-       * Site attributes, shown as plain pills — not links.
+       * Site attributes, shown as plain pills, not links.
        *
        * D13 dropped site tagging on the grounds that "only 1 of 14 sites is
        * tagged at all". The export says otherwise: five are. Le Grange and
        * Montoso are "Adatto ai principianti"; Monte Cucetto, Monte Freidur and
        * Punta Ceresa are "Hike&Fly". Those describe the site and are worth
        * showing. What stays dropped is the shared vocabulary and the /tags/*
-       * archive routes — this is a list of strings on the entry, nothing more.
+       * archive routes: this is a list of strings on the entry, nothing more.
        */
       tags: z.array(z.string()).default([]),
       /** `field_images`. Only Roletto (5) and Montoso (3) have any today. */
@@ -181,7 +181,7 @@ const sites = defineCollection({
 /**
  * Fixed pages (`/voli`, `/iscrizioni`, `/contatti`).
  *
- * One entry per page rather than a collection of like things — Keystatic calls
+ * One entry per page rather than a collection of like things: Keystatic calls
  * these singletons, and in Phase 3 each becomes one. They are here so that the
  * blocks §2.4 said to lift out of `full_html` (pricing tiers, contact buttons,
  * bank details) are structured data now, editable later without a content
@@ -225,7 +225,7 @@ const pages = defineCollection({
         )
         .optional(),
 
-      /** /iscrizioni — the pricing cards (§2.4, §5). */
+      /** /iscrizioni, the pricing cards (§2.4, §5). */
       tiers: z
         .array(
           z.object({
@@ -233,7 +233,7 @@ const pages = defineCollection({
             /** Euros. A number so a future Stripe integration can use it. */
             price: z.number(),
             /**
-             * What the price is per, if anything — "all'anno". Left empty by
+             * What the price is per, if anything: "all'anno". Left empty by
              * default rather than assumed: the old site printed a bare figure
              * and nothing in the export says the quota renews.
              */
@@ -244,10 +244,10 @@ const pages = defineCollection({
             /**
              * What this tier does *not* get. The reason the page needs them:
              * a Sostenitore is not a member, and a list of benefits alone
-             * cannot say so — it reads as a smaller version of the same thing.
+             * cannot say so: it reads as a smaller version of the same thing.
              */
             limits: z.array(z.string()).default([]),
-            /** A word on the highlighted card — "Consigliata". */
+            /** A word on the highlighted card, "Consigliata". */
             badge: z.string().optional(),
             /** Satispay today, a Stripe Payment Link if D10 goes that way. */
             payUrl: z.url(), // z.string().url() is deprecated in Zod 4
@@ -268,7 +268,7 @@ const pages = defineCollection({
         })
         .optional(),
 
-      /** /contatti — the phone / WhatsApp / email row (§2.4). */
+      /** /contatti, the phone / WhatsApp / email row (§2.4). */
       contacts: z
         .array(
           z.object({
@@ -282,7 +282,7 @@ const pages = defineCollection({
 });
 
 /**
- * Map features (Drupal `storage:map_feature`) — MIGRATION-PLAN.md §2.2.
+ * Map features (Drupal `storage:map_feature`), MIGRATION-PLAN.md §2.2.
  *
  * Drupal held one opaque geofield per feature: a WKT string that might be a
  * `POINT`, a `LINESTRING`, or a `GEOMETRYCOLLECTION` holding a point *and* a
@@ -301,7 +301,7 @@ const pages = defineCollection({
  * matter are enforced per type below.
  */
 const coordinate = z.tuple([
-  z.number().min(-180).max(180), // lon — WKT and GeoJSON are lon-first
+  z.number().min(-180).max(180), // lon: WKT and GeoJSON are lon-first
   z.number().min(-90).max(90), // lat
 ]);
 
@@ -332,7 +332,7 @@ const coordinateList = z.string().transform((value, ctx) => {
  * Site-wide settings an editor can change but that belong to no page.
  *
  * A collection of one file today. It is here rather than in `pages` because a
- * page has a URL and a body, and this has neither — putting it there would mean
+ * page has a URL and a body, and this has neither, putting it there would mean
  * a volunteer meeting "Pagina: social" in a list of real pages.
  */
 const settings = defineCollection({
@@ -350,7 +350,7 @@ const settings = defineCollection({
     legalName: z.string().optional(),
     taxCode: z.string().optional(),
     vatNumber: z.string().optional(),
-    /** Omit if it is a private address — see docs; the email is enough. */
+    /** Omit if it is a private address, see docs; the email is enough. */
     registeredOffice: z.string().optional(),
     pec: z.string().optional(),
     /** Registro nazionale delle attività sportive dilettantistiche. */
@@ -395,8 +395,8 @@ const mapFeatures = defineCollection({
       /**
        * A landing's zone, or the obstacle's line.
        *
-       * Not run through `unwrapConditional`: here the discriminant is data —
-       * polygon or line — rather than the yes/no wrapper Keystatic puts around
+       * Not run through `unwrapConditional`: here the discriminant is data,
+       * polygon or line: rather than the yes/no wrapper Keystatic puts around
        * an optional group, and Keystatic's serialisation of a select-discriminated
        * conditional is already this shape.
        */
@@ -409,7 +409,7 @@ const mapFeatures = defineCollection({
     })
     .superRefine((feature, ctx) => {
       /*
-        A polygon ring must close — first point identical to last. OpenAir
+        A polygon ring must close: first point identical to last. OpenAir
         readers differ on what they do with an open ring, and "differ" is not a
         word that belongs near airspace data.
       */
@@ -446,7 +446,7 @@ const mapFeatures = defineCollection({
         ctx.addIssue({
           code: 'custom',
           path: ['point'],
-          message: `A ${feature.type} needs a point — it is its marker and its waypoint.`,
+          message: `A ${feature.type} needs a point: it is its marker and its waypoint.`,
         });
       }
     }),

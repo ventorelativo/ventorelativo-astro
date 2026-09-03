@@ -73,8 +73,8 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
   /*
     Measured from the old site's `.navbar-nav .nav-link`: uppercase, no letter
     spacing, 8px of vertical padding, an 8px horizontal margin and a 3px bottom
-    rule that only shows on the current page. Colour runs on its own ramp —
-    `rgba(0,0,0,.65)` rising to solid black — rather than the body text tokens.
+    rule that only shows on the current page. Colour runs on its own ramp:
+    `rgba(0,0,0,.65)` rising to solid black: rather than the body text tokens.
   */
   .nav__list a {
     display: block;
@@ -93,7 +93,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
   /*
     Colour only. The 3px rule is reserved at every width for row height, but it
-    is coloured in only in the inline bar — see the wide block below. In the
+    is coloured in only in the inline bar: see the wide block below. In the
     drawer the current page is marked by an underline instead.
   */
   .nav__list a:hover {
@@ -147,7 +147,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     flex-direction: column;
   }
 
-  /* The drawer ran at 1.5rem/300 — larger and lighter than the inline bar. The
+  /* The drawer ran at 1.5rem/300: larger and lighter than the inline bar. The
      3px rule stays in place but transparent, so the row keeps its height and
      the current page is marked by an underline instead. */
   .nav__drawer .nav__list a {
@@ -220,7 +220,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       if (event.target === drawer) drawer.close();
     });
 
-    // Following a link inside the drawer should close it — matters when the
+    // Following a link inside the drawer should close it: matters when the
     // destination is the current page (an in-page anchor won't remount).
     drawer.addEventListener('click', (event) => {
       if ((event.target as HTMLElement).closest('a')) drawer.close();

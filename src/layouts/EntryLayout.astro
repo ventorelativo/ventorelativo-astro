@@ -3,7 +3,7 @@
  * A single content entry: news article today, flight site in slice 2.
  *
  * Sits beside PageLayout (MIGRATION-PLAN.md §3) rather than inside it: an entry
- * has a byline block — date, category, hero image — that a static page does not,
+ * has a byline block (date, category, hero image) that a static page does not,
  * and the body is an <article> rather than a plain slot.
  */
 import BaseLayout from './BaseLayout.astro';
@@ -38,7 +38,7 @@ interface Props {
   /**
    * A `view-transition-name` for the h1, so the title of the card that was
    * clicked flies into place instead of cross-fading with the rest of the
-   * page. Unique per document, identical across the two documents — see
+   * page. Unique per document, identical across the two documents, see
    * global.css.
    */
   titleTransition?: string;
@@ -99,8 +99,8 @@ const {
       /*
       Sections that are not prose.
 
-      `.prose` caps its width at a comfortable measure for reading — around 42
-      rem — which is right for paragraphs and wrong for everything else. A table
+      `.prose` caps its width at a comfortable measure for reading: around 42
+      rem, which is right for paragraphs and wrong for everything else. A table
       of flight points or a grid of photographs has no measure to respect and
       only loses by being squeezed into one, so they go here: still inside the
       container, but at its full width.

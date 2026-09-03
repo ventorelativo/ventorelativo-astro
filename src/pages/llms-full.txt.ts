@@ -1,5 +1,5 @@
 /**
- * /llms-full.txt — every page's text in one file.
+ * /llms-full.txt: every page's text in one file.
  *
  * The companion to /llms.txt: that one is the index, this is the library. The
  * bodies are the MDX exactly as written, which is already Markdown apart from

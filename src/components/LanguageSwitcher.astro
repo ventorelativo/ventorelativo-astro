@@ -1,10 +1,10 @@
 ---
 /**
- * Language switcher (G11) — a facade over GTranslate.
+ * Language switcher (G11): a facade over GTranslate.
  *
  * The old site ran GTranslate's `flags.js` widget in the footer: a row of five
  * flags that, on click, drove Google's own translate element. Ported here as a
- * *facade* — the control is static HTML, and nothing third-party is fetched
+ * *facade*: the control is static HTML, and nothing third-party is fetched
  * until a visitor shows interest. A page that nobody translates costs exactly
  * the markup below.
  *
@@ -15,7 +15,7 @@
  * The mechanism is the same one `flags.js` used with `url_structure: 'none'`:
  * Google's TranslateElement, driven through its hidden `goog-te-combo` select,
  * remembering the choice in the `googtrans` cookie it sets itself. So a
- * visitor who picked Deutsch stays in Deutsch across pages — and only they pay
+ * visitor who picked Deutsch stays in Deutsch across pages, and only they pay
  * for the script, on every page, because the cookie says they asked to.
  *
  * The flags are drawn here rather than fetched: GTranslate's own `es.svg` is
@@ -27,14 +27,14 @@
   The control is <details>, the same shape as <ThemeToggle> beside it, and for
   the same reasons: a popover would need anchor positioning to sit under its
   button, while <details> brings open/close state and keyboard support with
-  it. The radios stay the real control — grouping, arrow keys and the checked
+  it. The radios stay the real control: grouping, arrow keys and the checked
   state are the browser's job, and the summary is a label for them.
 */
 
 /*
   Order and language set come from the Drupal config
   (`config/gtranslate.settings.yml`: it, fr, en, de, es), with the native
-  names GTranslate used — `native_language_names: 1`.
+  names GTranslate used, `native_language_names: 1`.
 */
 const LANGUAGES = [
   { code: 'it', name: 'Italiano' },
@@ -84,7 +84,7 @@ const CHECK_ATTRS = {
 
 {
   /*
-  `translate="no"` keeps Google from translating the switcher itself — the
+  `translate="no"` keeps Google from translating the switcher itself: the
   language names are the one thing on the page that must stay put.
 */
 }
@@ -340,7 +340,7 @@ const CHECK_ATTRS = {
 
     /**
      * Mirror the chosen language onto the closed control. The flag is copied
-     * from that option's own label rather than kept in a second map here —
+     * from that option's own label rather than kept in a second map here:
      * one definition, in the markup above.
      */
     function reflect(lang: string) {
@@ -377,7 +377,7 @@ const CHECK_ATTRS = {
         combo.dispatchEvent(new Event('change'));
       } catch {
         // Blocked, offline, or Google is down. The page stays in the language
-        // it is written in — nothing is broken — so put the control back to
+        // it is written in (nothing is broken) so put the control back to
         // what is actually on screen rather than what was asked for.
         reflect(activeLang());
       } finally {

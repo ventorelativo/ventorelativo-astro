@@ -6,7 +6,7 @@
  * `import` statement makes Keystatic refuse to open the entry at all, with
  * "Unhandled type mdxjsEsm". The site still builds, so nothing catches it until
  * a volunteer opens the post and finds a red box. Body components are handed to
- * `<Content components={MDX_COMPONENTS} />` — see src/components/mdx/components.ts.
+ * `<Content components={MDX_COMPONENTS} />`: see src/components/mdx/components.ts.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';

@@ -7,7 +7,7 @@
  */
 
 /**
- * The club's own style, "TopoPG" — 132 layers over contours, hillshade and
+ * The club's own style, "TopoPG": 132 layers over contours, hillshade and
  * OpenMapTiles. Not a stock MapTiler style: it lives in the club's account, so
  * it is a plain id here and not something to substitute.
  */
@@ -17,7 +17,7 @@ export const STYLE_ID = '3d203d09-e79b-4c16-a28d-b9564619b3a7';
  * Public by necessity: a tile key travels in the browser's requests, so it
  * cannot be hidden. It is protected by restricting the referrer domains in the
  * MapTiler dashboard, and it is in `SECRETS_SCAN_OMIT_KEYS` because Netlify's
- * scanner would otherwise fail the build for finding it in the output — which
+ * scanner would otherwise fail the build for finding it in the output, which
  * is precisely where it belongs.
  */
 export const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY ?? '';
@@ -31,7 +31,7 @@ export const TERRAIN_SOURCE = 'terrain-rgb-v2';
 /**
  * True scale: the mountain is the height the mountain is.
  *
- * It was 1.5 — chosen so a valley read as a valley at the scale one site is
+ * It was 1.5: chosen so a valley read as a valley at the scale one site is
  * framed at, the old site's 1.2 having been almost invisible. Exaggerated
  * relief also lifts the high markers further off the fitted rectangle, which is
  * half of why some takeoffs ended up outside the frame, and on a map pilots
@@ -55,7 +55,7 @@ export function terrainUrl(): string {
 
 /*
   Where tiles come from. Defined in its own module because the facade needs it
-  eagerly and must not pull this file in to get it — see tileOrigin.ts.
+  eagerly and must not pull this file in to get it: see tileOrigin.ts.
 */
 export { TILE_ORIGIN } from './tileOrigin';
 
@@ -81,7 +81,7 @@ export const MAX_BOUNDS: [[number, number], [number, number]] = [
  * Tracestrack Topo is what the old site offered in its style switcher, with
  * the same key, recovered from `leaflet_more_maps.settings.yml`.
  *
- * The key is protected by a referrer allowlist rather than by secrecy — it has
+ * The key is protected by a referrer allowlist rather than by secrecy: it has
  * to travel in a tile URL the browser makes, so it cannot be hidden. It is
  * still read from the environment rather than written here. Referrer
  * restrictions are a control the provider enforces and can lose; a key sitting
@@ -112,11 +112,11 @@ export const RASTER_BASE = {
  *
  *  - **Seasons are quarters, not months.** `jan`, `apr`, `jul`, `oct`, each
  *    covering three months, plus `all`. September is `jul`, not `sep`, which
- *    404s — the docs' `thermals_jul_07` example is the only clue to this.
+ *    404s: the docs' `thermals_jul_07` example is the only clue to this.
  *  - **Times are 04, 07 and 10**, hours since sunrise, plus `all`. The docs
  *    say 00, 07 and 12; 00 and 12 return 400 at every zoom and every season.
  *
- * `src` must name the host the page is served from — see `thermalTiles`.
+ * `src` must name the host the page is served from: see `thermalTiles`.
  */
 export const THERMAL_LAYERS = [
   { value: 'thermals', label: 'Termiche' },
@@ -171,7 +171,7 @@ export function currentThermalSeason(now = new Date()): string {
 }
 
 /**
- * `src` is not a courtesy — kk7 checks it against the Referer and refuses the
+ * `src` is not a courtesy: kk7 checks it against the Referer and refuses the
  * tile when the two disagree.
  *
  * Hardcoding `ventorelativo.it` therefore worked on the live domain and on

@@ -39,7 +39,7 @@ html {
  *
  * This is deliberately *not* Astro's `<ClientRouter />`. That was measured
  * first: it costs 5.3 kB gzipped and two extra requests on every page, turns
- * every navigation into a client-side swap, and silently broke the map —
+ * every navigation into a client-side swap, and silently broke the map:
  * SiteMap's script runs once at module scope, so after a swap the button was
  * still there and did nothing. This rule costs nothing, keeps navigations
  * real, and no script has to learn about it.
@@ -54,7 +54,7 @@ html {
 
 /*
  * The default root transition is half a second, which reads as slow on pages
- * this light — they are usually painted before the animation finishes.
+ * this light: they are usually painted before the animation finishes.
  */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -64,7 +64,7 @@ html {
 /*
  * The teaser image morphing into the article's hero.
  *
- * Both carry `view-transition-name: post-<slug>` — unique per document, which
+ * Both carry `view-transition-name: post-<slug>`, unique per document, which
  * is what the name has to be, and identical across the two documents, which is
  * what makes the browser treat them as the same thing moving.
  *
@@ -77,7 +77,7 @@ html {
  *
  * `view-transition-class` because the stylesheet cannot know the slug.
  * Supported wherever `@view-transition` is (Chrome 125+, Safari 18.2+,
- * Firefox 144+ — slightly wider, in fact), so this never applies without the
+ * Firefox 144+: slightly wider, in fact), so this never applies without the
  * transition it belongs to.
  */
 ::view-transition-old(.post),
@@ -106,7 +106,7 @@ body {
   font-size: var(--text-base);
   /*
     300, as the old site ran it (`--bs-body-font-weight: 300`). The 350 this
-    started with made buttons and nav links — both 400 — read as barely heavier
+    started with made buttons and nav links (both 400) read as barely heavier
     than the prose around them; at 300 the weight contrast the old design relied
     on comes back.
   */
@@ -136,7 +136,7 @@ select {
 /* ------------------------------------------------------------- typography */
 
 /*
- * Headings are the link blue at weight 500, as the old site had them —
+ * Headings are the link blue at weight 500, as the old site had them:
  * measured #1f52a6 / 500 / line-height 1.2 on h1, h2 and h3 alike.
  *
  * Sizes are Bootstrap's responsive formulas rather than the --text-* tokens,
@@ -176,7 +176,7 @@ li {
  * The old theme set this explicitly (`b, strong { font-weight: 600 }`) rather
  * than leaving the UA's `bolder` to resolve, and with a 300 body that matters:
  * `bolder` computes to 400 from a 300 parent, which is barely a difference at
- * all — the site-spec labels in the flight-site bodies were invisible as bold.
+ * all: the site-spec labels in the flight-site bodies were invisible as bold.
  *
  * The old theme also gave these their own colour, `--bold-color: #606b7b`,
  * *darker* than its light body text. Ours is already darker, so the equivalent
@@ -311,11 +311,11 @@ hr {
 }
 
 /*
- * Grey filled — the old theme's `.btn-secondary`.
+ * Grey filled: the old theme's `.btn-secondary`.
  *
  * Its *outline* is the body text colour, not the grey fill. `#e2e8f0` as a
  * border and label measures 1.23:1 on a white page: an invisible button. The
- * styleguide's variant matrix is what surfaced it — nothing on the site
+ * styleguide's variant matrix is what surfaced it: nothing on the site
  * combines these two classes yet, so it had never been looked at.
  */
 .button--secondary {
@@ -338,9 +338,9 @@ hr {
 /*
  * Cards.
  *
- * A global primitive because five components now draw one — news teasers,
+ * A global primitive because five components now draw one: news teasers,
  * flight sites, the XContest searches, the press downloads and the navdata
- * files — and five copies of "border, radius, raised background" is five
+ * files, and five copies of "border, radius, raised background" is five
  * places for them to drift apart. Each component keeps its own layout and its
  * own contents; this is only the surface they sit on.
  *
@@ -362,7 +362,7 @@ hr {
 
 /*
  * `--card-interactive` is set by the components whose whole card is a link.
- * A card that does nothing when clicked should not grow a hover state — it
+ * A card that does nothing when clicked should not grow a hover state: it
  * promises an interaction it does not have.
  */
 .card--link:hover,
@@ -392,7 +392,7 @@ hr {
   /*
     Above the card's own contents, or the paragraph that follows the heading in
     the DOM paints over it and the click lands on the text. Both cards had this
-    rule without the z-index and both had a clickable heading in a dead card —
+    rule without the z-index and both had a clickable heading in a dead card,
     which is the failure mode of this pattern: it looks implemented.
 
     The cost is that text inside the card cannot be selected. That is the same
@@ -450,11 +450,11 @@ hr {
  *
  * Markdown cannot render a component, so this is the only way to reach a link
  * inside a body. The geometry is `ExternalIcon.astro`'s, as a mask so it takes
- * the link's own colour — the two are one drawing in two forms, and an edit to
+ * the link's own colour: the two are one drawing in two forms, and an edit to
  * one belongs in the other.
  *
  * `:not(:has(.external))` keeps it off any link that already draws the real
- * component — an `<ActionLinks>` button, a row of the calendar menu — which
+ * component (an `<ActionLinks>` button, a row of the calendar menu) which
  * would otherwise carry the mark twice.
  */
 .prose a[href^='http']:not(:has(.external))::after {

@@ -9,8 +9,8 @@ import type { APIRoute } from 'astro';
 /**
  * The one hostname allowed into a search index.
  *
- * Everything else — the ventorelativo-astro.netlify.app staging deploy, and
- * every branch preview — is a byte-for-byte copy of a site that already ranks.
+ * Everything else: the ventorelativo-astro.netlify.app staging deploy, and
+ * every branch preview: is a byte-for-byte copy of a site that already ranks.
  * Left crawlable they would compete with it for its own queries, and an editor
  * checking a preview would be publishing to Google without meaning to.
  *
@@ -35,7 +35,7 @@ Sitemap: ${new URL('sitemap.xml', site)}
 # ${new URL('llms.txt', site)}
 # ${new URL('llms-full.txt', site)}
 `
-    : `# Anteprima — non indicizzare.
+    : `# Anteprima, non indicizzare.
 # This deploy is a copy of ${INDEXABLE_HOST}, not the site itself.
 User-agent: *
 Disallow: /

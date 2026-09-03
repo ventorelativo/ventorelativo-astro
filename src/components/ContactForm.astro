@@ -12,7 +12,7 @@
  * knowing:
  *
  *  - The hidden `form-name` input must be present and must match `name`, or the
- *    submission is rejected — the POST is handled by name, not by URL.
+ *    submission is rejected: the POST is handled by name, not by URL.
  *  - It only works on a real Netlify deploy. Locally, submitting this form 404s;
  *    that is expected, not a bug to chase.
  *
@@ -33,7 +33,7 @@
 
   {
     /* The honeypot: hidden from people, tempting to bots. Not `display: none`
-      via CSS alone — `hidden` keeps it out of the tab order too. */
+      via CSS alone: `hidden` keeps it out of the tab order too. */
   }
   <p hidden>
     <label>Non compilare questo campo: <input name="bot-field" /></label>
@@ -86,5 +86,5 @@
     margin-block-start: var(--space-md);
   }
 
-  /* `.field` and its controls are a global primitive — see global.css. */
+  /* `.field` and its controls are a global primitive: see global.css. */
 </style>

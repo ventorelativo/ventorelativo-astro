@@ -49,7 +49,7 @@ can see images.
 Because that lies. Headless Chrome on macOS clamps its window to a **500px
 minimum width**, so it lays the page out at 500px and crops the picture to 390.
 Every media query below 500px behaves wrongly, and the crop looks exactly like a
-horizontal-overflow bug — which is precisely the false alarm it produced here
+horizontal-overflow bug, which is precisely the false alarm it produced here
 once. `scripts/shot.mjs` drives Chrome over the DevTools Protocol and sets device
 metrics the way the browser's own device toolbar does, so 390 means 390.
 
@@ -60,7 +60,7 @@ lives somewhere unusual.
 ### Light is emulated as explicitly as dark
 
 It did not used to be. The script set `prefers-color-scheme` only for `--dark`
-and left it unset otherwise, so Chrome followed the host OS — and on a Mac in
+and left it unset otherwise, so Chrome followed the host OS, and on a Mac in
 dark appearance every file named `…-light.png` held a dark screenshot, with
 nothing to say so. Both directions are now set explicitly. Distrust any light
 shot taken before 2026-09-03.
@@ -77,7 +77,7 @@ each guards a promise the site makes and cannot keep by accident:
 | `npm run sitemap:check` | a built page is missing from `/sitemap.xml`, or listed and absent |
 | `npm run privacy:check` | a page starts loading something third-party unasked               |
 
-All four read `dist/`, so they need a build first — `verify` does that for them.
+All four read `dist/`, so they need a build first: `verify` does that for them.
 All four were proved by being broken on purpose: removing a built page, pointing
 a redirect at nothing, deleting a sitemap entry, and dropping a Google Fonts link
 into a page.
@@ -94,7 +94,7 @@ its background. Chrome's own audit does, and it is worth running against the
 
 Through the chrome-devtools MCP server: navigate a page, then run the audit at
 `device: mobile`. It covers accessibility, best practices, SEO and agentic
-browsing — not performance, which `npm run weight` and a throttled trace cover
+browsing, not performance, which `npm run weight` and a throttled trace cover
 better.
 
 All seven page types scored **100 in every category** on 2026-09-03. Getting
@@ -110,7 +110,7 @@ there took three fixes, and all three are the kind that look fine on screen:
 
 - [ ] `npm run verify` clean
 - [ ] Measured at **390x844** (phone) and **1440x900** (laptop)
-- [ ] Checked in **both colour schemes** — run again with `--dark`
+- [ ] Checked in **both colour schemes**: run again with `--dark`
 - [ ] No unintended vertical scrolling; no horizontal scrolling at all
 - [ ] Text still legible where it sits over a photograph
 - [ ] Interactive controls reachable by keyboard, with a visible focus ring
@@ -132,7 +132,7 @@ styles show the old rule.
 
 **Stale pages after a config change.** Add an integration or an adapter to
 `astro.config.mjs` and the running server can carry on serving pages built
-before it — entire new components missing, no error anywhere. This reads exactly
+before it: entire new components missing, no error anywhere. This reads exactly
 like code that does not work.
 
 **Telling them apart takes one command.** Build, and compare:
@@ -154,7 +154,7 @@ entirely and is always authoritative.
 
 ### `dist/` is generated
 
-Editing built output changes nothing durable — the next build overwrites it, and
+Editing built output changes nothing durable: the next build overwrites it, and
 it is git-ignored. Change the source.
 
 ### Astro's `<Image>` / `<Picture>` put your class on the `<img>`

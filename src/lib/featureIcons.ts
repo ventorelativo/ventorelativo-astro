@@ -1,8 +1,8 @@
 /**
  * The club's marker artwork, as `<symbol>` bodies.
  *
- * One place, because three things draw these now — the poster, the table and
- * the map — and they have to be the same drawing or the page teaches three
+ * One place, because three things draw these now: the poster, the table and
+ * the map, and they have to be the same drawing or the page teaches three
  * different vocabularies for the same four kinds of thing.
  *
  * The map cannot use the symbols: MapLibre rasterises the files themselves.
@@ -19,7 +19,7 @@ import type { FeatureType } from './featureTypes';
  *
  * Sliced rather than matched with a regular expression. A pattern containing
  * literal tags inside `.astro` frontmatter derails the compiler's parse, and it
- * fails in a way that names nothing useful — `Astro.props` silently degrades to
+ * fails in a way that names nothing useful: `Astro.props` silently degrades to
  * `any` and the errors surface as unrelated indexing complaints elsewhere. It
  * lives in a `.ts` file now, but the shape stays: there is no reason for it to
  * be a regular expression.
@@ -36,7 +36,7 @@ function symbolBody(markup: string): string {
  * The keyline exists so a marker stays legible over a photographic basemap. On
  * a flat page it does the opposite: the landing target's ring is 11 units of
  * 100, the keyline eats several from each edge, and what survives reads as a
- * plain dot however large the icon is drawn. The map keeps the files intact —
+ * plain dot however large the icon is drawn. The map keeps the files intact:
  * only the static contexts use these.
  *
  * Two shapes to remove, because the two files express the keyline differently:

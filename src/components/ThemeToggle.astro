@@ -10,7 +10,7 @@
  *
  * Built on <details>, not the Popover API. A popover lives in the top layer,
  * whose containing block is the viewport, so positioning it under its button
- * needs CSS anchor positioning — not something to depend on for a footer
+ * needs CSS anchor positioning, not something to depend on for a footer
  * control. <details> gives the open/close state and keyboard support for free;
  * the script below adds only what it lacks: outside-click and Escape.
  *
@@ -21,7 +21,7 @@
  * BaseLayout's <head>; this component only renders the control.
  */
 
-/* 24x24, stroke-based, matching weights — drawn inline rather than pulled from
+/* 24x24, stroke-based, matching weights: drawn inline rather than pulled from
    an icon package for three glyphs that will never change. */
 const ICONS = {
   light: `<circle cx="12" cy="12" r="4.25" />
@@ -53,7 +53,7 @@ const SVG_ATTRS = {
   The tick's class lives in the spread object, not as a separate `class`
   attribute beside it: on an element that has both, Astro's scoped-style class
   injection overwrites the standalone `class`, and the rule silently never
-  matches — which showed up as a tick beside every option.
+  matches, which showed up as a tick beside every option.
 */
 const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
 ---
@@ -216,7 +216,7 @@ const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
       const v = localStorage.getItem(STORAGE_KEY);
       return isTheme(v) ? v : 'auto';
     } catch {
-      // Private mode / blocked storage — fall back to following the OS.
+      // Private mode / blocked storage: fall back to following the OS.
       return 'auto';
     }
   }
@@ -230,7 +230,7 @@ const CHECK_ATTRS = { ...SVG_ATTRS, class: 'check' } as const;
 
     /**
      * Mirror the chosen option onto the closed control. The glyph is copied
-     * from that option's own label rather than kept in a second map here —
+     * from that option's own label rather than kept in a second map here:
      * one definition, in the markup above.
      */
     function reflect(theme: Theme) {

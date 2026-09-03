@@ -1,5 +1,5 @@
 /**
- * /sitemap.xml — every page, in one file.
+ * /sitemap.xml: every page, in one file.
  *
  * Written by hand rather than by `@astrojs/sitemap`, which always emits a
  * `sitemap-index.xml` pointing at a `sitemap-0.xml`. That shape exists for
@@ -13,7 +13,7 @@
  *
  * Pages that are deliberately absent are listed in EXCLUDED, and
  * `scripts/check-sitemap.mjs` fails the build if a built page is in neither
- * this file nor that list — the failure mode of a hand-written sitemap is a
+ * this file nor that list: the failure mode of a hand-written sitemap is a
  * page nobody notices is missing.
  */
 import type { APIRoute } from 'astro';

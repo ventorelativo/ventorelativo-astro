@@ -9,7 +9,7 @@ For club members, developers, and AI agents working on the Ventorelativo site.
 | [verifying-changes.md](verifying-changes.md) | You have made a change and want to know it actually works. Includes the measurement tool and the known traps.          |
 | [performance.md](performance.md)             | Before adding any library, and whenever a page gets heavier. The site targets 100/100 in PageSpeed Insights.           |
 | [deploying.md](deploying.md)                 | You are setting up hosting or the CMS, or something about a deploy or a preview branch is not behaving.                |
-| [payments.md](payments.md)                   | You are wiring up membership payments — Stripe, the Make.com scenario, and the Google Sheet behind them.               |
+| [payments.md](payments.md)                   | You are wiring up membership payments: Stripe, the Make.com scenario, and the Google Sheet behind them.                |
 | [cutover.md](cutover.md)                     | You are about to move ventorelativo.it to this build, or want to know what is left before that can happen.             |
 | [../AGENTS.md](../AGENTS.md)                 | You are an AI agent, or you want to see the rules one is given.                                                        |
 | [../MIGRATION-PLAN.md](../MIGRATION-PLAN.md) | You want the full scope of the Drupal → Astro migration, the decisions behind it, and what each phase covers.          |
@@ -34,7 +34,7 @@ You do not need to explain the project each time. Useful things to say instead:
 - **Content in Italian, code and comments in English.**
 
 If an agent proposes adding a dependency, a CSS framework, a dark-mode block, or
-changing URLs — those are all things the instructions forbid for concrete
+changing URLs: those are all things the instructions forbid for concrete
 reasons. Ask it to justify against [`AGENTS.md`](../AGENTS.md) before agreeing.
 
 ## Current state

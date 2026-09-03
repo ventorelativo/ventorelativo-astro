@@ -9,7 +9,7 @@
  *    into the HTML while Vite still preloads the file it never wrote, the
  *    import rejects on a 404, and the whole feature dies with it.
  *  - **Import it in component frontmatter.** Works, but bundles 8 kB of
- *    brotli'd map CSS into every one of the fourteen site pages — paid by
+ *    brotli'd map CSS into every one of the fourteen site pages: paid by
  *    everyone, used by the few who open a map.
  *  - **Copy it to `public/` and inject a `<link>` when the map opens.** Files
  *    in `public/` are served verbatim: no hashing, no inlining, no Vite. The
@@ -29,7 +29,7 @@ const require = createRequire(import.meta.url);
   one: without it the map renders **nothing vector at all**.
 
   MapLibre finds its tile-parsing worker by building a URL beside its own
-  module — `new URL('./maplibre-gl-worker.mjs', import.meta.url)`. Bundlers
+  module: `new URL('./maplibre-gl-worker.mjs', import.meta.url)`. Bundlers
   cannot see through that, so Vite hashes the main chunk to
   `maplibre-gl.<hash>.js` and never emits a worker next to it. The request
   404s, and because only *vector* tiles are parsed in the worker, the failure

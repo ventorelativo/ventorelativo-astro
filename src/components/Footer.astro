@@ -9,14 +9,14 @@
  * There is no legal / VAT line. A `block_content` titled "Footer" carries one,
  * but no `block.block.*.yml` ever placed it, so Drupal never rendered it and it
  * appears nowhere in the archived `html/` build. It was a draft, not content.
- * (It also contains a personal codice fiscale — worth a deliberate decision
+ * (It also contains a personal codice fiscale: worth a deliberate decision
  * before publishing, not an accident of migration.)
  *   vr_gtranslate       -> <LanguageSwitcher> (G11)
  *   vr_themetoggle      -> <ThemeToggle>      (G10)
  *
  * `vr_creditiimmagine` (G8) is *not* here. It was a footer-region block in
  * Drupal, but it was rendered bottom-right of <main> and it only ever credits
- * the homepage background photo — so it lives with that picture instead (see
+ * the homepage background photo, so it lives with that picture instead (see
  * `.hero__credit` in index.astro). Nothing about the site chrome has to know
  * which page happens to have an image.
  *
@@ -33,7 +33,7 @@ import ThemeToggle from './ThemeToggle.astro';
 
   An editor picks a network and pastes a URL; the path data stays in code,
   because asking a volunteer for SVG geometry is asking for a broken footer.
-  Adding a network means adding it in both places — the enum in
+  Adding a network means adding it in both places: the enum in
   content.config.ts refuses one that has no icon here, so the build says so
   rather than the footer rendering a hole.
 */
@@ -56,7 +56,7 @@ const settings = await getEntry('settings', 'social');
 const org = (await getEntry('settings', 'organization'))?.data;
 
 /*
-  The legal line. Only what is filled in appears — an ASD's registry data is
+  The legal line. Only what is filled in appears: an ASD's registry data is
   not something this repository can know, and a placeholder on a legal notice
   is worse than a short one.
 */
@@ -122,7 +122,7 @@ const SOCIAL = (settings?.data.links ?? []).map(({ network, href }) => ({
   }
 
   /*
-    The old site's contour pattern, back where it was — `main + footer` had
+    The old site's contour pattern, back where it was, `main + footer` had
     `background-image: var(--bg-countour)`.
 
     Drawn through a mask rather than as a background image, so one file works

@@ -6,7 +6,7 @@
  * separate command to remember. Astro writes each one to `/og/<route>.jpg` at
  * build time; nothing renders on demand.
  *
- * The expensive part is cached by content hash — see src/lib/og.ts.
+ * The expensive part is cached by content hash: see src/lib/og.ts.
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
@@ -35,7 +35,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
       `news` is listed by hand because it is an index with no entry in `pages`.
       `home` and `siti` are not: both *are* pages, and listing them here as
       well produced two paths for `/og/home.jpg`. Astro kept the first and
-      warned about the second on every build — the card was right, the route
+      warned about the second on every build: the card was right, the route
       table was not.
     */
     {
@@ -63,13 +63,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
       props: {
         /*
           Every other card is `<section> / <page title>`. The homepage has no
-          section, so it is `<what we are> / <who we are>` — the descriptor
+          section, so it is `<what we are> / <who we are>`: the descriptor
           small, the name in the big type. The other way round, which is what
           this was, printed "Parapendio Club" larger than the club.
 
           It also carries the page's own hero photograph, washed into the brand
           blue: the homepage is the link that gets shared, and the valley it
-          shows is the answer to "where is this club". Only this page — the
+          shows is the answer to "where is this club". Only this page: the
           other fixed pages have no picture that is about them.
         */
         title: entry.id === 'home' ? SITE.name : entry.data.title,

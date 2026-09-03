@@ -1,7 +1,7 @@
 # Performance
 
 **The goal is 100/100 in PageSpeed Insights, and staying there.** Not "fast
-enough" — the site is a handful of static pages for a volunteer club, and there
+enough": the site is a handful of static pages for a volunteer club, and there
 is no reason for it to be anything less than the fastest thing its visitors open
 that day. Many of them are on a phone, on mountain data.
 
@@ -22,7 +22,7 @@ Measured on the production build (`npm run build && npm run preview`), at
 Almost all of the weight is photographs. The JavaScript column counts external
 files: the pages with a map carry its facade, everything else carries only
 Astro's prefetch. On top of that every page inlines its component scripts
-(1.5 kB on the wire) — the no-flash theme script, the theme toggle, the nav
+(1.5 kB on the wire): the no-flash theme script, the theme toggle, the nav
 drawer and the language switcher, small enough that Astro puts them in the
 document rather than spending a request on them.
 
@@ -30,10 +30,10 @@ Two of these numbers are worse than the ones this table held before, and both
 for the same reason: `topo.svg`, the contour texture behind the footer, is
 15 kB on the wire and loads on **every page**. It is the largest non-font,
 non-photograph item on the site and the obvious thing to attack if the budget
-ever needs to come down — a small tile repeated through `mask-size` would do
+ever needs to come down: a small tile repeated through `mask-size` would do
 the same job for a fraction of it.
 
-Measure it yourself — never estimate:
+Measure it yourself, never estimate:
 
 ```
 npm run build && npm run preview
@@ -47,7 +47,7 @@ numbers meaningless.
 ### A shared module stops a script being inlined
 
 Astro inlines a component's `<script>` only while it has nothing to import.
-Adding one static import — even to a ten-line helper in `src/lib/` — turns that
+Adding one static import (even to a ten-line helper in `src/lib/`) turns that
 script into an external module _and_ pulls in a shared chunk beside it.
 
 This was measured, not guessed: factoring the `<details>` light-dismiss logic
@@ -59,13 +59,13 @@ on purpose. Each one says so.
 
 The rule: **inside a component's client script, prefer duplication to an
 import** unless the thing being imported is big enough that it should be its own
-request anyway — which is exactly what the map's dynamic `import()` is.
+request anyway, which is exactly what the map's dynamic `import()` is.
 
 ### What opening a map costs, and why it is not smaller
 
 MapLibre is **239 kB brotli** across three files, fetched only when somebody
 presses "Apri la mappa". The number quoted before this was 970 kB, which was
-the uncompressed main chunk — not a figure any visitor ever pays.
+the uncompressed main chunk, not a figure any visitor ever pays.
 
 It was 326 kB until the shared module stopped being downloaded twice; see the
 `rollupOptions` comment in `astro.config.mjs`. What remains is not reducible by
@@ -87,7 +87,7 @@ it, and that is measured by the table above rather than argued.
 
 Two built chunks are far over Vite's 500 kB default: Keystatic's admin UI
 (~2.6 MB) and MapLibre (~970 kB). Both are deliberate, and neither is on the
-path of a visitor reading a page — the first is fetched at `/keystatic` by an
+path of a visitor reading a page: the first is fetched at `/keystatic` by an
 editor, the second only when somebody opens a map. The warning has no way to
 tell a lazy chunk from an eager one, so it fired on every build and said
 nothing; `chunkSizeWarningLimit` in `astro.config.mjs` is set just above
@@ -118,7 +118,7 @@ above, measured with `npm run weight`, is the real budget.
    `public/` skips every optimisation Astro would have done.
 7. **Prefetch conservatively.** `hover`, not `viewport`. Prefetching every link
    on screen sounds free and is not: on `/siti` it fetched fourteen pages
-   nobody asked for — 172 kB of someone's data.
+   nobody asked for: 172 kB of someone's data.
 
 ## Judging a proposed library
 
@@ -151,20 +151,20 @@ that wants more than one small async request.
 - **Immutable caching** on `/_astro/*`, where every filename carries a content
   hash (see `netlify.toml`). HTML deliberately revalidates so edits go live at
   once.
-- **`astro:assets`** generating avif/webp at the sizes actually used — the site
+- **`astro:assets`** generating avif/webp at the sizes actually used, the site
   photographs go from 1.7 MB originals to ~40 kB thumbnails.
 
 ## Facades, for the things that cannot be small
 
 Two features on this site are genuinely heavy and genuinely wanted: the map and
-the translation widget. Both ship as a **facade** — the part a visitor sees is
+the translation widget. Both ship as a **facade**: the part a visitor sees is
 static HTML that costs a few hundred bytes, and the real thing is fetched only
 once they show they want it.
 
 - **The map** (`SiteMap.astro`) paints an SVG of the markers, and loads MapLibre
   (240 kB) on click.
 - **The language switcher** (`LanguageSwitcher.astro`) is a flag and a menu of
-  five, and loads Google's `translate_a/element.js` on hover or click — never
+  five, and loads Google's `translate_a/element.js` on hover or click, never
   on page load. A visitor who has translated before carries a `googtrans` cookie, and
   only they pay for it, on every page, because they asked to.
 
@@ -172,7 +172,7 @@ The pattern has one rule that matters: **paint the busy state synchronously,
 then await.** A click handler that awaits before touching the DOM reads as a
 dropped click, and shows up as INP.
 
-The alternative for the translator was the widget the Drupal site ran — a
+The alternative for the translator was the widget the Drupal site ran: a
 third-party script from a domain we do not control, on every page, for a
 feature most visitors of an Italian club site never touch. That single script
 is larger than everything else this site loads.
@@ -181,7 +181,7 @@ is larger than everything else this site loads.
 
 Social cards (`/og/*.jpg`) are rendered at build with satori and sharp, both
 devDependencies. That is ~25 images and a couple of seconds, and none of it
-reaches a browser — the visitor gets a JPEG that only Facebook, WhatsApp and
+reaches a browser: the visitor gets a JPEG that only Facebook, WhatsApp and
 friends ever fetch.
 
 They are cached by content hash in `.astro/og-cache/`, keyed on the title, the
@@ -192,7 +192,7 @@ persist that directory between Netlify builds.
 
 **Bump `TEMPLATE_VERSION` in `src/lib/og.ts` when the card design changes**, or
 every existing card keeps its old pixels for ever. That includes replacing
-`src/assets/og-logo.svg`, the logo lockup every card draws — swap that one file
+`src/assets/og-logo.svg`, the logo lockup every card draws: swap that one file
 for a designed version and all the cards follow.
 
 They are JPEG, not WebP, on purpose: only link scrapers ever fetch them, and
@@ -204,7 +204,7 @@ the site itself serves is WebP or AVIF.
 - **Dev numbers are not real numbers.** Always measure the build.
 - **A dynamic import can pull CSS with it.** Astro inlines small stylesheets
   into the HTML, and Vite will still emit a preload for a file it then did not
-  write — the fetch 404s and rejects the import. Import third-party CSS in the
+  write: the fetch 404s and rejects the import. Import third-party CSS in the
   component frontmatter, where Astro handles it as page CSS.
 - **`optimizeDeps.include`** is needed for anything only reached through a
   dynamic import in a client script, or it works in the build and silently does

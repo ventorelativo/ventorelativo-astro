@@ -2,7 +2,7 @@
  * XContest flight-search URLs (MIGRATION-PLAN.md §4.4).
  *
  * All searches are scoped to the club's centre point and radius, exactly as the
- * Drupal `scraper` block built them — same filters, same ordering, so the
+ * Drupal `scraper` block built them: same filters, same ordering, so the
  * results a pilot sees are the results they saw before.
  */
 import { CLUB_CENTRE } from '../consts';

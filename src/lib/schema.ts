@@ -3,7 +3,7 @@
  *
  * The Drupal `helper` module emitted one `SportsClub` object, identical on
  * every page, and nothing about the page being read. (It never actually
- * shipped — there is no `ld+json` in the archived build at all.) This is the
+ * shipped: there is no `ld+json` in the archived build at all.) This is the
  * same club, described more precisely, plus per-page nodes that say what each
  * page *is*.
  *
@@ -12,7 +12,7 @@
  * One `@graph` per page holding several nodes, each with an `@id`, so they can
  * reference one another instead of repeating themselves: the article points at
  * the club as its publisher rather than restating the club's name, logo and
- * URL. That is how search engines are meant to read a site — one entity,
+ * URL. That is how search engines are meant to read a site: one entity,
  * described once, referred to from everywhere.
  *
  * ## What is deliberately absent
@@ -20,13 +20,13 @@
  * No `address` or `geo` on the club: it is a volunteer association with no
  * premises, and inventing a street address to fill a field is how structured
  * data becomes a lie. `areaServed` carries a `GeoCircle` instead, which is a
- * true and more useful statement — it is the same centre and 20 km radius the
+ * true and more useful statement: it is the same centre and 20 km radius the
  * XContest searches use.
  *
  * The `Place` node for flight sites arrived with Phase 4, as this comment used
  * to promise it would: a site without coordinates was a name and a sentence,
  * and adding one would have said nothing. It has takeoffs now, so it is a real
- * location — see `placeNode`.
+ * location: see `placeNode`.
  *
  * `Event` used to be absent here, because the dates and places lived only in
  * prose and guessing at them from a body would have produced structured data
@@ -62,7 +62,7 @@ export function clubNode(site: URL): Node {
     knowsLanguage: SITE.lang,
     /*
       Named valleys for a human-readable answer, plus the circle the club
-      actually flies in — the same point and radius the XContest searches use,
+      actually flies in: the same point and radius the XContest searches use,
       so the two descriptions of "where this club is" cannot disagree.
     */
     areaServed: [
@@ -96,7 +96,7 @@ export function websiteNode(site: URL): Node {
 }
 
 /**
- * The trail as Google reads it — this is what produces the breadcrumb line in
+ * The trail as Google reads it: this is what produces the breadcrumb line in
  * a search result instead of a bare URL.
  */
 export function breadcrumbNode(
@@ -150,7 +150,7 @@ export function articleNode(site: URL, article: ArticleInput): Node {
 }
 
 export interface EventInput {
-  /** The article announcing it — the event's identity and its page. */
+  /** The article announcing it, the event's identity and its page. */
   url: URL;
   name: string;
   description: string;
@@ -190,7 +190,7 @@ export interface PlaceInput {
   description: string;
   /** The site's takeoffs. The first one stands for the site's position. */
   takeoffs: { name: string; lat: number; lon: number }[];
-  /** Site attributes — "Adatto ai principianti", "Hike&Fly". */
+  /** Site attributes, "Adatto ai principianti", "Hike&Fly". */
   tags?: string[];
   /** Absolute URL of one photograph, when the site has any. */
   image?: string;
@@ -207,7 +207,7 @@ export interface PlaceInput {
  * The site's own `geo` is its first takeoff, not a centroid of everything it
  * owns. A centroid of a takeoff and its landings is a point in mid-air over a
  * valley, which is not where anybody goes. Landings are deliberately not
- * modelled as places of their own — they are parts of a flight, not
+ * modelled as places of their own: they are parts of a flight, not
  * destinations, and `/api/navdata/*` already publishes every one of them in
  * the format a pilot's instrument actually reads.
  *

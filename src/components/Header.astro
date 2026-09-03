@@ -24,7 +24,7 @@ const { transparent = false } = Astro.props;
     {
       /*
       The name and slogan show on every page. The mark does not: on the homepage
-      the hero carries it, centred and large, directly below — so repeating it
+      the hero carries it, centred and large, directly below, so repeating it
       in the header is the same logo twice on one screen.
     */
     }
@@ -32,7 +32,7 @@ const { transparent = false } = Astro.props;
       {
         /*
           Named for the view transition, and only ever rendered here when the
-          homepage is not the page being shown — so the name is unique in the
+          homepage is not the page being shown, so the name is unique in the
           document, which it has to be. Coming from the homepage the browser
           matches this against the hero's big centred mark and flies one into
           the other; between two interior pages it holds still, which is also
@@ -81,7 +81,7 @@ const { transparent = false } = Astro.props;
 
     /*
       Over the homepage hero there is no chrome behind the nav, and the light
-      scheme's hero is a pale wash — `$gray-400` on top of it is all but
+      scheme's hero is a pale wash: `$gray-400` on top of it is all but
       invisible. Dark mode keeps the grey, where it reads fine against the
       photograph.
     */
@@ -118,7 +118,7 @@ const { transparent = false } = Astro.props;
   /*
     Matches the old site's `.navbar-brand a.site-title`: uppercase and bold from
     the Bootstrap base theme, the vr subtheme's `letter-spacing: -0.02em` over
-    the base's +2px, and the link colour rather than a text colour — the
+    the base's +2px, and the link colour rather than a text colour: the
     wordmark was blue there, and it is what ties the header to the brand.
   */
   .header__name {
@@ -137,7 +137,7 @@ const { transparent = false } = Astro.props;
   }
 
   /*
-    The name stays at every width — it is how a visitor knows whose site this
+    The name stays at every width: it is how a visitor knows whose site this
     is. Only the slogan drops on narrow screens, where the logo artwork already
     carries it and the header would otherwise crowd the menu button.
   */

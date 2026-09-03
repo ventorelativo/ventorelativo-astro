@@ -18,7 +18,7 @@
  * creating a duplicate, so the URL is used as the identity.
  */
 export interface CalendarEvent {
-  /** Stable identity — the article URL. */
+  /** Stable identity, the article URL. */
   uid: string;
   title: string;
   description: string;
@@ -31,7 +31,7 @@ export interface CalendarEvent {
   url: string;
 }
 
-/** `YYYYMMDD`, in local terms — an all-day event has no timezone. */
+/** `YYYYMMDD`, in local terms, an all-day event has no timezone. */
 function toDate(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}`;
@@ -41,7 +41,7 @@ function toDate(date: Date): string {
  * The day after the last day.
  *
  * Every calendar here takes an *exclusive* end, so a one-day event ends the
- * following morning. Get it wrong and the event shows across two days — the
+ * following morning. Get it wrong and the event shows across two days: the
  * one bug in this file a reader will actually notice.
  */
 function endOf(event: CalendarEvent): Date {
@@ -50,7 +50,7 @@ function endOf(event: CalendarEvent): Date {
   return day;
 }
 
-/** `YYYY-MM-DD` — Outlook's date form. */
+/** `YYYY-MM-DD`, Outlook's date form. */
 function isoDay(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
@@ -85,10 +85,10 @@ function fold(line: string): string {
  * The "add to Google Calendar" link.
  *
  * Google takes a pre-filled event as query parameters, so the button is an
- * anchor and nothing has to run on the page — no widget, no script, no
+ * anchor and nothing has to run on the page: no widget, no script, no
  * account lookup. The same event, expressed twice: this and the `.ics`.
  *
- * `dates` follows the same rule as `DTEND` above — the end is exclusive, so a
+ * `dates` follows the same rule as `DTEND` above: the end is exclusive, so a
  * one-day event ends the following day or Google shows it across two.
  */
 export function googleCalendarUrl(event: CalendarEvent): string {

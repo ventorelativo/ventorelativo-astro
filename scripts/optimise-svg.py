@@ -6,7 +6,7 @@ Vector exports carry six decimals of a designer's tool. At the sizes this site
 draws them nobody can see the difference, and the file halves.
 
 The catch is that most of a path is *relative* commands, so rounding each delta
-on its own accumulates error — over a thousand commands the shape wanders by
+on its own accumulates error: over a thousand commands the shape wanders by
 tens of pixels. This keeps the exact position alongside the emitted one and
 picks each delta so the emitted point lands on the rounded exact point, which
 keeps the error bounded at half a unit everywhere.

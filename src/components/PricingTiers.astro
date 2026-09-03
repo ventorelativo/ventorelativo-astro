@@ -2,7 +2,7 @@
 /**
  * Membership tiers on /iscrizioni (§2.4, §5).
  *
- * Was hand-written Bootstrap in the page body — `.card.rounded-3.shadow-sm`,
+ * Was hand-written Bootstrap in the page body: `.card.rounded-3.shadow-sm`,
  * `.text-bg-primary`, a `w-100 btn btn-primary stretched-link`. The data is
  * structured now, so switching payment rail (D10, Satispay → Stripe) is a URL
  * and a label in two fields rather than an edit to markup an editor should not
@@ -12,7 +12,7 @@
  *
  * The two tiers are not two sizes of the same thing. A Sostenitore supports
  * the club; a Socio is a member of it, with a vote. A list of benefits alone
- * cannot say that — read down two columns of ticks, the cheaper one just looks
+ * cannot say that: read down two columns of ticks, the cheaper one just looks
  * like less. The missing rows are the point of the page, so they are on it.
  *
  * The old card's filled header comes back for the highlighted tier, which is
@@ -113,7 +113,7 @@ const MARK = {
       Equal-height cards alone were not enough: the highlighted tier's header
       carries a badge, which made its band taller, and the two prices below
       started at different heights. A subgrid puts both headers in one row, so
-      the taller of the two sets the height of both — and the bodies then start
+      the taller of the two sets the height of both, and the bodies then start
       and end together, which is what puts the pay buttons on one line.
     */
     grid-template-rows: auto 1fr;
@@ -161,7 +161,7 @@ const MARK = {
     The old card's `text-bg-primary` header, kept to the band.
 
     `--brand-blue`, not `--color-accent`, so the header and the pay button
-    below it are the same blue in both schemes — the button deliberately does
+    below it are the same blue in both schemes: the button deliberately does
     not follow the accent into dark mode, and a card whose head and foot
     disagreed read as two pieces.
   */
@@ -182,7 +182,7 @@ const MARK = {
     border-radius: var(--radius-pill);
     /*
       15%, not more. At 22% the pill lightened the blue under it to #5078ba and
-      white on that is 4.43:1 — under the line for 13px text, and invisible to
+      white on that is 4.43:1, under the line for 13px text, and invisible to
       anyone reading the design rather than measuring it.
     */
     background-color: color-mix(in srgb, var(--color-on-brand) 15%, transparent);
@@ -277,7 +277,7 @@ const MARK = {
      different list lengths. */
   /*
     Flush to the bottom of the card. `auto` works here only because the body is
-    a subgrid row that stretches to the tallest card — as a plain flex column
+    a subgrid row that stretches to the tallest card, as a plain flex column
     sized to its own content it had nothing to push against.
   */
   .tier__pay {

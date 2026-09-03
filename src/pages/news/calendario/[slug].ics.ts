@@ -1,5 +1,5 @@
 /**
- * `/news/calendario/<slug>.ics` — the "add to calendar" download.
+ * `/news/calendario/<slug>.ics`: the "add to calendar" download.
  *
  * One route per post that has event fields, generated at build like every other
  * page. Posts without them produce no route, so the button only exists where

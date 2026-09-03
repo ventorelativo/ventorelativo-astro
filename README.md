@@ -8,7 +8,7 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 
 > **Migration in progress.** [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) is the source of
 > truth for what is being built, what has been decided (D1–D13) and what is still open.
-> **Phases 1 and 2 are done** — design system, all content, every URL, SEO and
+> **Phases 1 and 2 are done**: design system, all content, every URL, SEO and
 > the CMS in local mode. Phase 3 is Keystatic on GitHub, which needs a remote.
 
 ## Documentation
@@ -21,7 +21,7 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 | [`docs/performance.md`](docs/performance.md)             | The speed budget: 100/100 PageSpeed, and how dependencies are judged against it.                  |
 | [`AGENTS.md`](AGENTS.md)                                 | Instructions for AI coding agents. `CLAUDE.md` and `.github/copilot-instructions.md` point at it. |
 
-Club members can work on this site with an AI agent without knowing Astro — see
+Club members can work on this site with an AI agent without knowing Astro: see
 [`docs/README.md`](docs/README.md).
 
 ## Getting started
@@ -31,22 +31,22 @@ npm install
 npm run dev      # http://localhost:4321
 ```
 
-| Script            | What it does                                                  |
-| ----------------- | ------------------------------------------------------------- |
-| `npm run dev`     | Dev server with HMR                                           |
-| `npm run build`   | Static build into `dist/`                                     |
-| `npm run preview` | Serve the built output                                        |
-| `npm run check`   | Astro + TypeScript diagnostics                                |
-| `npm run verify`  | `check` + `build`. The gate before calling work done.         |
-| `npm run shot`    | Screenshot and measure a page in a real emulated viewport     |
-| `npm run weight`  | Transferred bytes by resource type — run it against the build |
+| Script            | What it does                                                 |
+| ----------------- | ------------------------------------------------------------ |
+| `npm run dev`     | Dev server with HMR                                          |
+| `npm run build`   | Static build into `dist/`                                    |
+| `npm run preview` | Serve the built output                                       |
+| `npm run check`   | Astro + TypeScript diagnostics                               |
+| `npm run verify`  | `check` + `build`. The gate before calling work done.        |
+| `npm run shot`    | Screenshot and measure a page in a real emulated viewport    |
+| `npm run weight`  | Transferred bytes by resource type: run it against the build |
 
 ## Layout
 
 ```
 src/
   assets/              Images, the OG lockup, the Metropolis face used on cards.
-  content/             news/, sites/, pages/ — the MDX the site is built from.
+  content/             news/, sites/, pages/: the MDX the site is built from.
   content.config.ts    Collection schemas. Zod validates them at build.
   lib/                 og.ts (social cards), schema.ts, xcontest.ts, breadcrumbs.ts
   consts.ts            Site name, nav, club coordinates.
@@ -61,7 +61,7 @@ src/
     index.astro        Homepage hero.
     news/, siti/       Index + entry routes for the two collections.
     og/[...route].jpg  Generated social cards, cached by content hash.
-    styleguide.astro   Design-system reference — DELETE before going live.
+    styleguide.astro   Design-system reference: DELETE before going live.
 public/                Favicons and the OG social card, copied from the vr theme.
 keystatic.config.ts    The editing UI's schema. Must agree with content.config.ts.
 docs/                  Documentation for humans and agents.
@@ -80,7 +80,7 @@ only emits real 301s when a host adapter is present; without one it writes meta-
 HTML pages, which pass no ranking signal. See the comment in `astro.config.mjs`.
 
 **No adapter yet.** The site is fully prerendered, so it doesn't need one. `@astrojs/netlify`
-goes in at Phase 3, when Keystatic's admin routes need on-demand rendering — adding it
+goes in at Phase 3, when Keystatic's admin routes need on-demand rendering: adding it
 early costs a ~3.6 MB SSR function on every deploy for nothing.
 
 **URLs are load-bearing.** `build.format: 'directory'` is what makes `/siti/montoso/`
@@ -88,5 +88,5 @@ resolve the same way the Tome export did. Don't change it. The full URL inventor
 migration must preserve is in `MIGRATION-PLAN.md` §3.
 
 **The old site is the reference.** `../ventorelativo-drupal` stays around read-only.
-Its committed `html/` directory is the byte-level output to diff against — particularly
+Its committed `html/` directory is the byte-level output to diff against: particularly
 for the OpenAir and CUP flight-computer files in Phase 4.

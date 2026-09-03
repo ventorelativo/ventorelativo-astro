@@ -25,7 +25,7 @@ import ExternalIcon from '../components/ExternalIcon.astro';
   The homepage's editable parts, from the `home` entry in the pages collection.
 
   The credit travels inside `hero` rather than beside it because it belongs to
-  the picture and not to the page (G8) — a page that does not render `src` has
+  the picture and not to the page (G8): a page that does not render `src` has
   no credit to show, and an editor swapping the photograph is prompted for the
   new one in the same place.
 */
@@ -60,13 +60,13 @@ const CTAS = home.data.ctas ?? [];
     />
 
     <div class="hero__content container">
-      {/* Morphs into the header's mark on every other page — see Header. */}
+      {/* Morphs into the header's mark on every other page: see Header. */}
       <Logo height="8rem" style="view-transition-name: brand-mark" />
 
       {
         /*
         The logo artwork already carries the wordmark and the slogan, so
-        repeating them as text beneath it reads as a stutter — and the header
+        repeating them as text beneath it reads as a stutter, and the header
         now shows both. They stay in the DOM, visually hidden: the page still
         needs its one <h1>, and that heading is what a screen reader announces
         and what search engines read.
@@ -88,7 +88,7 @@ const CTAS = home.data.ctas ?? [];
 
     {
       /*
-      The credit sits with the picture it credits, bottom-right of <main> —
+      The credit sits with the picture it credits, bottom-right of <main>,
       where `vr_creditiimmagine` put it in the Drupal theme. It used to be
       passed down to the footer, which meant a global chrome component had to
       know about one page's image; now it cannot appear anywhere the photo
@@ -113,7 +113,7 @@ const CTAS = home.data.ctas ?? [];
   .hero {
     position: relative;
     /*
-      Fills whatever the footer leaves — body is a 100svh flex column, so this
+      Fills whatever the footer leaves: body is a 100svh flex column, so this
       is the viewport minus the footer rather than the whole viewport. A
       `min-height: 100svh` here would push the footer below the fold on every
       screen size, which is exactly what it used to do.
@@ -126,16 +126,16 @@ const CTAS = home.data.ctas ?? [];
 
     /*
       The hero is treated differently per scheme, deliberately.
-      No `color-scheme` override here — each mode gets its own character:
+      No `color-scheme` override here, each mode gets its own character:
 
-      Heaviest at the top and nearly clear at the foot — the other way up from
+      Heaviest at the top and nearly clear at the foot: the other way up from
       where this started. The scrim exists to carry the logo and the buttons,
       which sit in the upper half; running it the other way spent its density
       on the ridge line, which is the one part of the picture worth seeing.
       The credit sits over the clear end, and is the only thing there.
 
       LIGHT: a pale wash, as the Drupal theme had it, but no longer bleaching
-      the mountains out — that was a side effect of the old direction, not the
+      the mountains out: that was a side effect of the old direction, not the
       intent.
 
       DARK: lighter again, so the snow and the ridge read properly behind
@@ -151,7 +151,7 @@ const CTAS = home.data.ctas ?? [];
       A soft pool behind the logo and the buttons.
 
       Once the linear scrim stopped covering the whole picture, the content had
-      only whatever the sky happened to be behind it — and this sky is bright.
+      only whatever the sky happened to be behind it, and this sky is bright.
       The outline buttons' label measured 5.0:1 in light and 1.4:1 in dark
       against it. An ellipse with no visible edge puts a controlled ground
       under the content and leaves the rest of the photograph alone.
@@ -160,7 +160,7 @@ const CTAS = home.data.ctas ?? [];
 
     /*
       The credit sits on the clear end of the scrim, which is now the raw
-      photograph in both schemes — so it takes a light colour in both, rather
+      photograph in both schemes, so it takes a light colour in both, rather
       than following a token meant for a page background it is no longer on.
     */
     --hero-credit: rgb(255 255 255 / 0.88);
@@ -190,7 +190,7 @@ const CTAS = home.data.ctas ?? [];
 
   /*
     Legibility scrim. The light values fold in what the Drupal theme achieved
-    with `opacity: .8` on the image plus a 55%→80% white gradient — same result,
+    with `opacity: .8` on the image plus a 55%→80% white gradient, same result,
     one mechanism, so the image itself stays at full opacity in both modes.
   */
   .hero::after {
@@ -210,7 +210,7 @@ const CTAS = home.data.ctas ?? [];
     inset-inline-end: var(--space-md);
     color: var(--hero-credit);
     font-size: var(--text-xs);
-    /* No panel behind it — a shadow is enough over terrain, and a box here
+    /* No panel behind it: a shadow is enough over terrain, and a box here
        would be the loudest thing in the corner. */
     text-shadow: 0 1px 3px rgb(0 0 0 / 0.55);
     text-align: end;
@@ -245,7 +245,7 @@ const CTAS = home.data.ctas ?? [];
 
     In dark mode their label is `--color-accent`, a light blue that measured
     2.1:1 against this sky before any of today's changes and 2.5:1 after the
-    pool went in — readable to nobody either way. White takes it to 7.2:1 and
+    pool went in, readable to nobody either way. White takes it to 7.2:1 and
     costs nothing: the button is over a picture, so the accent was never
     carrying brand meaning here that the mark above it does not carry better.
 
@@ -267,7 +267,7 @@ const CTAS = home.data.ctas ?? [];
   /*
     No hero-specific button treatment any more. It existed because the outline
     button's border used to be a UI grey that vanished against the photograph;
-    now that the border is the brand blue, it reads on the hero unaided — and
+    now that the border is the brand blue it reads on the hero unaided, and
     the override's translucent white fill was fighting the ported hover state,
     leaving white text on a near-white background.
   */

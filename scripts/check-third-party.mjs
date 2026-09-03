@@ -1,8 +1,8 @@
 /**
  * The privacy gate: nothing third-party may load on its own.
  *
- * The claim `/privacy` makes to visitors is architectural — "opening a page of
- * this site starts no request to anyone else" — and it is the reason the site
+ * The claim `/privacy` makes to visitors is architectural: "opening a page of
+ * this site starts no request to anyone else", and it is the reason the site
  * needs no consent banner. A claim like that is worth exactly as much as the
  * check behind it, and it is one careless `<script src>` from being false.
  *
@@ -12,7 +12,7 @@
  * `src/content/pages/privacy.mdx` as well.
  *
  * What this does **not** cover, and cannot: URLs inside JavaScript that only
- * run on interaction — the map's tile providers, Google's translate script.
+ * run on interaction: the map's tile providers, Google's translate script.
  * Those are the facades, they are disclosed, and the point is that they are
  * behind a click. `scripts/shot.mjs --requests` is the tool for watching what
  * a real page load actually fetches.
@@ -26,12 +26,12 @@ const BUILD = 'dist';
 
 /**
  * Origins allowed to load without the visitor asking, and why. Keep this in
- * step with the "Statistiche di visita" section of the privacy notice — if
+ * step with the "Statistiche di visita" section of the privacy notice: if
  * something is added here and not there, the notice is wrong.
  */
 const ALLOWED = {
   'static.cloudflareinsights.com':
-    'Cloudflare Web Analytics (S16) — cookieless, aggregate, disclosed in /privacy',
+    'Cloudflare Web Analytics (S16): cookieless, aggregate, disclosed in /privacy',
 };
 
 /** Attributes a browser fetches before anyone clicks anything. */
@@ -60,7 +60,7 @@ const seen = new Map();
 for (const file of pages(BUILD)) {
   /*
     Keystatic's admin is not a page of the site. It is a React app two people
-    sign into, it is `noindex`, and it legitimately talks to GitHub.
+    sign into, it is `noindex` and it legitimately talks to GitHub.
   */
   if (file.includes('/keystatic/')) continue;
 

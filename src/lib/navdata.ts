@@ -12,13 +12,13 @@
  *  - **Which features go in each file** is decided by the view, not by the type
  *    table. Waypoints take everything except `poi`; airspace everything except
  *    `obstacle`. A feature then contributes only if it has the geometry that
- *    file is made of — which is why the counts are 29 and 13 rather than 33 and
+ *    file is made of, which is why the counts are 29 and 13 rather than 33 and
  *    14. The obstacle is a bare line, so it has no point and no polygon.
  *  - **Both files sort by name**, ascending, inherited from the view's default
  *    display.
  *  - **PHP's `%f` rounds; its `(int)` cast truncates.** Reproduced exactly:
  *    `toFixed` rounds the same way, and `Math.trunc` matches the cast. The
- *    difference is visible in the data — Bagnolo's longitude is 18.1395 minutes
+ *    difference is visible in the data: Bagnolo's longitude is 18.1395 minutes
  *    to the eye, but 18.139499999999984 as a double, so it renders `18.139` and
  *    not `18.140`.
  */
@@ -91,7 +91,7 @@ function byName(a: NavFeature, b: NavFeature): number {
 }
 
 /**
- * `ventorelativo-waypoints.cup` — everything but points of interest, provided
+ * `ventorelativo-waypoints.cup`: everything but points of interest, provided
  * it has a point.
  *
  * The empty columns are not padding: a CUP row is twelve fields, and readers
@@ -120,7 +120,7 @@ export function buildCup(features: NavFeature[]): string {
 }
 
 /**
- * `ventorelativo-airspace.txt` — everything but obstacles, provided it has a
+ * `ventorelativo-airspace.txt`: everything but obstacles, provided it has a
  * polygon. In practice that is the thirteen landing zones.
  *
  * `generated` is the only line that varies between builds, and the only line

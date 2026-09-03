@@ -26,7 +26,7 @@ const { entry } = Astro.props;
 const { title, summary, images, tags, guideUrl } = entry.data;
 
 /*
-  `mapFeatures` holds references, not data — Zod's `reference()` stores the id
+  `mapFeatures` holds references, not data: Zod's `reference()` stores the id
   and checks at build that the target exists, so a typo fails the build rather
   than rendering an empty table. `getEntries` resolves them, in the order the
   site lists them, which is the order Drupal's field held.
@@ -129,7 +129,7 @@ const takeoffs = features
 <style>
   /*
     A card row, not a button: it is a pointer to somebody else's page rather
-    than an action on this one, and the source deserves saying out loud —
+    than an action on this one, and the source deserves saying out loud:
     "Windgram e previsioni" alone reads as a page of ours.
   */
   .guide__link {

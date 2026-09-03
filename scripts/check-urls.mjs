@@ -2,7 +2,7 @@
  * The cutover gate: every URL the old site served must still resolve.
  *
  * Phase 2 diffed the URL sets once, by hand. This does it on every build,
- * because the risk did not end there — deleting a site in Keystatic or renaming
+ * because the risk did not end there: deleting a site in Keystatic or renaming
  * a news post removes a live URL, and nothing else in the pipeline would say so.
  * The domain moves in Phase 5 (MIGRATION-PLAN.md §7), and after that a missing
  * URL is a 404 in front of the club rather than a diff in a terminal.
@@ -14,11 +14,11 @@
  * Every old URL must be one of three things, and the third needs a reason
  * written down here:
  *
- *   1. built    — a page at the same path in `dist/`
- *   2. redirected — a 301 in `netlify.toml` (Astro's own `redirects` option is
+ *   1. built   : a page at the same path in `dist/`
+ *   2. redirected: a 301 in `netlify.toml` (Astro's own `redirects` option is
  *      banned, AGENTS.md rule 2, because without a host adapter it emits
  *      meta-refresh HTML that passes no ranking signal)
- *   3. dropped  — deliberately, with the decision that dropped it
+ *   3. dropped : deliberately, with the decision that dropped it
  *
  * Run after a build. Wired into `npm run verify`.
  */
@@ -34,28 +34,28 @@ const BUILD = 'dist';
  * redirected fails the gate.
  */
 const DROPPED = {
-  '/tags/adatto-ai-principianti/': 'D13 — tag archives dropped, tags kept as pills',
-  '/tags/asdasd/': 'D13 — and it was junk',
+  '/tags/adatto-ai-principianti/': 'D13, tag archives dropped, tags kept as pills',
+  '/tags/asdasd/': 'D13, and it was junk',
   '/tags/competizioni/': 'D13',
   '/tags/eventi/': 'D13',
   '/tags/hikefly/': 'D13',
   /*
-    Astro emits `dist/404.html`, which Netlify serves for any unmatched path —
+    Astro emits `dist/404.html`, which Netlify serves for any unmatched path:
     the same behaviour, without a page of its own at `/404/`. Nothing links
     there on purpose.
   */
   '/404/': 'Astro serves 404.html directly; no page lives at /404/',
   // Deleted at cutover (Phase 5). Until then it is built but kept out of the
   // sitemap and out of search.
-  '/styleguide/': 'design reference, not a page of the site — noindex, no sitemap',
+  '/styleguide/': 'design reference, not a page of the site, noindex, no sitemap',
   /*
     Drupal's own contact path. It did render a page in the archived build, and
-    briefly had a redirect here — but the club confirms it was an artefact of
+    briefly had a redirect here, but the club confirms it was an artefact of
     the CMS rather than an address anyone was given. It was never in the old
     sitemap either. `/contact/contatti` keeps its redirect: that one was a real
     redirect entity in Drupal (S10).
   */
-  '/contact/': "Drupal's own path, never advertised — confirmed an artefact",
+  '/contact/': "Drupal's own path, never advertised, confirmed an artefact",
 };
 
 /**
@@ -119,7 +119,7 @@ for (const url of old) {
   else if (rules.has(url)) counts.redirected++;
   else if (DROPPED[url]) counts.dropped++;
   else {
-    console.error(`✗ ${url} — served by the old site, and now nothing serves it.`);
+    console.error(`✗ ${url}: served by the old site, and now nothing serves it.`);
     console.error('  Build it, redirect it in netlify.toml, or add it to DROPPED');
     console.error('  in this file with the decision that dropped it.');
     failed = true;
@@ -129,7 +129,7 @@ for (const url of old) {
 for (const file of FILES) {
   if (existsSync(join(BUILD, file))) counts.built++;
   else {
-    console.error(`✗ ${file} — the old site served this and the build does not.`);
+    console.error(`✗ ${file}: the old site served this and the build does not.`);
     failed = true;
   }
 }
@@ -137,7 +137,7 @@ for (const file of FILES) {
 /*
   A rule that points at something that no longer exists is a 301 into a 404.
 
-  The target may be a page or a file — `/sitemap.xml` → `/sitemap-index.xml` is
+  The target may be a page or a file: `/sitemap.xml` → `/sitemap-index.xml` is
   the latter. `/keystatic` is neither: it is the one route rendered on demand
   by the function, so there is nothing in `dist/` to find.
 */

@@ -4,7 +4,7 @@
  *
  * This is the poster half of the facade (MIGRATION-PLAN.md Phase 4b): what the
  * page ships instead of a map. It costs about a kilobyte, needs no API key, no
- * tiles and no JavaScript, and it cannot fail — there is nothing to fetch. When
+ * tiles and no JavaScript, and it cannot fail: there is nothing to fetch. When
  * the real map lands it replaces this on interaction, and everyone who never
  * asks for a map keeps a page that weighs what it weighs now.
  *
@@ -14,7 +14,7 @@
  *
  * It did carry a scale bar for a while. The MapLibre map it stands in for
  * prints none, so the bar appeared, then vanished the moment anyone opened the
- * map — a measurement that only exists in the placeholder is worse than no
+ * map: a measurement that only exists in the placeholder is worse than no
  * measurement at all.
  */
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
@@ -45,7 +45,7 @@ const points: LatLon[] = features.flatMap((feature) => [
 /*
   16:9, matched to the widest shape the frame takes.
 
-  The frame is 600 px tall and container-wide on a laptop — about 1.73 — and
+  The frame is 600 px tall and container-wide on a laptop (about 1.73) and
   reverts to this same 16:9 on a phone, so a 16:9 drawing fits by width in both
   and fills them. `preserveAspectRatio` absorbs the small difference into the
   frame's own background, which is flat, so the leftover is invisible.
@@ -62,7 +62,7 @@ function toPoints(coordinates: [number, number][]): string {
     .join(' ');
 }
 
-// "2 decolli, 3 atterraggi" — a screen reader gets the content, not "image".
+// "2 decolli, 3 atterraggi": a screen reader gets the content, not "image".
 const counts = new Map<FeatureType, number>();
 for (const feature of features)
   counts.set(feature.type, (counts.get(feature.type) ?? 0) + 1);
@@ -82,7 +82,7 @@ const markers = features.filter((feature) => feature.point);
   Two rules. Names flip to the left of their marker in the right-hand third of
   the frame, so one near the edge is not clipped by it. And names that would
   overlap get pushed down, because real sites have features a few hundred
-  metres apart — Montoso's "Atterraggio Ponte di Bibiana" and "Ritrovo: Ponte
+  metres apart, Montoso's "Atterraggio Ponte di Bibiana" and "Ritrovo: Ponte
   di Bibiana" printed straight through each other before this existed.
 
   Widths are estimated from character count rather than measured: there is no
@@ -91,7 +91,7 @@ const markers = features.filter((feature) => feature.point);
 */
 /*
   Sizes are in viewBox units, and the viewBox is 1000 wide against a frame that
-  renders around 1040 px on a laptop — so one unit is roughly one pixel, and
+  renders around 1040 px on a laptop, so one unit is roughly one pixel, and
   these numbers can be read as pixel sizes. They were halved when the poster
   moved from the reading column to the full container width: the same units
   had been drawing 27 px text.
@@ -112,7 +112,7 @@ interface PlacedLabel {
 /**
  * Where a feature's name points at.
  *
- * Usually its marker. The obstacle has no point — it is a bare line — so it
+ * Usually its marker. The obstacle has no point (it is a bare line) so it
  * anchors to the middle of that line instead. Leaving it unlabelled would mean
  * the one genuine hazard on the drawing, a high-tension cable, is the only
  * thing without a name on it.
@@ -166,7 +166,7 @@ function placeLabels(): PlacedLabel[] {
 /*
   Names, up to a point.
 
-  On a site's own diagram — two to seven points — the names are most of what it
+  On a site's own diagram (two to seven points) the names are most of what it
   says. On the overview, thirty-three of them collide into a wall of text that
   detaches from its markers as the de-confliction pushes each one clear. Past
   this many the shapes and their positions carry the drawing, and the
@@ -248,7 +248,7 @@ const labels = markers.length <= LABEL_LIMIT ? placeLabels() : [];
     margin: 0 0 var(--space-md);
     /*
       The drawing is sized in viewBox units, so how big a unit renders depends
-      on how wide the poster is — 1040 px in the container on a laptop, 342 px
+      on how wide the poster is: 1040 px in the container on a laptop, 342 px
       on a phone. That is a factor of three, which no single set of numbers
       survives. A container query is the right tool rather than a viewport
       media query: what matters is this element's width, not the window's.
@@ -326,13 +326,13 @@ const labels = markers.length <= LABEL_LIMIT ? placeLabels() : [];
 
   /*
     Narrow: everything scales up in viewBox units to come out the same size on
-    screen, and the names go — at this width they render around five pixels,
+    screen, and the names go, at this width they render around five pixels,
     which is not a label but a smudge. The table underneath carries every name,
     so the diagram falls back to shapes and positions.
 
     `r` is settable from CSS on an SVG circle, which is what keeps the markers
     in one place rather than duplicating the whole drawing for small screens.
-    A browser too old for that keeps the `r` attribute and draws them small —
+    A browser too old for that keeps the `r` attribute and draws them small:
     a worse diagram, not a broken one.
   */
   @container (max-width: 40rem) {

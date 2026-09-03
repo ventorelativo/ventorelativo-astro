@@ -1,11 +1,11 @@
 /**
- * /llms.txt — an index of this site's content, for language models.
+ * /llms.txt: an index of this site's content, for language models.
  *
  * The convention (llmstxt.org): one H1, a blockquote summary, then sections of
  * `- [Title](URL): description` lines, served as plain text.
  *
  * Worth being honest about what this buys: llms.txt is widely published and
- * rarely fetched — one 2026 crawl found it was 0.1% of AI bot requests. The
+ * rarely fetched: one 2026 crawl found it was 0.1% of AI bot requests. The
  * things that actually make this site legible to a machine are the schema.org
  * graph (src/lib/schema.ts) and plain semantic HTML. This costs a build-time
  * route and nothing at runtime, so it is worth having anyway; it is not worth

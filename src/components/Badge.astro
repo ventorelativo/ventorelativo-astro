@@ -3,8 +3,8 @@
  * A small category badge (D13).
  *
  * The Drupal theme rendered taxonomy terms as Bootstrap `.badge` pills linking
- * to `/tags/<slug>` archives. Those archives are gone — four terms across five
- * pieces of content did not justify five thin pages — so this is presentational
+ * to `/tags/<slug>` archives. Those archives are gone: four terms across five
+ * pieces of content did not justify five thin pages, so this is presentational
  * only: it labels a post, it does not navigate.
  */
 interface Props {
@@ -19,7 +19,7 @@ const { label } = Astro.props;
 <style>
   /*
     The old `.badge`: 0.825rem/700 at line-height 1, a 6px radius, and a 10%
-    wash of the link blue behind it — sentence case, not uppercase.
+    wash of the link blue behind it: sentence case, not uppercase.
 
     The wash follows `--color-accent` rather than being pinned to the light-mode
     blue as the original was; at 10% opacity on a dark background that pairing

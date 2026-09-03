@@ -4,7 +4,7 @@
  * Passed to `<Content components={MDX_COMPONENTS} />` rather than imported at
  * the top of each MDX file. Two reasons, both about the people editing:
  *
- *  - Keystatic cannot parse an `import` inside a content file at all — it
+ *  - Keystatic cannot parse an `import` inside a content file at all: it
  *    rejects the whole entry with "Unhandled type mdxjsEsm".
  *  - An import line is code in a document, and the point of Phase 3 is that
  *    nobody has to write code to publish a news post.

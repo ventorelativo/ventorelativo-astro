@@ -1,9 +1,9 @@
 /**
- * /api/news.json — the club's posts as data, events first.
+ * /api/news.json: the club's posts as data, events first.
  *
  * The companion to `siti.json`, and the reason it earns its place: a post with
  * `event` fields has a real date, a takeoff and a landing, which is a question
- * an assistant can actually answer — "is anything on at Montoso this month".
+ * an assistant can actually answer: "is anything on at Montoso this month".
  * A post without them is an article, and says so.
  *
  * Only what the pages already show. The body text is not here: `/llms-full.txt`

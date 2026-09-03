@@ -37,8 +37,8 @@ const { entry, priority = false } = Astro.props;
   card's width and cropped in the browser.
 
   The difference is most of the page. These are portrait posters; the card
-  shows a 340x192 letterbox of one. Asking for 800w gave an 800x1231 image —
-  145 kB — of which the browser drew a 384px-tall strip and discarded the
+  shows a 340x192 letterbox of one. Asking for 800w gave an 800x1231 image:
+  145 kB, of which the browser drew a 384px-tall strip and discarded the
   rest. `fit: cover` makes sharp do the same crop, once, at build.
 
   The candidate widths are chosen against the sizes below, not picked round:
@@ -56,7 +56,7 @@ const CARD_IMAGE = {
 const { title, date, summary, image, category, event } = entry.data;
 /*
   An event's card says so before you read it: the day sits on the image and
-  the takeoff replaces nothing — it is added under the title. A post without
+  the takeoff replaces nothing: it is added under the title. A post without
   `event` gets neither and reads as an article, which is the whole reason
   events live inside `news` rather than in a collection of their own.
 */
