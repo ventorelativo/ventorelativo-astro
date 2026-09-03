@@ -38,8 +38,10 @@ terrain, the KK7 thermal layers, the Tracestrack topo base, per-site and
 overview; the **XContest links** per takeoff; the **language switcher**, a
 facade over GTranslate; `geo:export`/`geo:import` for round-tripping map
 features through GeoJSON; and the **writing kit** at `/redazione`, one Italian
-document a volunteer pastes into a free ChatGPT or Gemini account to get every
-field of a news post filled in ([`docs/authoring-with-ai.md`](docs/authoring-with-ai.md)).
+document a volunteer pastes into a free ChatGPT or Gemini account to get any
+content on the site written or corrected, field by field, including an inventory
+of what is editable and what is not
+([`docs/authoring-with-ai.md`](docs/authoring-with-ai.md)).
 
 **Not built, and why:**
 

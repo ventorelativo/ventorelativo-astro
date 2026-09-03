@@ -23,7 +23,7 @@
 import source from '../authoring/istruzioni.md?raw';
 
 /** The content types a volunteer can ask about. Matches the `blocco:` markers. */
-export type Kind = 'news' | 'siti';
+export type Kind = 'news' | 'siti' | 'pagine';
 
 export const KINDS: { kind: Kind; label: string; hint: string }[] = [
   {
@@ -36,7 +36,24 @@ export const KINDS: { kind: Kind; label: string; hint: string }[] = [
     label: 'Un sito di volo',
     hint: 'La scheda di uno dei quattordici siti, da correggere o completare.',
   },
+  {
+    kind: 'pagine',
+    label: 'Una pagina fissa o le impostazioni',
+    hint: 'Home, iscrizioni, contatti, privacy, kit stampa, i social, i dati del club.',
+  },
 ];
+
+/**
+ * Always sent, whatever the volunteer is editing.
+ *
+ * `comune` is the brief and the rules. `mappa` is the inventory: every page,
+ * the entry that controls it, and what is not editable from the CMS at all.
+ * Without it a model answers the question it was asked rather than the one the
+ * volunteer has, and half of these live somewhere other than the page they are
+ * visible on: the footer's legal line is a site-wide setting, the flight list
+ * comes from XContest, the map comes from data nobody edits here.
+ */
+const ALWAYS = ['comune', 'mappa'] as const;
 
 const BLOCK = /<!-- blocco:([a-z]+) -->\n([\s\S]*?)<!-- \/blocco:\1 -->/g;
 
@@ -48,7 +65,7 @@ for (const [, name, body] of source.matchAll(BLOCK)) blocks.set(name, body.trim(
 
 /* A missing block means the markdown was edited and a marker lost. Fail loudly
    at build time: the alternative is a contract that quietly omits a rule. */
-for (const name of ['comune', 'news', 'siti', 'chiusura']) {
+for (const name of [...ALWAYS, 'news', 'siti', 'pagine', 'chiusura']) {
   if (!blocks.has(name)) {
     throw new Error(
       `istruzioni.md has no "blocco:${name}" block. The markers are what ` +
@@ -69,11 +86,14 @@ function fill(text: string, site: URL): string {
  * Defaults to all of them: that is what `/redazione/istruzioni.txt` serves and
  * what a model following the link should see.
  */
-export function instructions(site: URL, kinds: Kind[] = ['news', 'siti']): string {
+export function instructions(
+  site: URL,
+  kinds: Kind[] = ['news', 'siti', 'pagine'],
+): string {
   return fill(
     [
       title,
-      blocks.get('comune'),
+      ...ALWAYS.map((name) => blocks.get(name)),
       ...kinds.map((kind) => blocks.get(kind)),
       blocks.get('chiusura'),
     ].join('\n\n'),
@@ -93,14 +113,17 @@ export function instructions(site: URL, kinds: Kind[] = ['news', 'siti']): strin
  * the volunteer copied and not the day the site was built.
  */
 export function prompt(site: URL, kind: Kind): string {
-  const what =
-    kind === 'news' ? 'una news o un evento' : 'la scheda di un sito di volo';
+  const what = {
+    news: 'Devi prepararmi una news o un evento',
+    siti: 'Devi aiutarmi con la scheda di un sito di volo',
+    pagine: 'Devi aiutarmi a modificare una pagina fissa o le impostazioni',
+  }[kind];
 
   return [
     /* One line per paragraph, not wrapped at 80 columns like the document
        below it: this part is read inside a narrow box on a phone, where a hard
        wrap breaks a second time and comes out ragged. */
-    `Devi prepararmi ${what} per il sito del Parapendio Club VentoRelativo.`,
+    `${what} per il sito del Parapendio Club VentoRelativo.`,
     '',
     'Segui alla lettera le istruzioni del club che ti incollo qui sotto: sono le regole della casa, comprese quelle su cosa non inventare mai e sul trattino lungo, che non va usato.',
     '',

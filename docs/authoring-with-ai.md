@@ -1,9 +1,14 @@
 # Writing content with an AI
 
-Volunteers write the club's news posts. Some of them would rather start from a
-draft than from a blank box, and every one of them already has a free ChatGPT or
-Gemini account. This is the kit that lets them do it without the site's rules
-getting lost on the way.
+Volunteers write the club's news posts and keep the rest of the site up to
+date. Some of them would rather start from a draft than from a blank box, and
+every one of them already has a free ChatGPT or Gemini account. This is the kit
+that lets them do it without the site's rules getting lost on the way.
+
+It covers **editing the site**, not only writing a post: an announcement, a
+correction to a flight site, a membership price, a contact, a page's text. The
+document opens with an inventory of what the site is made of, so a model can
+answer the question the volunteer actually has rather than the one they asked.
 
 The whole feature is **a document and a copy button**:
 
@@ -16,10 +21,10 @@ The whole feature is **a document and a copy button**:
 | `scripts/check-authoring.mjs` | Fails the build when the document and the schemas disagree.                |
 | `scripts/check-content.mjs`   | Fails the build on an em dash, which is the rule a model breaks by reflex. |
 
-A volunteer copies the prompt for what they are writing, pastes it into whatever
-chat they use, adds their raw notes underneath, and gets back a value for every
-field plus a list of what the model could not fill. They type those into
-Keystatic themselves. Nothing is automated, nothing is published without a
+A volunteer copies the prompt for what they are changing, pastes it into
+whatever chat they use, adds their raw notes underneath, and gets back the entry
+to open, a value for every field that changes, and a list of what the model
+could not fill. They type those into Keystatic themselves. Nothing is automated, nothing is published without a
 person reading it, and no key or account is involved.
 
 ## Why not WebMCP
@@ -56,11 +61,26 @@ site needs. English stays where it belongs: the field **keys** are English
 because they are the real keys, with the Italian Keystatic label beside each so
 a volunteer can match a value to the box it goes in.
 
+## The map, and why it always ships
+
+`blocco:mappa` is the part that makes this more than a form-filling aid: every
+page, the entry that controls it, and a table of what cannot be changed from the
+CMS at all. It goes out with every prompt, alongside the rules, because half of
+what a volunteer asks for lives somewhere other than the page they are looking
+at. The legal line under the footer is a site-wide setting, not part of the page
+showing it; the flight list on `/voli` comes from XContest; the map's markers
+come from data that is deliberately not editable, because it ends up in flight
+instruments.
+
+The last table is the important one. Without it a model asked to "change the
+menu" or "make the privacy page friendlier" will cheerfully explain how to edit
+the source. With it, the instruction is to say so and stop.
+
 ## Why the document is sliced
 
 A free tier has a small context window and quietly drops instructions once it
 fills. Someone writing a news post has no use for the flight-site rules, so the
-copy button ships the common section plus one type. The `<!-- blocco:… -->`
+copy button ships the common sections plus one type. The `<!-- blocco:… -->`
 markers in the markdown are the seams, and `src/lib/authoring.ts` throws at
 build time if one goes missing: a contract that silently omits a rule is worse
 than no contract.

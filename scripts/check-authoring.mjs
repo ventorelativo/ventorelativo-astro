@@ -38,7 +38,31 @@ const SCHEMA = 'src/content.config.ts';
  * tells the model to leave coordinates alone rather than describing a field it
  * must not touch.
  */
-const UNDOCUMENTED = { news: [], sites: ['mapFeatures'] };
+const UNDOCUMENTED = { news: [], sites: ['mapFeatures'], pages: [], settings: [] };
+
+/**
+ * Which block of the document describes which collections, and how deep that
+ * collection's Zod keys are indented.
+ *
+ * `pages` and `settings` share one block because a volunteer does not think of
+ * them as two things: "Pagina: Contatti" and "Social" are both entries in the
+ * same sidebar. The check treats their fields as one set, which is enough to
+ * catch a renamed or dropped field, the drift that actually happens.
+ *
+ * The indent is per collection because `settings` takes a plain `z.object` and
+ * the others take a function of `{ image }`, which costs them a level.
+ */
+const DESCRIBES = [
+  { block: 'news', collections: [['news', 6]] },
+  { block: 'siti', collections: [['sites', 6]] },
+  {
+    block: 'pagine',
+    collections: [
+      ['pages', 6],
+      ['settings', 4],
+    ],
+  },
+];
 
 const contract = await readFile(CONTRACT, 'utf8');
 const schema = await readFile(SCHEMA, 'utf8');
@@ -53,12 +77,12 @@ function block(name) {
 }
 
 /** The top-level keys of one collection's Zod object. */
-function schemaFields(collection) {
+function schemaFields(collection, indent) {
   const start = schema.indexOf(`const ${collection} = defineCollection(`);
   if (start === -1) throw new Error(`${SCHEMA} has no "${collection}" collection.`);
   const end = schema.indexOf('\nconst ', start + 1);
   const body = schema.slice(start, end === -1 ? undefined : end);
-  return [...body.matchAll(/^ {6}(\w+): /gm)].map((m) => m[1]);
+  return [...body.matchAll(new RegExp(`^ {${indent}}(\\w+): `, 'gm'))].map((m) => m[1]);
 }
 
 /** The field names in the first column of the document's tables. */
@@ -69,30 +93,31 @@ function documentedFields(name) {
 const problems = [];
 const report = (message) => problems.push(message);
 
-for (const [collection, name] of [
-  ['news', 'news'],
-  ['sites', 'siti'],
-]) {
-  const declared = schemaFields(collection);
+for (const { block: name, collections } of DESCRIBES) {
   const documented = new Set(documentedFields(name));
-  const skip = new Set(UNDOCUMENTED[collection]);
+  const declared = new Set();
 
-  for (const field of declared) {
-    if (!documented.has(field) && !skip.has(field)) {
-      report(
-        `${CONTRACT}  "${collection}.${field}" is in the schema and not in the ` +
-          `document.\n    An editor's AI will never fill it. Add a row for it, ` +
-          `or list it in\n    UNDOCUMENTED with the reason.`,
-      );
+  for (const [collection, indent] of collections) {
+    const skip = new Set(UNDOCUMENTED[collection]);
+    for (const field of schemaFields(collection, indent)) {
+      declared.add(field);
+      if (!documented.has(field) && !skip.has(field)) {
+        report(
+          `${CONTRACT}  "${collection}.${field}" is in the schema and not in ` +
+            `the "${name}" block.\n    An editor's AI will never fill it. Add a ` +
+            `row for it, or list it in\n    UNDOCUMENTED with the reason.`,
+        );
+      }
     }
   }
 
   for (const field of documented) {
-    if (!declared.includes(field)) {
+    if (!declared.has(field)) {
       report(
-        `${CONTRACT}  "${collection}.${field}" is in the document and not in ` +
-          `the schema.\n    The AI would produce a value nobody can file. ` +
-          `Rename it or drop the row.`,
+        `${CONTRACT}  "${field}" is in the "${name}" block and in none of the ` +
+          `schemas it\n    describes (${collections.map(([c]) => c).join(', ')}). ` +
+          `The AI would produce a value\n    nobody can file. Rename it or drop ` +
+          `the row.`,
       );
     }
   }
@@ -154,5 +179,6 @@ const unique = (name) => new Set(documentedFields(name)).size;
 
 console.log(
   `authoring contract ok: ${unique('news')} news fields, ${unique('siti')} site ` +
-    `fields, ${enumValues.length} categories, ${tagsDocumented.length} tags`,
+    `fields, ${unique('pagine')} page and setting fields, ` +
+    `${enumValues.length} categories, ${tagsDocumented.length} tags`,
 );
