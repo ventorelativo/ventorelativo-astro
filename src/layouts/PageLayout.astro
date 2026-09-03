@@ -18,9 +18,11 @@ interface Props {
   breadcrumbLabels?: Record<string, string>;
   /** Route of this page's generated social card (S3). */
   ogRoute?: string;
+  /** Keep out of search results — see BaseLayout. */
+  noindex?: boolean;
 }
 
-const { title, description, intro, breadcrumbLabels, ogRoute } = Astro.props;
+const { title, description, intro, breadcrumbLabels, ogRoute, noindex } = Astro.props;
 ---
 
 <BaseLayout
@@ -28,6 +30,7 @@ const { title, description, intro, breadcrumbLabels, ogRoute } = Astro.props;
   description={description}
   ogRoute={ogRoute}
   breadcrumbLabels={breadcrumbLabels}
+  noindex={noindex}
 >
   <div class="container">
     <Breadcrumbs title={title} labels={breadcrumbLabels} />

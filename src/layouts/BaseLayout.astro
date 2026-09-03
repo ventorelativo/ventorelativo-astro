@@ -28,6 +28,17 @@ interface Props {
   publishedTime?: string;
   /** Labels for intermediate breadcrumb segments, for the BreadcrumbList. */
   breadcrumbLabels?: Record<string, string>;
+  /**
+   * Keep this page out of search results. For pages that only make sense
+   * after doing something — a form's thank-you, a payment's confirmation.
+   * They have no standalone value, and a search result landing on one is a
+   * dead end. `follow` so the links out of them still count.
+   *
+   * A page marked this way must also be excluded from the sitemap, in
+   * `astro.config.mjs` — telling Google both "index this" and "do not" is
+   * how a page ends up in the index anyway.
+   */
+  noindex?: boolean;
   /** Present on news posts: the NewsArticle node's fields. */
   article?: {
     title: string;
@@ -58,6 +69,7 @@ const {
   breadcrumbLabels,
   article,
   event,
+  noindex = false,
 } = Astro.props;
 ---
 
@@ -66,6 +78,8 @@ const {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {noindex && <meta name="robots" content="noindex, follow" />}
 
     <SEO
       title={title}

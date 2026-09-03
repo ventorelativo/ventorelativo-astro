@@ -124,9 +124,17 @@ export default defineConfig({
 
       /styleguide is excluded: it is a development reference, deleted at the end
       of Phase 2, and has no business in search results meanwhile.
+
+      The two post-action pages are excluded for a different reason: they carry
+      `noindex` (see BaseLayout), and a page that is in the sitemap while asking
+      not to be indexed is a contradiction Google resolves in its own favour.
+      Both lists have to agree.
     */
     sitemap({
-      filter: (page) => !page.includes('/styleguide'),
+      filter: (page) =>
+        !['/styleguide', '/contatti/messaggio-inviato'].some((excluded) =>
+          page.includes(excluded),
+        ),
       serialize(item) {
         const path = new URL(item.url).pathname;
         item.priority = path === '/' ? 1.0 : 0.5;
