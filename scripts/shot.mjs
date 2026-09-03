@@ -166,6 +166,16 @@ class CDP {
  * whatever selectors were asked for.
  */
 function measureInPage(selectors, computedSelectors) {
+  /** Does this element sit inside a box that scrolls sideways on purpose? */
+  function insideScroller(el) {
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const style = getComputedStyle(p);
+      const scrolls = style.overflowX === 'auto' || style.overflowX === 'scroll';
+      if (scrolls && p.scrollWidth > p.clientWidth) return true;
+    }
+    return false;
+  }
+
   const de = document.documentElement;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -176,6 +186,13 @@ function measureInPage(selectors, computedSelectors) {
     // Overlays legitimately park content off-screen — a lightbox's adjacent
     // slides, a drawer waiting to slide in. Only flow content can "overflow".
     if (el.closest('[role="dialog"], dialog, [aria-modal="true"]')) continue;
+    /*
+      Nor does content inside its own horizontal scroller overflow anything: a
+      wide table in an `overflow-x: auto` wrapper is the fix for overflow, not
+      an instance of it. Reported as a failure it trained the reader to ignore
+      the warning, which is worse than not warning at all.
+    */
+    if (insideScroller(el)) continue;
     if (r.right > vw + 0.5 || r.left < -0.5) {
       const cls = typeof el.className === 'string' ? el.className : '';
       overflow.push(
