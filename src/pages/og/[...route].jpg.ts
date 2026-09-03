@@ -62,17 +62,18 @@ export const getStaticPaths: GetStaticPaths = async () => {
       params: { route: entry.id },
       props: {
         /*
-          The homepage's card says what the club *is*. Its page title is the
-          club's name, which is already on the card as `kind` — printed twice
-          it read as a mistake.
+          Every other card is `<section> / <page title>`. The homepage has no
+          section, so it is `<what we are> / <who we are>` — the descriptor
+          small, the name in the big type. The other way round, which is what
+          this was, printed "Parapendio Club" larger than the club.
 
           It also carries the page's own hero photograph, washed into the brand
           blue: the homepage is the link that gets shared, and the valley it
           shows is the answer to "where is this club". Only this page — the
           other fixed pages have no picture that is about them.
         */
-        title: entry.id === 'home' ? SITE.slogan : entry.data.title,
-        kind: SITE.name,
+        title: entry.id === 'home' ? SITE.name : entry.data.title,
+        kind: entry.id === 'home' ? SITE.slogan : SITE.name,
         backgroundPath:
           entry.id === 'home' ? assetPath({ src: entry.data.hero?.src }) : undefined,
         washed: entry.id === 'home',

@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 9;
+const TEMPLATE_VERSION = 10;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -50,16 +50,18 @@ const font = await readFile('src/assets/fonts/Metropolis-Bold.ttf');
 /**
  * The brand-blue veil laid over a washed photograph.
  *
- * 0.82 by measurement, not by eye: below about 0.75 the mountains carry enough
- * contrast of their own to compete with the title, and above 0.9 the picture
- * is gone and the card may as well be flat.
+ * 0.58, and the title is protected by a scrim beside it rather than by this.
+ * Taking the veil to 0.82 — enough for white to clear 4.5:1 anywhere on the
+ * card — flattened the photograph into a blue rectangle with a suggestion of
+ * something behind it, which defeats the point of using a photograph. The
+ * ridge line has to be visible.
  */
 const WASH = await sharp({
   create: {
     width: WIDTH,
     height: HEIGHT,
     channels: 4,
-    background: { r: 0x1f, g: 0x52, b: 0xa6, alpha: 0.82 },
+    background: { r: 0x1f, g: 0x52, b: 0xa6, alpha: 0.58 },
   },
 })
   .png()
@@ -73,7 +75,13 @@ const WASH = await sharp({
 */
 const LOGO_SVG = await readFile('src/assets/og-logo.svg', 'utf8');
 const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString('base64')}`;
-const LOGO_WIDTH = 300;
+/*
+  440, not the 300 this started at. At 300 the oval read as a decoration in the
+  corner and the word inside it — which is the club's name, and the only place
+  the name appears on a card whose title is something else — was too small to
+  read at the size a preview is actually shown in a chat.
+*/
+const LOGO_WIDTH = 440;
 const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 486) / 1078); // the asset's ratio
 
 export interface CardOptions {
@@ -140,13 +148,16 @@ function card(
               backgroundImage:
                 background && !washed
                   ? 'linear-gradient(to bottom, rgba(9,14,22,0.15) 0%, rgba(9,14,22,0.55) 55%, rgba(9,14,22,0.88) 100%)'
-                  : /*
-                      A washed background is already most of the way to the
-                      brand blue, so it takes the same light diagonal a card
-                      with no photograph gets — the heavy foot scrim on top of
-                      it read as a smudge rather than as depth.
-                    */
-                    'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(9,14,22,0.35) 100%)',
+                  : washed
+                    ? /*
+                        Left to right, not top to bottom. The text sits bottom
+                        left and this photograph's ridge line runs across the
+                        lower right, so a foot scrim would have darkened the
+                        one thing the card is showing. This darkens the column
+                        the words are in and leaves the mountains alone.
+                      */
+                      'linear-gradient(to right, rgba(9,14,22,0.66) 0%, rgba(9,14,22,0.42) 40%, rgba(9,14,22,0) 78%)'
+                    : 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(9,14,22,0.35) 100%)',
             },
           },
         },
@@ -241,7 +252,7 @@ export async function renderCard({
           blue leaves the photograph's own colours fighting through it; doing
           only the desaturation leaves a grey card that is not the club's.
         */
-        .modulate(washed ? { saturation: 0.15, brightness: 1.04 } : {})
+        .modulate(washed ? { saturation: 0.2, brightness: 1.06 } : {})
         .composite(washed ? [{ input: WASH, blend: 'over' }] : [])
         .jpeg({ quality: 82 })
         .toBuffer()
