@@ -28,6 +28,11 @@ const FILES = [
 
 <section class="navdata">
   <h2>Dati per il navigatore</h2>
+  <p class="navdata__intro">
+    Generati da questo sito e aggiornati a ogni modifica: decolli, atterraggi e
+    atterraggi alti da caricare nello strumento, per averli sotto gli occhi in volo
+    invece che sulla carta.
+  </p>
   <ul>
     {
       FILES.map((file) => (
@@ -54,6 +59,13 @@ const FILES = [
     margin-block-start: var(--space-lg);
     padding-block-start: var(--space-md);
     border-block-start: 1px solid var(--color-border);
+  }
+
+  /* The heading sat straight on the cards; a section needs a line of air. */
+  .navdata__intro {
+    max-width: var(--prose-width);
+    margin-block: var(--space-2xs) var(--space-md);
+    color: var(--color-text-muted);
   }
 
   ul {
