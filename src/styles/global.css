@@ -310,12 +310,21 @@ hr {
   color: var(--button-contrast);
 }
 
-/* Grey filled — the old theme's `.btn-secondary`. */
+/*
+ * Grey filled — the old theme's `.btn-secondary`.
+ *
+ * Its *outline* is the body text colour, not the grey fill. `#e2e8f0` as a
+ * border and label measures 1.23:1 on a white page: an invisible button. The
+ * styleguide's variant matrix is what surfaced it — nothing on the site
+ * combines these two classes yet, so it had never been looked at.
+ */
 .button--secondary {
   --button-color: var(--brand-secondary);
   --button-color-hover: var(--brand-secondary-hover);
   --button-contrast: #000000;
-  --button-outline-color: var(--brand-secondary);
+  --button-outline-color: var(--color-text);
+  /* Filled on hover with `--color-text`, so the label takes the page's ground. */
+  --button-outline-contrast: var(--color-bg);
 }
 
 /* Green filled, for WhatsApp and anything else that means "go ahead". */
@@ -344,8 +353,13 @@ hr {
   color: var(--button-outline-color);
 }
 
+/*
+ * On hover the outline fills with its own colour, so the label needs a
+ * contrast chosen against *that*, which is not always the filled variant's:
+ * secondary fills grey normally and dark-grey on outline hover.
+ */
 .button--outline:hover {
   background-color: var(--button-outline-color);
   border-color: var(--button-outline-color);
-  color: var(--button-contrast);
+  color: var(--button-outline-contrast, var(--button-contrast));
 }

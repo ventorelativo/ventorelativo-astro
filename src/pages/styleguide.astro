@@ -1,41 +1,100 @@
 ---
 /**
- * Design-system reference page — Phase 1 only.
+ * Design-system reference.
  *
  * Exercises every primitive in one place so the design direction (D11) can be
- * reviewed before real content exists, and so the interior page shell
- * (PageLayout + Breadcrumbs + heading scale) has something to render.
+ * reviewed without hunting for a page that happens to use a given component.
  *
- * DELETE THIS FILE at the end of Phase 2. It is a scaffold, not a feature, and
- * it deliberately reuses the /styleguide path the Drupal `twbstools` module
- * exposed — which the migration plan lists as dropped.
+ * ## The rule this page has to follow
+ *
+ * **Every sample is the real thing.** The version this replaced set
+ * `font-size: var(--text-3xl)` on an `<li>` and labelled it "h1" — which shows
+ * the size and nothing else, while a real `h1` also carries its weight, colour,
+ * leading, balance and margins. A styleguide that renders approximations is
+ * worse than none, because it is confidently wrong.
+ *
+ * So: the headings are headings, the buttons are `<a class="button">`, and the
+ * cards are the components themselves, given real entries out of the content
+ * collections. Nothing here is a copy that can drift from what ships.
+ *
+ * DELETE THIS FILE at cutover (Phase 5). It is a scaffold, not a feature, and
+ * it reuses the /styleguide path the Drupal `twbstools` module exposed.
  */
-import PageLayout from '../layouts/PageLayout.astro';
+import { getCollection } from 'astro:content';
 
-const SWATCHES = [
+import PageLayout from '../layouts/PageLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import SiteCard from '../components/SiteCard.astro';
+import Badge from '../components/Badge.astro';
+import PricingTiers from '../components/PricingTiers.astro';
+
+/* Real entries, so the cards below are exactly what /news and /siti render. */
+const [post] = await getCollection('news', ({ data }) => !data.draft);
+const [site] = await getCollection('sites');
+
+const SWATCHES: [string, string][] = [
+  ['--brand-blue', 'Blu del marchio'],
+  ['--brand-yellow', 'Giallo del marchio'],
+  ['--color-accent', 'Accento'],
+  ['--color-accent-subtle', 'Accento tenue'],
+  ['--color-success', 'Verde'],
   ['--color-bg', 'Sfondo'],
   ['--color-bg-subtle', 'Sfondo tenue'],
   ['--color-bg-raised', 'Sfondo rialzato'],
   ['--color-border', 'Bordo'],
-  ['--color-accent', 'Accento'],
-  ['--color-accent-subtle', 'Accento tenue'],
-  ['--brand-yellow', 'Giallo'],
+  ['--color-border-strong', 'Bordo marcato'],
+  ['--color-text', 'Testo'],
+  ['--color-text-strong', 'Testo marcato'],
+  ['--color-text-muted', 'Testo tenue'],
 ];
 
-const TYPE = [
-  ['--text-3xl', 'h1 — Siti di volo'],
-  ['--text-2xl', 'h2 — Montoso'],
-  ['--text-xl', 'h3 — Decolli e atterraggi'],
-  ['--text-lg', 'Testo grande'],
-  ['--text-base', 'Testo base'],
-  ['--text-sm', 'Testo piccolo'],
-  ['--text-xs', 'Testo minimo'],
+const MAP_SWATCHES: [string, string][] = [
+  ['--color-map-takeoff', 'Decollo'],
+  ['--color-map-landing', 'Atterraggio'],
+  ['--color-map-obstacle', 'Ostacolo'],
+  ['--color-map-poi', 'Punto di interesse'],
+];
+
+/*
+  The button matrix. Three colours, each solid and outlined — `--outline` is a
+  modifier that reads whichever colour the button already has, which is the one
+  thing about the button system worth being able to see at a glance.
+*/
+const BUTTONS: { label: string; modifier: string; note: string }[] = [
+  { label: 'Primario', modifier: '', note: 'Azione principale' },
+  { label: 'Secondario', modifier: 'button--secondary', note: 'Azione di supporto' },
+  { label: 'Successo', modifier: 'button--success', note: 'WhatsApp, conferme' },
+];
+
+const TIERS = [
+  {
+    name: 'Esempio',
+    price: 10,
+    tagline: 'Come rende una quota non in evidenza.',
+    benefits: ['Un vantaggio'],
+    limits: ['Un limite'],
+    payUrl: 'https://example.com',
+    payLabel: 'Paga',
+    highlight: false,
+  },
+  {
+    name: 'In evidenza',
+    price: 30,
+    tagline: 'Con etichetta e testata piena.',
+    badge: 'Consigliata',
+    benefits: ['Un vantaggio', 'Un altro vantaggio'],
+    limits: [],
+    payUrl: 'https://example.com',
+    payLabel: 'Paga',
+    highlight: true,
+  },
 ];
 ---
 
 <PageLayout
   title="Styleguide"
-  intro="Riferimento del design system. Pagina temporanea di Fase 1."
+  intro="Riferimento del design system. Pagina temporanea, eliminata al passaggio del dominio."
+  noindex
 >
   <div class="stack">
     <section>
@@ -51,15 +110,15 @@ const TYPE = [
           ))
         }
       </ul>
-    </section>
 
-    <section>
-      <h2>Tipografia</h2>
-      <ul class="type">
+      <h3>Mappa</h3>
+      <ul class="swatches">
         {
-          TYPE.map(([token, sample]) => (
-            <li style={`font-size:var(${token})`}>
-              {sample} <code>{token}</code>
+          MAP_SWATCHES.map(([token, label]) => (
+            <li>
+              <span class="swatch" style={`background:var(${token})`} />
+              <strong>{label}</strong>
+              <code>{token}</code>
             </li>
           ))
         }
@@ -67,30 +126,120 @@ const TYPE = [
     </section>
 
     <section>
+      <h2>Tipografia</h2>
+      {
+        /*
+        Real headings inside `.prose`, which is where body copy lives. The
+        token beside each is the size it resolves to, not the whole story:
+        weight, colour and leading come with the element.
+      */
+      }
+      <div class="prose specimen">
+        <h1>Titolo di primo livello <code>h1</code></h1>
+        <h2>Titolo di secondo livello <code>h2</code></h2>
+        <h3>Titolo di terzo livello <code>h3</code></h3>
+        <h4>Titolo di quarto livello <code>h4</code></h4>
+        <p>
+          Testo base. Il sito di volo Montoso guarda a sud-est e apre presto, con un
+          decollo erboso e <a href="/siti/montoso/">una scheda</a> che ne racconta esposizione
+          e atterraggi. <strong>Il grassetto</strong> ha un peso proprio, e <em
+            >il corsivo</em
+          > resta leggibile alla dimensione del corpo.
+        </p>
+        <ul>
+          <li>Elenco puntato, primo elemento</li>
+          <li>Secondo elemento, con <a href="/voli/">un link</a></li>
+        </ul>
+        <blockquote>
+          <p>Una citazione, per vedere il rientro e il filetto.</p>
+        </blockquote>
+        <p class="small">
+          Testo piccolo, come le didascalie e le note. <code>--text-sm</code>
+        </p>
+      </div>
+    </section>
+
+    <section>
       <h2>Bottoni</h2>
+      <p class="note">
+        Tre colori, ciascuno pieno o in outline. <code>.button--outline</code> è un modificatore:
+        prende il colore che il bottone ha già, quindi si combina con tutti e tre invece di
+        esistere una volta per colore.
+      </p>
+
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th scope="col">Variante</th>
+            <th scope="col">Pieno</th>
+            <th scope="col">Outline</th>
+            <th scope="col">Quando</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            BUTTONS.map(({ label, modifier, note }) => (
+              <tr>
+                <th scope="row">
+                  <code>{modifier || '.button'}</code>
+                </th>
+                <td>
+                  <a href="#buttons" class:list={['button', modifier]}>
+                    {label}
+                  </a>
+                </td>
+                <td>
+                  <a
+                    href="#buttons"
+                    class:list={['button', modifier, 'button--outline']}
+                  >
+                    {label}
+                  </a>
+                </td>
+                <td class="note">{note}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Etichette</h2>
       <p class="row">
-        <a href="#" class="button">Primario</a>
-        <a href="#" class="button button--outline">Secondario</a>
+        <Badge label="Eventi" />
+        <Badge label="Competizioni" />
+        <Badge label="Adatto ai principianti" />
       </p>
     </section>
 
     <section>
-      <h2>Testo lungo</h2>
-      <div class="prose">
-        <p>
-          Il sito di volo Montoso offre un'esperienza mozzafiato nel cuore delle Alpi
-          italiane. Situato a circa 1.600 metri di altitudine, questo sito è apprezzato
-          dai parapendisti per la sua esposizione sud-est, che regala condizioni di volo
-          ideali per la maggior parte dell'anno.
+      <h2>Schede</h2>
+      <p class="note">
+        I componenti veri, con voci vere delle collezioni: quello che si vede qui è
+        quello che rendono <code>/news</code> e <code>/siti</code>.
+      </p>
+
+      <h3>Notizia o evento</h3>
+      <div class="cards">{post && <ArticleCard entry={post} priority />}</div>
+
+      <h3>Sito di volo</h3>
+      <div class="cards">{site && <SiteCard entry={site} />}</div>
+
+      <h3>Quote</h3>
+      <PricingTiers tiers={TIERS} />
+    </section>
+
+    <section>
+      <h2>Campi</h2>
+      <div class="fields">
+        <p class="field">
+          <label for="sg-text">Campo di testo</label>
+          <input id="sg-text" type="text" placeholder="Montoso" />
         </p>
-        <h3>Caratteristiche</h3>
-        <ul>
-          <li>Vista panoramica sulla pianura padana</li>
-          <li>Decollo ampio e erboso</li>
-          <li>Atterraggio ufficiale a Bagnolo Piemonte</li>
-        </ul>
-        <p>
-          Maggiori informazioni sui <a href="/siti">siti di volo</a> del club.
+        <p class="field">
+          <label for="sg-area">Area di testo</label>
+          <textarea id="sg-area" rows="3"></textarea>
         </p>
       </div>
     </section>
@@ -130,13 +279,58 @@ const TYPE = [
     border-radius: var(--radius-md);
   }
 
-  .type {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    list-style: none;
-    padding: 0;
-    line-height: var(--leading-snug);
+  /* The specimen is real prose, so it needs the width real prose gets. */
+  .specimen {
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-raised);
+  }
+
+  .specimen code {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+
+  .matrix {
+    width: 100%;
+    max-width: var(--content-width);
+    border-collapse: collapse;
+  }
+
+  .matrix th,
+  .matrix td {
+    padding: var(--space-2xs) var(--space-xs);
+    border-block-end: 1px solid var(--color-border);
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  .matrix thead th {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-md);
+    max-width: var(--content-width);
+  }
+
+  .fields {
+    display: grid;
+    gap: var(--space-sm);
+    max-width: var(--prose-width);
+  }
+
+  .note {
+    max-width: var(--prose-width);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 
   code {
@@ -147,6 +341,7 @@ const TYPE = [
   .row {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--space-2xs);
   }
 </style>
