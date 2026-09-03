@@ -131,13 +131,18 @@ something real.
    `NavdataController.php`, and `src/lib/navdata.ts` records why each rule is
    what it is.
 10. **UI copy is Italian.** Code, comments and documentation are English. That
-    includes Keystatic's field labels — volunteers read them.
-11. **Three lists describe content, and they must agree.** A field added to a
+    includes Keystatic's field labels, which volunteers read.
+11. **Never use an em dash.** Not in content, not in UI copy, not in comments,
+    not in documentation, not in commit messages. The club does not want the
+    punctuation anywhere in this project. Use a comma, a colon, a semicolon,
+    parentheses or a full stop, whichever the sentence actually needs. An en
+    dash stays legal in a numeric range.
+12. **Three lists describe content, and they must agree.** A field added to a
     collection needs updating in `src/content.config.ts` (what the build
     accepts), `keystatic.config.ts` (what an editor can type) and, for body
     components, `src/components/mdx/components.ts` (what renders). Zod is the
     backstop: drift fails the build rather than the page.
-12. **Content files must not contain `import` statements.** Keystatic refuses
+13. **Content files must not contain `import` statements.** Keystatic refuses
     to open an entry that has one. Body components are handed to `<Content
 components={MDX_COMPONENTS} />` instead.
 

@@ -28,7 +28,7 @@ export const GET: APIRoute = ({ props, site }) => {
     description: summary,
     location: [event.location, event.landing && `atterraggio: ${event.landing}`]
       .filter(Boolean)
-      .join(' — '),
+      .join(', '),
     start: event.start,
     end: event.end,
     url,

@@ -675,7 +675,7 @@ const typeNames = Object.fromEntries(
       map.on('error', () => {
         if (!loaded) {
           map.remove();
-          back('Mappa non disponibile — riprova');
+          back('Mappa non disponibile, riprova');
         }
       });
 
@@ -1092,7 +1092,7 @@ const typeNames = Object.fromEntries(
         map.addControl(new LayersControl(map, styleLayerIds, config), 'top-right');
       });
     } catch {
-      back('Mappa non disponibile — riprova');
+      back('Mappa non disponibile, riprova');
     }
   }
 

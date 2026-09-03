@@ -42,7 +42,7 @@ const ogImage = new URL(
   ogRoute ? `/og/${ogRoute}.jpg` : '/social-card.png',
   Astro.site,
 );
-const ogImageAlt = imageAlt ?? `${title ?? SITE.name} — ${SITE.name}`;
+const ogImageAlt = imageAlt ?? `${title ?? SITE.name} | ${SITE.name}`;
 ---
 
 <title>{pageTitle}</title>

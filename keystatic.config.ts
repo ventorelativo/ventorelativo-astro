@@ -250,7 +250,7 @@ export default config({
         summary: fields.text({
           label: 'Sommario',
           description:
-            'Una o due frasi. Compare nell’elenco delle news, su Google e quando il link viene condiviso — quindi serve sempre.',
+            'Una o due frasi. Compare nell’elenco delle news, su Google e quando il link viene condiviso, quindi serve sempre.',
           multiline: true,
           validation: { isRequired: true, length: { min: 40, max: 300 } },
         }),
@@ -335,7 +335,7 @@ export default config({
         summary: fields.text({
           label: 'Scheda breve',
           description:
-            'Quota, esposizione e comune — es. "1969m, S-SE, Roure (TO)". Compare nell’elenco dei siti e su Google.',
+            'Quota, esposizione e comune. Per esempio "1969m, S-SE, Roure (TO)". Compare nell’elenco dei siti e su Google.',
           validation: { isRequired: true },
         }),
         guideUrl: fields.url({

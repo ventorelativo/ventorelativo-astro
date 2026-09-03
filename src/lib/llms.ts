@@ -40,7 +40,7 @@ export async function contentSections(site: URL): Promise<Section[]> {
           // The tags are real site attributes — "Adatto ai principianti",
           // "Hike&Fly" — and are exactly the kind of thing a question is
           // asked about, so they go in the one-line description.
-          description: [entry.data.summary, ...entry.data.tags].join(' — '),
+          description: [entry.data.summary, ...entry.data.tags].join(', '),
           body: entry.body ?? '',
         })),
     },
@@ -51,7 +51,7 @@ export async function contentSections(site: URL): Promise<Section[]> {
         .map((entry) => ({
           title: entry.data.title,
           href: url(`/news/${entry.id}/`),
-          description: `${entry.data.date.toISOString().slice(0, 10)} — ${entry.data.summary}`,
+          description: `${entry.data.date.toISOString().slice(0, 10)}: ${entry.data.summary}`,
           body: entry.body ?? '',
         })),
     },
