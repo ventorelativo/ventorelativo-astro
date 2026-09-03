@@ -1,12 +1,13 @@
 # The association's legal identity, shown in the footer and on /contatti.
 #
-# Deliberately incomplete: none of this is published anywhere it could be read
-# off, and a codice fiscale invented to fill a template would be a false
-# statement on a legal notice. The committee fills these in Keystatic
-# ("Dati dell'associazione"); each one appears only once it has a value.
-legalName: Associazione Sportiva Vento Relativo
-taxCode: ''
+# Filled from what the committee found in the registries. Every field renders
+# only when it has a value, and `registeredOffice` is deliberately left empty:
+# for a small ASD it is usually someone's home, publishing it is not required,
+# and the contact page is a sufficient recapito.
+legalName: A.S.D. Vento Relativo
+taxCode: '94551960019'
 vatNumber: ''
 registeredOffice: ''
 pec: ''
+registryNumber: '77094'
 affiliation: ''

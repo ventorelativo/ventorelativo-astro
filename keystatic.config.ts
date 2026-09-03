@@ -399,6 +399,11 @@ export default config({
             'Lascia vuoto se è un indirizzo privato: non è obbligatorio pubblicarlo, e la mail basta come recapito.',
         }),
         pec: fields.text({ label: 'PEC' }),
+        registryNumber: fields.text({
+          label: 'Numero registro',
+          description:
+            'Registro nazionale delle attività sportive dilettantistiche (RASD).',
+        }),
         affiliation: fields.text({
           label: 'Affiliazione',
           description: 'Per esempio «Affiliata FIVL n. 1234».',

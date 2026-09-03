@@ -25,9 +25,26 @@ const { contacts } = page.data;
 
   {contacts && <ContactButtons contacts={contacts} />}
 
-  <p>Alternativamente, potete utilizzare il modulo sottostante.</p>
-
-  <ContactForm />
+  <div class="form">
+    <h2>Scrivici</h2>
+    <p class="form__intro">
+      Il modulo arriva alla stessa casella dell'indirizzo qui sopra. Se preferisci
+      il telefono, il numero è quello del direttivo: chiamalo a un'ora ragionevole.
+    </p>
+    <ContactForm />
+  </div>
 
   <OrganizationDetails />
 </PageLayout>
+
+<style>
+  .form {
+    margin-block-start: var(--space-xl);
+  }
+
+  .form__intro {
+    max-width: var(--prose-width);
+    margin-block-end: var(--space-md);
+    color: var(--color-text-muted);
+  }
+</style>

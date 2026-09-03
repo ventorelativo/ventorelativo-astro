@@ -353,6 +353,8 @@ const settings = defineCollection({
     /** Omit if it is a private address — see docs; the email is enough. */
     registeredOffice: z.string().optional(),
     pec: z.string().optional(),
+    /** Registro nazionale delle attività sportive dilettantistiche. */
+    registryNumber: z.string().optional(),
     /** e.g. "Affiliata FIVL n. 1234". */
     affiliation: z.string().optional(),
 
