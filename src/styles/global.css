@@ -30,6 +30,43 @@ html {
   }
 }
 
+/*
+ * Cross-document view transitions (Phase 7, item 4).
+ *
+ * The page-to-page cross-fade, done by the browser. Both the page being left
+ * and the page being entered have to opt in, which a site-wide stylesheet
+ * satisfies by definition.
+ *
+ * This is deliberately *not* Astro's `<ClientRouter />`. That was measured
+ * first: it costs 5.3 kB gzipped and two extra requests on every page, turns
+ * every navigation into a client-side swap, and silently broke the map —
+ * SiteMap's script runs once at module scope, so after a swap the button was
+ * still there and did nothing. This rule costs nothing, keeps navigations
+ * real, and no script has to learn about it.
+ *
+ * The price is Firefox, which has not shipped it: those visitors get an
+ * ordinary navigation, which is what they have today. About 85% of browsers
+ * animate.
+ */
+@view-transition {
+  navigation: auto;
+}
+
+/*
+ * The default root transition is half a second, which reads as slow on pages
+ * this light — they are usually painted before the animation finishes.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
+
 body {
   min-height: 100svh;
   display: flex;
