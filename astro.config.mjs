@@ -169,6 +169,41 @@ export default defineConfig({
     optimizeDeps: { include: ['bigger-picture', 'maplibre-gl'] },
 
     build: {
+      rollupOptions: {
+        /*
+          MapLibre's shared module, downloaded once instead of twice.
+
+          The library is two files: `maplibre-gl.mjs`, which imports
+          `maplibre-gl-shared.mjs` — the tile parsers, the style spec, the
+          geometry — and the worker, which imports the same shared file.
+          `scripts/sync-vendor.mjs` already copies the worker and that sibling
+          into `public/vendor/`, because a bundler cannot see through the way
+          MapLibre locates its worker (see AGENTS.md).
+
+          Left alone, the bundler inlines the shared module into the main chunk
+          as well, so opening a map fetched all of it twice: 204 kB brotli in
+          the page's chunk and another 109 kB for the worker. Marking it
+          external and pointing the main chunk at the same `/vendor/` URL the
+          worker uses means one file, one download, two module instances —
+          which is all the two threads ever needed. 326 kB brotli down to 239.
+
+          `/vendor/*` is served `must-revalidate`, and that is what keeps this
+          honest: `sync-vendor` re-copies from `node_modules` on every build,
+          so a MapLibre upgrade replaces the file and every client picks it up.
+          Do not give these files an immutable cache header.
+
+          If this ever goes wrong the symptom is the one in AGENTS.md — raster
+          terrain draws and every label, road and marker is missing. Check it
+          the way it was checked here: `npm run shot -- <a site page> --webgl`
+          with the map opened.
+        */
+        external: [/maplibre-gl-shared/],
+        output: {
+          paths: (id) =>
+            id.includes('maplibre-gl-shared') ? '/vendor/maplibre-gl-shared.mjs' : id,
+        },
+      },
+
       /*
         Two chunks are over Vite's 500 kB default, and both are meant to be:
         Keystatic's admin UI (~2.6 MB, fetched only at /keystatic, by an
