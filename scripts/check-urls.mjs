@@ -48,6 +48,14 @@ const DROPPED = {
   // Deleted at cutover (Phase 5). Until then it is built but kept out of the
   // sitemap and out of search.
   '/styleguide/': 'temporary design reference, deleted at cutover',
+  /*
+    Drupal's own contact path. It did render a page in the archived build, and
+    briefly had a redirect here — but the club confirms it was an artefact of
+    the CMS rather than an address anyone was given. It was never in the old
+    sitemap either. `/contact/contatti` keeps its redirect: that one was a real
+    redirect entity in Drupal (S10).
+  */
+  '/contact/': "Drupal's own path, never advertised — confirmed an artefact",
 };
 
 /**

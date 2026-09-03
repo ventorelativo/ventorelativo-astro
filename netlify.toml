@@ -17,14 +17,15 @@
   #    string as this repository, and readable at github.com/apps/<slug>.
   #  - PUBLIC_CF_BEACON_TOKEN identifies the site to Cloudflare's analytics; it
   #    is written into a script tag on every page.
-  #  - PUBLIC_MAPTILER_KEY signs every tile request the map makes from the
-  #    browser, so it cannot be anything but public. It is protected by
-  #    MapTiler's referrer allowlist instead — see src/lib/mapConfig.ts.
+  #  - PUBLIC_MAPTILER_KEY and PUBLIC_TRACESTRACK_KEY sign every tile request
+  #    the map makes from the browser, so they cannot be anything but public.
+  #    They are protected by each provider's referrer allowlist instead — see
+  #    src/lib/mapConfig.ts.
   #
   # Listed by name rather than disabling the scan, so a real secret added later
   # is still caught. The genuine ones — KEYSTATIC_GITHUB_CLIENT_SECRET and
   # KEYSTATIC_SECRET — carry no prefix and stay scanned.
-  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG,PUBLIC_CF_BEACON_TOKEN,PUBLIC_MAPTILER_KEY"
+  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_KEYSTATIC_GITHUB_APP_SLUG,PUBLIC_CF_BEACON_TOKEN,PUBLIC_MAPTILER_KEY,PUBLIC_TRACESTRACK_KEY"
 
 # Redirects (MIGRATION-PLAN.md S10, S11).
 #
@@ -39,15 +40,6 @@
   status = 301
   force = true
 
-# Drupal's own contact path, which served a real page ("Form Contatti") in the
-# archived build. It was never in that site's sitemap, so nothing indexed it —
-# but it is the default path for a Drupal contact form and someone may well
-# have bookmarked it. Found by scripts/check-urls.mjs, which is the point of it.
-[[redirects]]
-  from = "/contact"
-  to = "/contatti"
-  status = 301
-  force = true
 
 # /home and / served identical content in Drupal — duplicate content (S11).
 [[redirects]]
