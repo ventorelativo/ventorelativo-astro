@@ -57,10 +57,22 @@ for (const name of [...ALWAYS, 'news', 'siti', 'pagine', 'chiusura']) {
 }
 
 function fill(text: string, site: URL): string {
-  return text
-    .replaceAll('{{keystatic}}', new URL('/keystatic', site).href)
-    .replaceAll('{{istruzioni}}', new URL('/redazione/istruzioni.txt', site).href)
-    .replaceAll('{{contenuti}}', new URL('/redazione/contenuti.json', site).href);
+  return (
+    text
+      .replaceAll('{{keystatic}}', new URL('/keystatic', site).href)
+      .replaceAll('{{istruzioni}}', new URL('/redazione/istruzioni.txt', site).href)
+      .replaceAll('{{contenuti}}', new URL('/redazione/contenuti.json', site).href)
+      /*
+      Straight to the empty form, which saves a volunteer two steps. The branch
+      segment is not optional: in GitHub mode `/keystatic/collection/news/create`
+      answers "Not found", checked on the deployed admin. `main` is where an
+      editor is by default, and where the club has decided they should be.
+    */
+      .replaceAll(
+        '{{nuovanews}}',
+        new URL('/keystatic/branch/main/collection/news/create', site).href,
+      )
+  );
 }
 
 /**
