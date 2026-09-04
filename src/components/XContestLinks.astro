@@ -112,6 +112,9 @@ const LINKS: Link[] = [
   }
 </ul>
 
+{/* Both pages that show these links need it, so it lives with the links. */}
+<p class="xc__note">Per vedere i risultati serve l’accesso a XContest.</p>
+
 <style>
   /*
     Cards, not a row of identical buttons. Five blue pills reading "Migliori
@@ -126,6 +129,12 @@ const LINKS: Link[] = [
     margin: 0;
     padding: 0;
     max-width: var(--content-width);
+  }
+
+  .xc__note {
+    margin-block: var(--space-2xs) 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 
   .xc__item {
