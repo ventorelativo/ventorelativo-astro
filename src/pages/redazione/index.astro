@@ -42,6 +42,10 @@ const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 const short = linkPrompt(site);
 const full = prompt(site);
 const keystatic = new URL('/keystatic', site).href;
+/* Straight to the empty form, which saves a volunteer two steps. The branch
+   segment is not optional: in GitHub mode `/keystatic/collection/news/create`
+   answers "Not found", checked on the deployed admin. */
+const newsForm = new URL('/keystatic/branch/main/collection/news/create', site).href;
 const plainText = new URL('/redazione/istruzioni.txt', site).href;
 const asJson = new URL('/redazione/contenuti.json', site).href;
 
@@ -139,11 +143,10 @@ const CHATS = [
 
     <p>
       Per una <strong>news nuova</strong> l'intelligenza artificiale ti dà un blocco di testo
-      che comincia con tre trattini. Copialo tutto, apri <a href={keystatic}
-        >il gestore dei contenuti</a
-      >, scegli <strong>News</strong> e poi <strong>+</strong> per creare una voce nuova.
-      In alto a destra premi <strong>Paste entry</strong>: tutti i campi si riempiono da
-      soli.
+      che comincia con tre trattini. Copialo tutto, apri <a href={newsForm}
+        >il modulo di una news nuova</a
+      > e in alto a destra premi <strong>Paste entry</strong>: tutti i campi si
+      riempiono da soli.
     </p>
 
     <figure class="shot">
@@ -173,9 +176,11 @@ const CHATS = [
     </ul>
 
     <p>
-      Per una <strong>correzione</strong> a una pagina o a una scheda che esiste già, non
-      c'è niente da incollare in blocco: ricevi l'elenco dei campi da cambiare, apri la voce
-      e cambi solo quelli.
+      Per una <strong>correzione</strong> a una pagina o a una scheda che esiste già non c'è
+      un blocco da incollare: ricevi l'elenco dei campi da cambiare, apri <a
+        href={keystatic}>il gestore dei contenuti</a
+      > e cambi solo quelli. Se l'intelligenza artificiale ti chiede com'è il testo adesso
+      è normale, non può vederlo: selezionalo nel riquadro grande, copialo e incollaglielo.
     </p>
 
     <p>
