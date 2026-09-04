@@ -2,7 +2,7 @@
 /**
  * A site's map, as a facade (MIGRATION-PLAN.md Phase 4b).
  *
- * The page ships the poster and a button. MapLibre is 240 kB brotli'd and does
+ * The page ships an empty frame and a button. MapLibre is 240 kB brotli'd and does
  * not exist until someone asks for it, so a visitor who never opens a map pays
  * nothing, and Lighthouse (which measures page load) never sees it. That is
  * how a 240 kB dependency and a 100/100 target live on the same page.
@@ -15,7 +15,6 @@
  * Hover and focus start the fetch even earlier, so by the time the click lands
  * the download is usually already running.
  */
-import MapPoster from './MapPoster.astro';
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { MAPTILER_KEY } from '../lib/mapConfig';
 /*
@@ -67,10 +66,9 @@ interface Feature {
 
 interface Props {
   features: Feature[];
-  title: string;
 }
 
-const { features, title } = Astro.props;
+const { features } = Astro.props;
 
 /*
   The geometry, as GeoJSON, in a script tag rather than a data attribute: it is
@@ -78,7 +76,7 @@ const { features, title } = Astro.props;
   attribute and parsing it back out.
 
   Colours are resolved in the browser from the same `--color-map-*` tokens the
-  poster uses, so the two cannot drift and the map follows the theme.
+  feature table uses, so the two cannot drift and the map follows the theme.
 */
 const geojson = {
   type: 'FeatureCollection',
@@ -120,8 +118,8 @@ const geojson = {
   ],
 };
 
-// Without a key there is nothing to load, so the button would lie. The poster
-// stands on its own: it is a drawing, not a placeholder for one.
+// Without a key there is nothing to load, so the button would lie, and the
+// frame is left as what it is: an empty box the page keeps its shape with.
 const interactive = features.length > 0 && MAPTILER_KEY !== '';
 
 const typeColours = Object.fromEntries(
@@ -133,9 +131,9 @@ const typeColours = Object.fromEntries(
 const icons = { takeoff: takeoffIcon, landing: landingIcon };
 
 /*
-  What the popup calls each kind. From FEATURE_TYPES, so the map, the table and
-  the poster cannot drift apart on the wording, and the glyphs are the ones the
-  old site's popups used, so a pilot who knew that map recognises this one.
+  What the popup calls each kind. From FEATURE_TYPES, so the map and the table
+  cannot drift apart on the wording, and the glyphs are the ones the old site's
+  popups used, so a pilot who knew that map recognises this one.
 */
 const typeNames = Object.fromEntries(
   Object.entries(FEATURE_TYPES).map(([type, info]) => [type, [info.emoji, info.label]]),
@@ -162,7 +160,8 @@ const typeNames = Object.fromEntries(
     `--icon-fullscreen-close: url(${fullscreenCloseIcon})`,
   ].join('; ')}
 >
-  <MapPoster features={features} title={title} />
+  {/* Nothing to look at on purpose: see the comment on `.map__ground`. */}
+  <div class="map__ground"></div>
 
   {
     interactive && (
@@ -205,33 +204,53 @@ const typeNames = Object.fromEntries(
   .map {
     position: relative;
     /*
-      On the block, not on the poster. The poster is hidden the moment the map
-      opens, and with it went the only thing separating the frame from whatever
-      followed: the site grid on /siti ran straight into the map's bottom edge.
+      On the block, not on the frame inside it. The frame is hidden the moment
+      the map opens, and with it went the only thing separating this from
+      whatever followed: the site grid on /siti ran straight into the map's
+      bottom edge.
     */
     margin-block-end: var(--space-md);
   }
 
   /*
-    One height for the poster and the map, so swapping one for the other shifts
-    nothing: the whole reason CLS stays at zero.
+    One height for the empty frame and for the map, so swapping one for the
+    other shifts nothing: the whole reason CLS stays at zero.
 
     600 px at every width, as the old site had it: the frame keeps its height
     and lets its aspect follow the container, which reads far better than a
     frame that grows and shrinks with the window.
-
-    On a phone that is a tall portrait frame, and the poster's 16:9 drawing sits
-    in the middle of it with bands above and below, which is why the poster
-    paints its own background across the whole frame, so the bands are not
-    visible as bands.
   */
-  .map,
-  :global(.poster) {
+  .map {
     --map-height: 600px;
   }
 
   /*
-    The button sits over the poster rather than beside it, so the whole drawing
+    What stands in for the map until the map is there.
+
+    This was a schematic of the site drawn as inline SVG, and on a fast
+    connection it was worth nothing: MapLibre starts and hides it long before
+    a vector tile lands, so all it produced was a flash of marker colours
+    against an empty canvas. What a visitor on a slow connection actually
+    watches is this, the basemap's own ground colour, which is now what the
+    page ships in the first place. Same box as the canvas, so opening the map
+    moves nothing.
+
+    The cost is real and accepted: a screen reader used to get "2 decolli, 3
+    atterraggi" from the drawing. The feature table on a site page and the
+    site grid on /siti both still say it in text.
+  */
+  .map__ground {
+    height: var(--map-height);
+    /* Ignored while the height is fixed; takes over when it goes `auto`. */
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-map-ground);
+  }
+
+  /*
+    The button sits over the frame rather than beside it, so the whole box
     reads as the control. It is a real <button>, so it is focusable, announced,
     and works from the keyboard without anything being added for it.
   */
@@ -266,7 +285,7 @@ const typeNames = Object.fromEntries(
   }
 
   /*
-    The canvas replaces the poster in the same box, so nothing on the page moves
+    The canvas replaces the frame in the same box, so nothing on the page moves
     when the map arrives: the layout shift a facade would otherwise cause is
     the reason to size it here rather than let MapLibre size itself.
   */
@@ -280,7 +299,7 @@ const typeNames = Object.fromEntries(
     overflow: hidden;
   }
 
-  .map--open :global(.poster) {
+  .map--open .map__ground {
     display: none;
   }
 
@@ -553,7 +572,8 @@ const typeNames = Object.fromEntries(
    *  - **Not on a metered or slow connection.** Save-Data and
    *    `prefers-reduced-data` are explicit requests not to do this, and 2G is
    *    a mountain valley: the audience this site is actually built for. Those
-   *    visitors keep the poster and the button, which is the honest trade: they
+   *    visitors keep the empty frame and the button, which is the honest
+   *    trade: they
    *    can still have the map, but they choose to spend the bytes.
    */
   function scheduleAutoLoad(root: HTMLElement, button: HTMLButtonElement) {
@@ -593,8 +613,8 @@ const typeNames = Object.fromEntries(
    * MapLibre is a WebGL renderer, so without WebGL 2 there is no map to be had.
    *
    * Worth checking rather than letting the constructor throw: the failure
-   * arrives after the poster has been swapped out, and a blank rectangle is a
-   * worse answer than the drawing that was already there.
+   * arrives after the frame has been swapped out for a canvas that will never
+   * paint, and a dead map is a worse answer than the button that was there.
    */
   function canRenderMap(): boolean {
     try {
@@ -672,7 +692,7 @@ const typeNames = Object.fromEntries(
 
       map.addControl(new NavigationControl({ visualizePitch: true }), 'top-right');
       // The canvas, not the whole block: fullscreen should show the map, not
-      // the map plus the poster hidden behind it.
+      // the map plus the empty frame hidden behind it.
       map.addControl(new FullscreenControl({ container: canvas }), 'top-right');
 
       /*
@@ -790,7 +810,8 @@ const typeNames = Object.fromEntries(
 
         const kinds = ['takeoff', 'landing', 'obstacle', 'poi'];
         // ['match', kind, 'takeoff', <colour>, …, <fallback>]: one paint
-        // expression fed from the CSS tokens, so map and poster stay in step.
+        // expression fed from the CSS tokens, so the map and the feature
+        // table stay in step.
         const colourExpression: unknown[] = ['match', ['get', 'kind']];
         for (const kind of kinds) colourExpression.push(kind, colourFor(kind));
         colourExpression.push(colourFor('takeoff'));
@@ -1171,11 +1192,11 @@ const typeNames = Object.fromEntries(
   }
 
   /**
-   * Put the poster back.
+   * Put the frame and the button back.
    *
-   * The drawing and the table below it say everything the map says, so a
-   * failure should return the page to what it had rather than leave an empty
-   * frame where a map was promised.
+   * The table below says everything the map says, so a failure should return
+   * the page to what it had rather than leave a dead canvas where a map was
+   * promised.
    */
   function fail(
     root: HTMLElement,
@@ -1285,7 +1306,7 @@ const typeNames = Object.fromEntries(
    * Takeoffs and landings have artwork and use it, from the sprite the page
    * already renders. The obstacle keeps its warning glyph: a hazard should
    * read as one, and there is no drawing for it. Anything else takes the
-   * coloured dot the table and the poster give it. Decorative in every case:
+   * coloured dot the table gives it. Decorative in every case:
    * the written label sits beside it.
    */
   function popupIcon({

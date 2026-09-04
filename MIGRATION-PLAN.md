@@ -1114,10 +1114,16 @@ cost is the requirement, not the library, which makes the question "when is it p
 not "which library".
 
 **Nobody pays it on load.** The facade pattern, which is Google's own recommendation for
-heavy embeds: the page ships a static poster, and the real map replaces it on interaction.
-Lighthouse measures page load, so a module fetched on click never enters the audit: the
-100/100 target survives intact, and a visitor who never opens the map never downloads a
-byte of it.
+heavy embeds: the page ships a placeholder, and the real map replaces it on interaction.
+
+> Shipped differently, after the fact: the poster below was built as described and then
+> removed. MapLibre starts long before its first vector tile arrives, so on any real
+> connection the drawing flashed its marker colours and was gone, and what a visitor
+> watched was the empty basemap underneath. The facade is now that same empty ground
+> (`--color-map-ground`), which is what the wait actually looks like.
+> Lighthouse measures page load, so a module fetched on click never enters the audit: the
+> 100/100 target survives intact, and a visitor who never opens the map never downloads a
+> byte of it.
 
 1. **Poster: an inline SVG, zero JS, zero third-party.** Drawn at build from the geometry
    already in `map-features`: the takeoff point and the landing polygon, in theme tokens.

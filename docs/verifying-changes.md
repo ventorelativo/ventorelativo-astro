@@ -140,8 +140,8 @@ like code that does not work.
 
 ```
 npm run build
-grep -c 'class="poster' dist/siti/montoso/index.html        # 1
-curl -s http://localhost:4321/siti/montoso/ | grep -c poster # 0  → stale server
+grep -c 'map__ground' dist/siti/montoso/index.html               # 1
+curl -s http://localhost:4321/siti/montoso/ | grep -c map__ground # 0  → stale server
 ```
 
 If it is in `dist/` and not on `:4321`, the code is fine and the server is not.

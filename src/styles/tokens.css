@@ -157,6 +157,14 @@
   */
   --color-map-poi: var(--brand-yellow);
 
+  /*
+    The ground MapLibre paints before a single vector tile has arrived, taken
+    from the basemap itself. Not a light-dark() pair, and that is the point:
+    the basemap is the same paper colour in both schemes, so a placeholder that
+    followed the theme would be a second flash on the way to the map.
+  */
+  --color-map-ground: #eae8e2;
+
   --color-focus: light-dark(var(--brand-blue), var(--brand-blue-bright));
 
   /* ---------------------------------------------------------- typography */
