@@ -29,6 +29,22 @@ function yamlString(raw) {
   return value;
 }
 
+/**
+ * A string literal Prettier would leave alone.
+ *
+ * `JSON.stringify` always emits double quotes, which the repository's Prettier
+ * config rewrites to single: the generated file then failed `format:check` on
+ * every run, in a file nobody is meant to edit. Prettier picks whichever quote
+ * needs fewer escapes, single on a tie, so "Pian dell'Alpe" keeps its doubles.
+ */
+function tsString(value) {
+  const singles = (value.match(/'/g) ?? []).length;
+  const doubles = (value.match(/"/g) ?? []).length;
+  return singles > doubles
+    ? JSON.stringify(value)
+    : `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
+}
+
 const sites = [];
 for (const file of await readdir(DIR)) {
   if (!file.endsWith('.mdx')) continue;
@@ -46,7 +62,7 @@ const body = `/**
  * remove a site in src/content/sites and the next build rewrites this.
  */
 export const SITE_OPTIONS = [
-${sites.map((s) => `  { label: ${JSON.stringify(s.label)}, value: ${JSON.stringify(s.value)} },`).join('\n')}
+${sites.map((s) => `  { label: ${tsString(s.label)}, value: ${tsString(s.value)} },`).join('\n')}
 ] as const;
 `;
 

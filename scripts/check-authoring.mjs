@@ -178,12 +178,16 @@ for (const tag of tagsDocumented) {
   not exist fails it. Committed means it can be committed stale, so it is
   checked: run `node scripts/build-site-options.mjs` and the difference goes.
 */
+const unquote = (s) => s.replaceAll(/\\(.)/g, '$1');
+
 const generated = new Map(
   [
+    // Either quote: the generator writes whichever one Prettier would keep,
+    // so "Pian dell'Alpe" is double-quoted and the other thirteen are not.
     ...(await readFile('src/lib/siteOptions.ts', 'utf8')).matchAll(
-      /\{ label: "((?:[^"\\]|\\.)*)", value: "([^"]*)" \}/g,
+      /\{ label: (["'])((?:[^\\]|\\.)*?)\1, value: (["'])((?:[^\\]|\\.)*?)\3 \}/g,
     ),
-  ].map((m) => [m[2], m[1].replaceAll('\\"', '"')]),
+  ].map((m) => [unquote(m[4]), unquote(m[2])]),
 );
 
 const real = new Map();
