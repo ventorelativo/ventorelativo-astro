@@ -23,7 +23,10 @@ interface Props {
   type?: 'website' | 'article';
   /** ISO date, for articles. */
   publishedTime?: string;
-  /** What follows the pipe in the title. Defaults to the club's full name. */
+  /**
+   * What follows the pipe in the title. Left unset it is chosen to fit: see
+   * below. Pass one only to override that.
+   */
   suffix?: string;
 }
 
@@ -34,7 +37,7 @@ const {
   imageAlt,
   type = 'website',
   publishedTime,
-  suffix = `${SITE.name} ${SITE.slogan}`,
+  suffix,
 } = Astro.props;
 
 /*
@@ -47,7 +50,23 @@ const {
   A prop, because the homepage's own title says "Parapendio" already and would
   otherwise say it twice.
 */
-const pageTitle = title ? `${title} | ${suffix}` : suffix;
+/*
+  The suffix is whichever one still fits.
+
+  A result truncates around sixty characters, and three titles here ran to
+  seventy-nine: the words spent past that are spent on nothing. So the long
+  suffix where there is room for it, the club's name where there is not, and
+  nothing at all where even that does not fit. A post's own title is the club's
+  words and is left alone; Google prints the site's name beside a result
+  anyway, from the `WebSite` node.
+*/
+const LONG = `${SITE.name} ${SITE.slogan}`;
+const MAX_TITLE = 60;
+const fitted = (name: string) =>
+  !title || `${title} | ${name}`.length <= MAX_TITLE ? name : null;
+const chosen = suffix ?? fitted(LONG) ?? fitted(SITE.name);
+
+const pageTitle = title ? (chosen ? `${title} | ${chosen}` : title) : LONG;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
 const ogImage = new URL(
