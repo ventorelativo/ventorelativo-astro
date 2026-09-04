@@ -11,7 +11,7 @@ import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Badge from './Badge.astro';
 import { formatDate, isoDate } from '../utils/date';
-import { FEATURE_SYMBOLS } from '../lib/featureIcons';
+import PinIcon from './PinIcon.astro';
 import H2 from './H2.astro';
 
 interface Props {
@@ -57,7 +57,7 @@ const CARD_IMAGE = {
 const { title, date, summary, image, category, event } = entry.data;
 /*
   An event's card says so before you read it: the day sits on the image and
-  the takeoff replaces nothing: it is added under the title. A post without
+  the place replaces nothing: it is added under the title. A post without
   `event` gets neither and reads as an article, which is the whole reason
   events live inside `news` rather than in a collection of their own.
 */
@@ -113,9 +113,7 @@ const href = `/news/${entry.id}/`;
     {
       event && (
         <p class="card__where">
-          <svg viewBox="0 0 100 100" width="16" height="16" aria-hidden="true">
-            <g class="glyph" set:html={FEATURE_SYMBOLS.takeoff} />
-          </svg>
+          <PinIcon size={16} />
           {event.location}
         </p>
       )
@@ -188,9 +186,10 @@ const href = `/news/${entry.id}/`;
     font-weight: 500;
   }
 
-  .card__where .glyph {
-    flex: none;
-    fill: var(--color-map-takeoff);
+  /* The same pin as the event panel: this line is a place you can find, not
+     a takeoff. It was the takeoff glyph, which named the wrong thing. */
+  .card__where :global(.pin) {
+    color: var(--color-text-muted);
   }
 
   .card__body {

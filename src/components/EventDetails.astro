@@ -34,6 +34,7 @@ import type { CollectionEntry } from 'astro:content';
 import { getEntry } from 'astro:content';
 
 import ExternalIcon from './ExternalIcon.astro';
+import PinIcon from './PinIcon.astro';
 import { FEATURE_SYMBOLS } from '../lib/featureIcons';
 import { googleCalendarUrl, outlookCalendarUrl } from '../lib/ics';
 import { formatDate, isoDate } from '../utils/date';
@@ -135,10 +136,6 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
   reaches the page as the six characters `\u2060`, checked in the built HTML.
 */
 const JOINER = String.fromCharCode(0x2060);
-
-/* A map pin, in the same stroked style as the calendar beside it. */
-const PIN = `<path d="M10 18s6-5.2 6-9.5A6 6 0 0 0 4 8.5C4 12.8 10 18 10 18Z" />
-  <circle cx="10" cy="8.5" r="2.2" />`;
 ---
 
 <section class="event">
@@ -160,9 +157,7 @@ const PIN = `<path d="M10 18s6-5.2 6-9.5A6 6 0 0 0 4 8.5C4 12.8 10 18 10 18Z" />
       </div>
 
       <div class="event__row">
-        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
-          <g class="stroke" set:html={PIN} />
-        </svg>
+        <PinIcon size={18} class="pin--muted" />
         <dt class="visually-hidden">Ritrovo</dt>
         <dd>
           <a href={mapUrl} target="_blank" rel="noopener noreferrer">
@@ -400,6 +395,12 @@ const PIN = `<path d="M10 18s6-5.2 6-9.5A6 6 0 0 0 4 8.5C4 12.8 10 18 10 18Z" />
     font-weight: 500;
     line-height: 1.3;
     text-wrap: pretty;
+  }
+
+  /* The pin is `currentColor`; here that means the same muted grey as the
+     calendar it sits under. */
+  .event__row :global(.pin--muted) {
+    color: var(--color-text-muted);
   }
 
   .stroke {

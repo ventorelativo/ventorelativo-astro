@@ -1,0 +1,42 @@
+---
+/**
+ * A map pin: where you turn up.
+ *
+ * Two places draw it now, the event panel and the news card, and both mean the
+ * same thing by it: a place a map can find, as opposed to the club's own
+ * takeoff and landing glyphs, which mean particular points on a flight site.
+ * Using the takeoff mark for a meeting place was the confusion this replaces.
+ *
+ * Stroked in `currentColor` so the caller decides: muted beside a label,
+ * inherited inside a link.
+ */
+interface Props {
+  size?: number;
+  class?: string;
+}
+
+const { size = 16, class: className } = Astro.props;
+---
+
+<svg
+  class:list={['pin', className]}
+  viewBox="0 0 20 20"
+  width={size}
+  height={size}
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d="M10 18s6-5.2 6-9.5A6 6 0 0 0 4 8.5C4 12.8 10 18 10 18Z"></path>
+  <circle cx="10" cy="8.5" r="2.2"></circle>
+</svg>
+
+<style>
+  .pin {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>
