@@ -40,14 +40,20 @@ interface Props {
   /**
    * How many searches to show, from the top of the list.
    *
-   * The homepage takes the first two, the ones anybody wants at a glance:
-   * what has just been flown and today's best. The rest are on /voli, which
-   * is where the section links.
+   * The homepage takes the first three, the ones anybody wants at a glance:
+   * what has just been flown, today's best and the month's. The rest are on
+   * /voli, which is where the section links.
    */
   limit?: number;
+  /**
+   * `list` stacks them one per row. On /voli the five are the page, and three
+   * columns of short cards read as a toolbar rather than as a list of five
+   * different questions to ask the archive.
+   */
+  layout?: 'grid' | 'list';
 }
 
-const { limit } = Astro.props;
+const { limit, layout = 'grid' } = Astro.props;
 
 const LINKS: Link[] = [
   {
@@ -86,7 +92,7 @@ const LINKS: Link[] = [
 ];
 ---
 
-<ul class="xc">
+<ul class:list={['xc', layout === 'list' && 'xc--list']}>
   {
     LINKS.slice(0, limit).map(({ icon, label, hint, href, scope }) => (
       <li class="xc__item">
@@ -129,6 +135,10 @@ const LINKS: Link[] = [
     margin: 0;
     padding: 0;
     max-width: var(--content-width);
+  }
+
+  .xc--list {
+    grid-template-columns: 1fr;
   }
 
   .xc__note {

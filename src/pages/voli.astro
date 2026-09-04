@@ -1,6 +1,6 @@
 ---
 /**
- * /voli (C6, X1, X2): intro prose then the five XContest searches.
+ * /voli (C6, X1, X2): intro prose then the five XContest searches, stacked.
  */
 import { getEntry, render } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
@@ -17,7 +17,7 @@ const { Content } = await render(page);
   </div>
 
   <div class="links">
-    <XContestLinks />
+    <XContestLinks layout="list" />
   </div>
 </PageLayout>
 
