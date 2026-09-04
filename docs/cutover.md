@@ -23,12 +23,14 @@ nothing and reported no error.
 fail on finding them in the output, where Astro deliberately put them. A build
 without the MapTiler key says so in the deploy log.
 
-### 2. Set `PUBLIC_CF_BEACON_TOKEN`
+### 2. Set `PUBLIC_CF_BEACON_TOKEN`: done, production only
 
 Decided 2026-09-03: analytics is on. Netlify → **Site configuration →
 Environment variables** → `PUBLIC_CF_BEACON_TOKEN`, from the Cloudflare Web
-Analytics dashboard. Without it `Analytics.astro` renders nothing, which is what
-happens locally and on previews.
+Analytics dashboard. Set 2026-09-04, scoped to the **production** context alone,
+so previews and branch deploys count nothing: an editor checking their own
+branch is not a visitor. Without it `Analytics.astro` renders nothing, which is
+what happens locally and on every preview.
 
 **This one is coupled to a legal page.** `/privacy` now states as fact that the
 beacon runs, names Cloudflare as a US recipient, and gives legitimate interest
@@ -40,25 +42,29 @@ and so does the entry in `check-third-party.mjs`'s allowlist.
 No cookie banner is needed and none should be added: nothing is stored on the
 visitor's device, so there is nothing to consent to.
 
-### 3. Add the branch previews to the Tracestrack referrer list
+### 3. Add the branch previews to the Tracestrack referrer list: done 2026-09-04
 
 `https://*--ventorelativo-astro.netlify.app`. Without it the topographic base
 layer 403s on every preview deploy, which looks like a broken map to an editor
 checking their own branch.
 
-### 4. Take the test content out
+### 4. Take the test content out: done 2026-09-04
 
-- **`/news/a-test-news/`**: written from the CMS to prove Phase 3 worked. It is
-  lorem ipsum, and it is currently the newest post, so it is the first card on
-  `/news/` and would be the first thing a visitor sees. Delete it in Keystatic.
-  It is already out of the sitemap and out of search, but after the move it would
-  be a real page on the club's domain. `scripts/check-urls.mjs` already knows it
-  is meant to go.
+- **`/news/a-test-news/`**: written from the CMS to prove Phase 3 worked. Lorem
+  ipsum, and the newest post, so it was the first card on `/news/` and would
+  have been the first thing a visitor saw on the club's own domain. Deleted from
+  Keystatic; `scripts/check-urls.mjs` already knew it was meant to go.
 
-### 5. Check the club is happy with what is there
+### 5. Check the club is happy with what is there: after go-live, deliberately
 
-The site is the club's, not the migration's. Worth one pass by someone who is not
-a developer, on a phone, before the address changes.
+The site is the club's, not the migration's, so someone who is not a developer
+has to look at it on a phone. That happens **after** the domain moves, decided
+2026-09-05: asking the club to review `ventorelativo-astro.netlify.app` means
+explaining why the address is wrong before anyone gets to the site itself, and
+the answers would be about the URL rather than about the pages.
+
+The rollback is what makes that safe: the old project keeps its own deploy, so
+anything the club hates is a domain move away from being the old site again.
 
 ## Moving the domain
 
