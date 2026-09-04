@@ -299,6 +299,18 @@ const typeNames = Object.fromEntries(
     overflow: hidden;
   }
 
+  /*
+    Firefox does not clip the WebGL canvas to the rounded corner above:
+    `overflow: hidden` on the box is enough in Chrome and Safari, and there
+    the map sat square in its rounded frame. The radius goes on the canvas
+    itself, and on the container MapLibre puts around it, so the clip is the
+    element's own rather than an ancestor's.
+  */
+  .map :global(.maplibregl-canvas-container),
+  .map :global(.maplibregl-canvas) {
+    border-radius: inherit;
+  }
+
   .map--open .map__ground {
     display: none;
   }
