@@ -44,6 +44,24 @@ const HERO = home.data.hero;
 */
 const SECTIONS = home.data.sections;
 if (!SECTIONS) throw new Error('src/content/pages/home.mdx has no "sections".');
+/*
+  Named, because the failure without it is "Cannot read properties of undefined
+  (reading 'title')" three hundred lines down.
+
+  A band goes missing for one reason in practice: the entry has it and the
+  schema in force does not, so Zod strips it. In a build that cannot happen;
+  in `astro dev` it happens whenever `src/content.config.ts` gains a key,
+  because the content cache in `.astro/data-store.json` outlives a restart.
+*/
+for (const band of ['siti', 'news', 'voli', 'iscrizioni', 'contatti'] as const) {
+  if (!SECTIONS[band]) {
+    throw new Error(
+      `home.mdx: sections.${band} is missing. If the file has it, the dev ` +
+        `server is serving it parsed by an older schema: stop it, delete ` +
+        `.astro/data-store.json, start it again.`,
+    );
+  }
+}
 
 /*
   The homepage was the hero and nothing else: 60 words, no headings, no links
