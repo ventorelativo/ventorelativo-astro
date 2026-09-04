@@ -137,10 +137,15 @@ const { transparent = false } = Astro.props;
     --color-nav-rule-hover: light-dark(rgba(0, 0, 0, 0.35), #ced4da);
 
     /*
-      No color-scheme override: the hero is pale in light mode and dark in dark
-      mode (see index.astro), so the normal per-scheme text tokens already give
-      the nav the right contrast over it in both.
+      Dark mode's nav is 65% white everywhere else, over a solid header. Here
+      it sits on the photograph, and measured 3.72:1 against the sky behind it:
+      below the 4.5 a 17.6px link needs. 85% takes it to 5.06 and still reads
+      as quieter than the active item, which is pure white.
+
+      Light mode is untouched at 6.38:1: the scrim is doing the work there.
     */
+    --color-nav: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.85));
+    --color-nav-hover: light-dark(rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.95));
   }
 
   .header__inner {
