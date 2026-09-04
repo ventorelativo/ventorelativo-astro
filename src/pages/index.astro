@@ -257,12 +257,11 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
   }
 
   /*
-    No `.prose` here. The intro is the page's opening statement and the
-    measure that suits a long article left two thirds of a wide screen empty
-    beside it. It gets a wider ceiling of its own.
+    No measure here at all. The intro is the page's opening statement, and
+    anything narrower than the container leaves a wide screen looking half
+    empty beside it.
   */
   .home__intro {
-    max-width: 52rem;
     font-size: var(--text-lg);
   }
 
@@ -271,14 +270,12 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
   }
 
   .home__lead {
-    max-width: var(--prose-width);
     color: var(--color-text-muted);
   }
 
   /* Fourteen names as one paragraph: a list of links a reader can scan and a
      search engine can follow, without fourteen boxes. */
   .home__sites {
-    max-width: 52rem;
     line-height: 1.9;
   }
 

@@ -245,6 +245,18 @@ hr {
   gap: var(--space-sm);
 }
 
+/*
+ * The measure off, for a page that opens with a line or two above a grid.
+ *
+ * `.prose` is the article measure, and on /siti and /voli the intro is not an
+ * article: it is a standfirst over a card grid or a list of links, and pinning
+ * it to 42rem left the top of a wide page looking half empty while everything
+ * under it ran to the container. The reading pages keep the measure.
+ */
+.prose--full {
+  max-width: none;
+}
+
 .prose :is(h2, h3, h4) {
   margin-top: var(--space-md);
 }
