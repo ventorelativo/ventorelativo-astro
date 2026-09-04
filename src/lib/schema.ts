@@ -161,6 +161,32 @@ export interface EventInput {
 }
 
 /**
+ * "Bagnolo Piemonte (CN)" as a Place with a postal address.
+ *
+ * Google wants `location.address` on a physical event: without it the result
+ * is not eligible, which is most of what the Event markup on this site is for.
+ * The club writes a place as "Comune (PROV)" everywhere, so the parts are
+ * already in the string.
+ *
+ * A label that does not match that shape keeps its name and gets no address.
+ * The alternative is inventing a country for a line nobody checked.
+ */
+function eventPlace(label: string): Node {
+  const parts = label.match(/^(.+?)\s*\(([A-Za-z]{2})\)$/);
+  if (!parts) return { '@type': 'Place', name: label };
+  return {
+    '@type': 'Place',
+    name: label,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: parts[1],
+      addressRegion: parts[2].toUpperCase(),
+      addressCountry: 'IT',
+    },
+  };
+}
+
+/**
  * An event announced by a news post.
  *
  * `startDate` is a plain `YYYY-MM-DD`, which is how schema.org expects an
@@ -178,7 +204,7 @@ export function eventNode(site: URL, event: EventInput): Node {
     endDate: day(event.end ?? event.start),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    location: { '@type': 'Place', name: event.location },
+    location: eventPlace(event.location),
     organizer: { '@id': ids.club(site) },
     url: event.url.href,
   };
