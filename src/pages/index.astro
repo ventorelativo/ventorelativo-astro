@@ -143,16 +143,15 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
           Quattordici siti tra le valli, ognuno con i suoi decolli e atterraggi, le
           coordinate, la mappa e i file da caricare nello strumento.
         </p>
-        <p class="home__sites">
+        <ul class="home__sites" role="list">
           {
-            sites.map((site, i) => (
-              <>
-                {i > 0 && <span aria-hidden="true"> · </span>}
+            sites.map((site) => (
+              <li>
                 <a href={`/siti/${site.id}/`}>{site.data.title}</a>
-              </>
+              </li>
             ))
           }
-        </p>
+        </ul>
         <p>
           <a class="home__more" href="/siti/">
             Tutti i siti di volo, con le mappe
@@ -265,18 +264,45 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
     color: var(--color-text-muted);
   }
 
-  /* Fourteen names as one paragraph: a list of links a reader can scan and a
-     search engine can follow, without fourteen boxes. */
+  /*
+    Fourteen names as pills, not as a sentence.
+
+    A paragraph of links separated by dots was read as prose: the eye ran
+    along the line instead of seeing fourteen places it could go. Each name
+    is now its own target, on the raised surface so it stands off the tint
+    this band carries.
+  */
   .home__sites {
-    line-height: 1.9;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .home__sites :global(a) {
+    display: block;
+    padding: var(--space-3xs) var(--space-2xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-bg-raised);
+    color: inherit;
     text-decoration: none;
+    transition:
+      border-color var(--transition),
+      color var(--transition);
   }
 
   .home__sites :global(a:hover) {
-    text-decoration: underline;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  /* The ring the rest of the site draws, since the pill is the whole target. */
+  .home__sites :global(a:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
 
   .home__more {
