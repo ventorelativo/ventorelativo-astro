@@ -267,8 +267,12 @@ visitor asks for it. Details and the reasoning behind each rule:
   old one: rename a `category` value and all four posts fail with "data does not
   match collection schema", the collection reports itself empty, and `/news`
   renders "Non ci sono ancora notizie pubblicate" while `dist/` has every card.
-  The error is in `npx astro dev logs`, not on the page. `npx astro dev stop`
-  and start it again. A build never sees this: it is a fresh process.
+  The error is in `npx astro dev logs`, not on the page. **A restart is not
+  always enough**: the parsed entries live in `.astro/data-store.json`, which
+  outlives the process, so a schema that _gains_ a key serves the old shape
+  from cache and the new field arrives `undefined`. Stop the server, delete
+  that file, start it again. A build never sees either: it is a fresh process
+  and `prebuild` rebuilds what it needs.
 
 - **`chrome --headless --window-size=390,844` lies on macOS**: the window is
   clamped to a 500px minimum width, so you get a 500px layout cropped to 390 and
