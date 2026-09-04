@@ -159,17 +159,50 @@ const full = await Promise.all(
     listener is the whole of the up-front JavaScript cost.
   */
   type BiggerPictureInstance = {
-    open: (options: { items: NodeList | Element[]; el?: Element }) => void;
+    open: (options: {
+      items: NodeList | Element[];
+      el?: Element;
+      onOpen?: (container: HTMLElement) => void;
+    }) => void;
   };
 
   let bp: BiggerPictureInstance | undefined;
+
+  /*
+    The library names its three buttons in English, and those names are the
+    whole of what a screen reader, or an agent reading the accessibility tree,
+    has to go on inside the lightbox. Rule 10 covers the copy we write; this is
+    the copy we get, so it is translated on the way out.
+  */
+  const LABELS: Record<string, string> = {
+    Close: 'Chiudi',
+    Previous: 'Immagine precedente',
+    Next: 'Immagine successiva',
+  };
+
+  function localise(container: HTMLElement) {
+    for (const button of container.querySelectorAll('button')) {
+      const english = button.getAttribute('aria-label');
+      if (english && LABELS[english])
+        button.setAttribute('aria-label', LABELS[english]);
+    }
+  }
 
   async function open(grid: Element, el: Element) {
     if (!bp) {
       const { default: BiggerPicture } = await import('bigger-picture');
       bp = BiggerPicture({ target: document.body }) as BiggerPictureInstance;
     }
-    bp.open({ items: grid.querySelectorAll('a'), el });
+    bp.open({
+      items: grid.querySelectorAll('a'),
+      el,
+      /*
+        The buttons are rendered by the time this fires, but the next and
+        previous pair is added when a second image exists, so the pass runs on
+        every open rather than once.
+      */
+      onOpen: (container: HTMLElement) => localise(container),
+    });
   }
 
   function init() {

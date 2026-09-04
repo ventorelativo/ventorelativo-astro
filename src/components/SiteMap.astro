@@ -688,6 +688,27 @@ const typeNames = Object.fromEntries(
         // Scrolling the page must not zoom the map out from under the reader.
         cooperativeGestures: true,
         attributionControl: { compact: true },
+        /*
+          MapLibre names its own controls, in English, and those names are what
+          a screen reader announces and what an agent reads out of the
+          accessibility tree: "Zoom in", "Enter fullscreen", and a canvas
+          called "Map", next to the club's own buttons in Italian. Rule 10
+          covers the copy we write; this is the copy we get.
+        */
+        locale: {
+          'Map.Title': 'Mappa',
+          'NavigationControl.ZoomIn': 'Ingrandisci',
+          'NavigationControl.ZoomOut': 'Riduci',
+          'NavigationControl.ResetBearing':
+            'Trascina per ruotare, clic per rimettere il nord in alto',
+          'FullscreenControl.Enter': 'Schermo intero',
+          'FullscreenControl.Exit': 'Esci da schermo intero',
+          'AttributionControl.ToggleAttribution': 'Crediti della mappa',
+          'AttributionControl.MapFeedback': 'Segnala un errore nella mappa',
+          'TerrainControl.Enable': 'Attiva il rilievo 3D',
+          'TerrainControl.Disable': 'Disattiva il rilievo 3D',
+          'LogoControl.Title': 'Logo MapLibre',
+        },
       });
 
       map.addControl(new NavigationControl({ visualizePitch: true }), 'top-right');
