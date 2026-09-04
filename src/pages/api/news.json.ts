@@ -32,8 +32,12 @@ export const GET: APIRoute = async ({ site }) => {
         ? {
             start: day(entry.data.event.start),
             end: entry.data.event.end ? day(entry.data.event.end) : null,
-            takeoff: entry.data.event.location,
-            landing: entry.data.event.landing ?? null,
+            /* Where you turn up, and it is findable on a map: see the
+               schema. `site` is the club's own page for the flying site. */
+            location: entry.data.event.location,
+            site: entry.data.event.site
+              ? new URL(`/siti/${entry.data.event.site.id}/`, origin).href
+              : null,
             calendar: new URL(`/news/calendario/${entry.id}.ics`, origin).href,
           }
         : null,

@@ -26,9 +26,9 @@ export const GET: APIRoute = ({ props, site }) => {
     uid: url,
     title,
     description: summary,
-    location: [event.location, event.landing && `atterraggio: ${event.landing}`]
-      .filter(Boolean)
-      .join(', '),
+    /* Exactly what the volunteer typed: a calendar hands this to a geocoder,
+       and anything appended to it makes the lookup worse, not better. */
+    location: event.location,
     start: event.start,
     end: event.end,
     url,

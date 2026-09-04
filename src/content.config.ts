@@ -94,15 +94,34 @@ const news = defineCollection({
             start: z.coerce.date(),
             /** Only for events spanning days; omit for a single day. */
             end: z.coerce.date().optional(),
-            /** Where you turn up: the takeoff. Free text, "Montoso (Bagnolo P.)". */
+            /**
+             * Where you turn up, written so a map can find it: an address, a
+             * comune, a car park, a business name.
+             *
+             * It used to be the takeoff, paired with a `landing` field, and
+             * that was wrong twice over. This string is what goes into the
+             * `.ics` as `LOCATION`, which Google Calendar geocodes, and a
+             * takeoff is exactly the kind of place a geocoder cannot find: no
+             * road, no address, no name a map knows. And in practice the club
+             * gathers at the landing, because that is where the cars are.
+             *
+             * So: one findable place. Which flying site it belongs to is
+             * `site` below, and the club's own page says where the takeoffs
+             * are far better than a calendar field could.
+             */
             location: z.string(),
             /**
-             * The landing. Optional, and specific to this club rather than a
-             * generic calendar field, for a hike & fly the two ends of the day
-             * are the two things a pilot needs to know, and both posts that
-             * announce events spelled them out by hand.
+             * The flying site this event happens at, if it is one of ours.
+             *
+             * `reference()` rather than free text so a renamed site cannot
+             * leave an event pointing at nothing: the build fails instead.
+             * Keystatic's relationship field writes `null` when empty, which
+             * `reference()` will not take, hence the preprocess.
              */
-            landing: z.string().optional(),
+            site: z.preprocess(
+              (value) => value ?? undefined,
+              reference('sites').optional(),
+            ),
           })
           .optional(),
       ),

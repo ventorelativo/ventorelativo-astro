@@ -328,12 +328,28 @@ export default config({
               end: fields.date({
                 label: 'Ultimo giorno (solo se dura più giorni)',
               }),
+              /*
+                One findable place, not a takeoff.
+
+                This string becomes `LOCATION` in the `.ics`, which Google
+                Calendar hands to its geocoder, and a takeoff is precisely what
+                a geocoder cannot find: no road, no address, no name a map
+                knows. The club gathers at the landing anyway, because that is
+                where the cars are. Which site it belongs to is the field
+                below.
+              */
               location: fields.text({
-                label: 'Decollo / ritrovo',
-                description: 'Dove ci si trova. Es. "Montoso (Bagnolo Piemonte)".',
+                label: 'Luogo del ritrovo',
+                description:
+                  'Un indirizzo, un comune, un parcheggio: qualcosa che Google Maps sappia trovare, perché finisce nel calendario di chi si iscrive. Es. "Bagnolo Piemonte (CN)".',
                 validation: { isRequired: true },
               }),
-              landing: fields.text({ label: 'Atterraggio' }),
+              site: fields.relationship({
+                label: 'Sito di volo',
+                description:
+                  'Facoltativo. Se si vola in uno dei nostri siti, scegliilo qui: la news mostra il collegamento alla sua scheda, con decolli e atterraggi.',
+                collection: 'sites',
+              }),
             }),
           },
         ),

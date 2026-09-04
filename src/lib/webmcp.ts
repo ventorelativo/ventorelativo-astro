@@ -80,8 +80,8 @@ interface Post {
   event: {
     start: string;
     end: string | null;
-    takeoff: string;
-    landing: string | null;
+    location: string;
+    site: string | null;
     calendar: string;
   } | null;
 }
@@ -229,10 +229,11 @@ const TOOLS: Tool[] = [
   {
     name: 'find_events',
     description:
-      "The club's announcements. Posts that announce an event carry a date, a " +
-      'takeoff, sometimes a landing, and a link to an .ics calendar file; the rest ' +
-      'are articles and have `event: null`. Use `upcoming` to ask only about what ' +
-      'has not happened yet.',
+      "The club's announcements. Posts that announce an event carry a date, the " +
+      'place people gather (written so a map can find it), sometimes a link to the ' +
+      "club's page for that flying site, and a link to an .ics calendar file; the " +
+      'rest are articles and have `event: null`. Use `upcoming` to ask only about ' +
+      'what has not happened yet.',
     inputSchema: {
       type: 'object',
       properties: {
