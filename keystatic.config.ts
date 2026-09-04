@@ -129,6 +129,24 @@ const homeSection = (label: string) =>
     { label },
   );
 
+/**
+ * "Descrizione per Google", wherever it appears.
+ *
+ * The limit is enforced, not suggested: a result truncates at about 160
+ * characters, two pages had already sailed past it, and a note an editor can
+ * ignore is how they got there. `help` is whatever that particular page needs
+ * said on top of the length.
+ */
+const metaDescription = (help?: string) =>
+  fields.text({
+    label: 'Descrizione per Google',
+    description: [help, 'Massimo 160 caratteri: dopo, Google taglia.']
+      .filter(Boolean)
+      .join(' '),
+    multiline: true,
+    validation: { length: { max: 160 } },
+  });
+
 /** Reused by both content collections: an image with its alt text. */
 const imageWithAlt = (directory: string, publicPath: string) =>
   fields.object(
@@ -304,7 +322,7 @@ export default config({
               that host changes at the cutover.
             */
             description:
-              'Serve una mano a scrivere? Su /redazione trovi il testo da incollare in ChatGPT o Gemini per farti preparare tutti i campi.',
+              'Meglio sotto i 60 caratteri: dopo, Google taglia il titolo. Serve una mano a scrivere? Su /redazione trovi il testo da incollare in ChatGPT o Gemini per farti preparare tutti i campi.',
             validation: { isRequired: true },
           },
           slug: {
@@ -321,9 +339,14 @@ export default config({
         summary: fields.text({
           label: 'Sommario',
           description:
-            'Una o due frasi. Compare nell’elenco delle news, su Google e quando il link viene condiviso, quindi serve sempre.',
+            'Una o due frasi. Compare nell’elenco delle news, su Google e quando il link viene condiviso, quindi serve sempre. Massimo 160 caratteri: dopo, Google taglia.',
           multiline: true,
-          validation: { isRequired: true, length: { min: 40, max: 300 } },
+          /*
+            160, not the 300 this allowed: the summary is the page's meta
+            description, and one post had already written past what a result
+            shows. A limit the field enforces is the only kind that holds.
+          */
+          validation: { isRequired: true, length: { min: 40, max: 160 } },
         }),
         image: imageWithAlt('src/assets/news', '../../assets/news/'),
         category: fields.select({
@@ -450,12 +473,9 @@ export default config({
             'Quota, esposizione e comune. Per esempio "1969m, S-SE, Roure (TO)". Compare nell’elenco dei siti e su Google.',
           validation: { isRequired: true },
         }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          description:
-            'Una o due frasi che dicano dove si trova e cosa ci si vola. Compare nei risultati di ricerca, dove la scheda breve qui sopra non dice niente a chi non conosce il posto. Nomina il comune e i paesi vicini: è così che ti trovano.',
-          multiline: true,
-        }),
+        description: metaDescription(
+          'Una o due frasi che dicano dove si trova e cosa ci si vola. Compare nei risultati di ricerca, dove la scheda breve qui sopra non dice niente a chi non conosce il posto. Nomina il comune e i paesi vicini: è così che ti trovano.',
+        ),
         guideUrl: fields.url({
           label: 'Windgram',
           description:
@@ -573,7 +593,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({ label: 'Descrizione per Google', multiline: true }),
+        description: metaDescription(),
         hero: fields.object(
           {
             src: fields.image({
@@ -632,10 +652,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          multiline: true,
-        }),
+        description: metaDescription(),
         content: fields.mdx({ label: 'Testo introduttivo' }),
       },
     }),
@@ -647,10 +664,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          multiline: true,
-        }),
+        description: metaDescription(),
         content: fields.mdx({ label: 'Testo introduttivo' }),
         /*
           The quote fields §2.4 asked for. When the committee settles D10, the
@@ -717,10 +731,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          multiline: true,
-        }),
+        description: metaDescription(),
         content: fields.mdx({ label: 'Testo introduttivo' }),
       },
     }),
@@ -732,10 +743,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          multiline: true,
-        }),
+        description: metaDescription(),
         content: fields.mdx({
           label: 'Linee guida',
           // Without this the page will not open: its body uses <Swatch>.
@@ -751,10 +759,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          multiline: true,
-        }),
+        description: metaDescription(),
         content: fields.mdx({ label: 'Informativa' }),
       },
     }),
@@ -766,10 +771,7 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
-        description: fields.text({
-          label: 'Descrizione per Google',
-          multiline: true,
-        }),
+        description: metaDescription(),
         content: fields.mdx({ label: 'Testo introduttivo' }),
         contacts: fields.array(
           fields.object({
