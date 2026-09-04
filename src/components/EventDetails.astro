@@ -178,31 +178,6 @@ const JOINER = String.fromCharCode(0x2060);
   </div>
 
   {
-    site && (
-      <a class="event__place" href={`/siti/${site.id}/`}>
-        <svg
-          class="event__site"
-          viewBox="6.5 6 149.5 88"
-          width="28.3"
-          height="16.7"
-          aria-hidden="true"
-        >
-          <g transform="translate(62 0)">
-            <g class="glyph glyph--landing" set:html={FEATURE_SYMBOLS.landing} />
-          </g>
-          <g>
-            <g class="glyph glyph--takeoff" set:html={FEATURE_SYMBOLS.takeoff} />
-          </g>
-        </svg>
-        <span class="event__place-text">
-          <span class="event__place-label">Sito di volo</span>
-          <span class="event__place-name">{site.data.title}</span>
-        </span>
-      </a>
-    )
-  }
-
-  {
     /*
     A menu, not a row of four buttons: only one of them is ever the right one
     for a given reader, and four side by side would be the loudest thing in the
@@ -264,6 +239,31 @@ const JOINER = String.fromCharCode(0x2060);
     </p>
   </div>
 </section>
+
+{
+  site && (
+    <a class="event__place" href={`/siti/${site.id}/`}>
+      <svg
+        class="event__site"
+        viewBox="6.5 6 149.5 88"
+        width="28.3"
+        height="16.7"
+        aria-hidden="true"
+      >
+        <g transform="translate(62 0)">
+          <g class="glyph glyph--landing" set:html={FEATURE_SYMBOLS.landing} />
+        </g>
+        <g>
+          <g class="glyph glyph--takeoff" set:html={FEATURE_SYMBOLS.takeoff} />
+        </g>
+      </svg>
+      <span class="event__place-text">
+        <span class="event__place-label">Sito di volo</span>
+        <span class="event__place-name">{site.data.title}</span>
+      </span>
+    </a>
+  )
+}
 
 <style>
   .event {
@@ -390,27 +390,29 @@ const JOINER = String.fromCharCode(0x2060);
   }
 
   /*
-    The site sits in a card of its own rather than as a third row of facts.
+    The site sits outside the event panel, between it and the article.
 
-    As a row it was the odd one out: the two-glyph mark is half again as wide
-    as a calendar or a pin, so either its text started to the right of the
-    others or the column grew and squeezed the date onto two lines. It is also
-    a different kind of thing. The date and the place are this event; the site
-    is a page elsewhere on the site, and a card that says so is easier to
-    ignore when you are only after the day.
+    Two reasons it is not a row of facts inside the panel. The two-glyph mark
+    is half again as wide as a calendar or a pin, so in that list either its
+    text started to the right of the others or the column grew and squeezed
+    the date onto two lines. And it is a different kind of thing: the date and
+    the place are this event, while the site is a page elsewhere, so it reads
+    as a pointer away rather than another detail of the day.
   */
   .event__place {
-    display: flex;
-    /* Its own line, but only as wide as it needs: full width left a mostly
-       empty box at 1440. */
-    flex-basis: 100%;
+    display: inline-flex;
+    /* Only as wide as it needs: full width left a mostly empty box at 1440. */
     max-width: max-content;
     align-items: center;
     gap: var(--space-xs);
+    /* No top margin: this is inline-level, so its margin would not collapse
+       with the panel's and the two would sit a double gap apart. It only ever
+       follows the panel, which already leaves space below itself. */
+    margin-block: 0 var(--space-md);
     padding: var(--space-2xs) var(--space-xs);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    background-color: var(--color-bg);
+    background-color: var(--color-bg-subtle);
     color: inherit;
     text-decoration: none;
   }
