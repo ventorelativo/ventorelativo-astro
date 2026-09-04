@@ -141,7 +141,15 @@ const imageWithAlt = (directory: string, publicPath: string) =>
  *    moves ventorelativo.it to this project, because branch deploys keep their
  *    netlify.app address regardless.
  */
-const PREVIEW_BASE = 'https://{branch}--ventorelativo-astro.netlify.app';
+const PREVIEW_BASE = import.meta.env.DEV
+  ? /*
+      Relative, so the preview link resolves against whatever the dev server
+      is: in local mode there is no branch, `{branch}` became the empty string
+      and every preview pointed at `https://--ventorelativo-astro.netlify.app`.
+      A relative href also survives a different port without being told.
+    */
+    ''
+  : 'https://{branch}--ventorelativo-astro.netlify.app';
 
 /**
  * Every edit happens on a branch named `modifiche-…`.
