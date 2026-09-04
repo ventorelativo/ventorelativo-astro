@@ -29,6 +29,7 @@ import { createElement } from 'react';
 import { config, collection, singleton, fields } from '@keystatic/core';
 
 import { SITE_OPTIONS } from './src/lib/siteOptions';
+import logoQuadrato from './src/assets/press/logo-quadrato.svg?raw';
 import { block } from '@keystatic/core/content-components';
 
 /**
@@ -164,52 +165,33 @@ const PREVIEW_BASE = import.meta.env.DEV
 const BRANCH_PREFIX = 'modifiche-';
 
 /**
- * The logo's mountain, as a 24px mark for the admin UI.
+ * The club's mark for the admin's corner, cut from the press kit.
  *
- * Traced from `src/assets/logo-card.svg` rather than imported: Keystatic wants
- * a React component, an SVG import in this file would pull the asset pipeline
- * into the CMS config, and at this size the lockup's wordmark is unreadable
- * anyway.
+ * `logo-quadrato.svg` is square only because of its white field: the artwork
+ * inside is the full lockup, 600 wide by 262 tall, and at mark size its
+ * wordmark is a smudge that repeats the "VentoRelativo" printed beside it.
+ *
+ * So the viewBox is cropped to the mountain alone, measured with `getBBox`:
+ * the drawing sits at y 168 to 357, and the two lines of type below 370 fall
+ * outside the viewport and are clipped. The white background rect goes with
+ * them, so the mark sits on the sidebar's own colour in either theme.
+ *
+ * `dangerouslySetInnerHTML` because this is our own build-time asset, inlined
+ * by Vite: there is no user input anywhere near it.
  */
+const LOGO_BODY = logoQuadrato
+  .slice(logoQuadrato.indexOf('>') + 1, logoQuadrato.lastIndexOf('</svg>'))
+  .replace('<rect width="600" height="600" fill="white"/>', '');
+
 function BrandMark() {
-  /*
-    The mark links to the site, which is what a logo in a CMS should do: an
-    editor wanting to see the page they are writing has nowhere else to click.
-
-    It is also the only place in the admin that takes markup we write. `ui`
-    accepts `brand` (a name and this component) and `navigation` (collection
-    and singleton keys, nothing else); there is no dashboard to extend and a
-    field `description` is a plain string, so it cannot be clickable.
-    Keystatic's `SidebarHeader` renders this component bare, inside an `HStack`
-    and not inside a link of its own, so an anchor here is valid rather than
-    nested.
-
-    `target="_blank"`: the admin is a single-page app holding unsaved form
-    state, and navigating away from it in the same tab throws that away.
-  */
-  return createElement(
-    'a',
-    {
-      href: '/',
-      target: '_blank',
-      rel: 'noreferrer',
-      title: 'Apri il sito',
-      'aria-label': 'Apri il sito in una nuova scheda',
-      style: { display: 'flex' },
-    },
-    createElement(
-      'svg',
-      { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none' },
-      createElement('path', {
-        fill: '#F5B400',
-        d: 'M2 17.5 9.2 7.4a1 1 0 0 1 1.6-.05L14 11.4l2.1-2.7a1 1 0 0 1 1.6.02L22 17.5H2Z',
-      }),
-      createElement('path', {
-        fill: '#1F52A6',
-        d: 'M3.6 8.2c2.6-1.9 5.4-2.7 8.4-2.4-2.2.6-4 1.6-5.6 3.1-1.1 1-1.9 2-2.5 3.1-.4-1.3-.5-2.6-.3-3.8Zm10.9-2c2.4.2 4.6 1 6.4 2.4.2 1.1.1 2.2-.2 3.3-.9-1.9-2.4-3.4-4.4-4.5a11 11 0 0 0-1.8-.8Z',
-      }),
-    ),
-  );
+  return createElement('svg', {
+    viewBox: '0 168 600 189',
+    width: 63,
+    height: 20,
+    role: 'img',
+    'aria-label': 'VentoRelativo',
+    dangerouslySetInnerHTML: { __html: LOGO_BODY },
+  });
 }
 
 export default config({
