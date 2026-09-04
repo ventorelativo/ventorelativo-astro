@@ -635,6 +635,7 @@ export default config({
             news: homeSection('Eventi e news'),
             voli: homeSection('I nostri voli'),
             iscrizioni: homeSection('Iscriversi'),
+            contatti: homeSection('Contatti'),
           },
           { label: 'Sezioni della home' },
         ),

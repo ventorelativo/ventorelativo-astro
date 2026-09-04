@@ -274,6 +274,7 @@ const pages = defineCollection({
           news: homeSection,
           voli: homeSection,
           iscrizioni: homeSection,
+          contatti: homeSection,
         })
         .optional(),
       /** /iscrizioni, the pricing cards (§2.4, §5). */

@@ -230,6 +230,19 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
         </section>
       )
     }
+
+    <section class="home__band home__band--tint">
+      <div class="container">
+        <H2>{SECTIONS.contatti.title}</H2>
+        {SECTIONS.contatti.intro && <p class="home__lead">{SECTIONS.contatti.intro}</p>}
+        <p>
+          <a class="home__more" href="/contatti/">
+            {SECTIONS.contatti.link}
+            <ArrowIcon />
+          </a>
+        </p>
+      </div>
+    </section>
   </div>
 </BaseLayout>
 
