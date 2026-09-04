@@ -30,7 +30,7 @@ import { config, collection, singleton, fields } from '@keystatic/core';
 
 import { SITE_OPTIONS } from './src/lib/siteOptions';
 import logoQuadrato from './src/assets/press/logo-quadrato.svg?raw';
-import { block } from '@keystatic/core/content-components';
+import { block, wrapper } from '@keystatic/core/content-components';
 
 /**
  * The components a body may contain.
@@ -70,7 +70,13 @@ const contentComponents = {
     },
   }),
 
-  Swatch: block({
+  /*
+    `wrapper`, not `block`: the note under the colour is the component's
+    children, and Keystatic refuses to parse a block that has any. Declared
+    the other way it took the media kit page down with "Missing component
+    definition for Swatch".
+  */
+  Swatch: wrapper({
     label: 'Colore del marchio',
     description: 'Un quadrato con il colore, il nome e il codice. Solo nel media kit.',
     schema: {
@@ -81,7 +87,6 @@ const contentComponents = {
       }),
       name: fields.text({ label: 'Nome', validation: { isRequired: true } }),
     },
-    ContentView: (props) => props.value.name,
   }),
 
   Facts: block({
@@ -681,7 +686,11 @@ export default config({
           label: 'Descrizione per Google',
           multiline: true,
         }),
-        content: fields.mdx({ label: 'Linee guida' }),
+        content: fields.mdx({
+          label: 'Linee guida',
+          // Without this the page will not open: its body uses <Swatch>.
+          components: contentComponents,
+        }),
       },
     }),
 
