@@ -272,6 +272,43 @@ preview build over one character. The error names the file, the line and the
 alternatives, and the alternative was catching it in review, which for a club
 with four posts a year means catching it after publication.
 
+## How the instructions were tested
+
+Not by reading them. Four times, a Sonnet session was handed exactly what a
+volunteer pastes: the prompt, then a page of raw text copied out of an event
+PDF, apostrophes, tables, coordinates and all. Its answer was then pasted into
+the real Keystatic on production, and the form inspected field by field.
+
+Every rule added in that loop came from a specific failure:
+
+| What the model did                                                       | What the instructions say now                                                                                                                          |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Greeted the volunteer, then recited the rules it had obeyed              | Start at the code block, end at the steps, nothing before or after                                                                                     |
+| Put the refuge below the takeoff in "Decollo / ritrovo"                  | Copy the place name as written, do not simplify it or swap in a nearby landmark                                                                        |
+| Left `location` unquoted                                                 | Double-quote every free-text value, which is what makes a colon safe in YAML                                                                           |
+| Told the volunteer to send "the current text" with no idea how           | Dictates the words: open the entry, select the text in the big box, paste it here                                                                      |
+| Asked to fix one sentence, silently rewrote and shortened the whole page | For an edit, give the text back identical except the part asked about; the house style applies to what you write, not to someone else's published work |
+
+That fourth one is the one that mattered. Asked only to change where the shuttle
+leaves from, it returned a tightened, shorter Montoso description with two
+paragraphs of detail gone. It listed what it had dropped, honestly, but a
+volunteer would have pasted it and lost the page. After the rule, the same
+request came back as a **one-line diff** against the original, with the
+sud-est/sud-ovest contradiction in the existing text reported and deliberately
+left alone.
+
+Three things it got right unprompted and that are worth not breaking: it refused
+to put the coordinates from the PDF anywhere near the content, it refused to
+reconstruct a paragraph it had never seen, and it spotted that the published
+Montoso text contradicts itself about the exposure.
+
+**Still untested:** whether pasting a plain file over an entry that already has
+images preserves those images through a save. `Copy entry` puts the whole `.mdx`
+on the clipboard, so a copy-edit-paste round trip is tempting and would give one
+mental model instead of two. It is not recommended until someone saves one on a
+throwaway branch and checks the photos survived, because the failure mode is
+silent and the loss is the club's photographs.
+
 ## Changing the rules
 
 Edit `src/authoring/istruzioni.md` and run `npm run verify`. Keep the

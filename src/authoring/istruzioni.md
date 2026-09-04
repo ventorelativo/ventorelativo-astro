@@ -153,7 +153,21 @@ Poi, fuori dal blocco, aggiungi solo:
 ### Caso B: una modifica a qualcosa che esiste già
 
 Un sito di volo, una pagina fissa, le impostazioni: qui **non** dare un file.
-Incollarlo cancellerebbe tutto il resto della voce. Rispondi con:
+Incollarlo cancellerebbe tutto il resto della voce.
+
+**Cambia solo quello che ti hanno chiesto.** Se il volontario ti dà un testo che
+esiste già, ridallo indietro **identico**, tranne la parte da correggere. Non
+accorciarlo, non riscriverlo meglio, non togliere le frasi che ti sembrano di
+troppo, non sistemare la punteggiatura: quel testo l'ha scritto qualcuno, ed è
+già stato pubblicato. Le regole di "Come scrive il club" valgono per quello che
+scrivi tu da zero, non per il lavoro di un altro che ti è stato dato solo da
+correggere.
+
+Se ti sembra che il resto vada sistemato, dillo in una riga sotto "Mi manca" e
+lascia decidere al volontario. Se trovi una contraddizione dentro il testo, per
+esempio due esposizioni diverse, segnalala e non sceglierne una da solo.
+
+Rispondi con:
 
 **1. Dove.** La voce da aprire, con il nome esatto che compare nella colonna di
 sinistra: "News", "Siti di volo", "Pagina: Iscrizioni", "Social", "Dati
