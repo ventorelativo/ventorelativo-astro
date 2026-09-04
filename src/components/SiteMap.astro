@@ -147,6 +147,15 @@ const typeNames = Object.fromEntries(
   data-map={interactive ? '' : null}
   data-reset-icon={interactive ? resetIcon : null}
   style={[
+    /*
+      The overview map on /siti and the site's own map are the same object at
+      two sizes, so the browser moves one into the other rather than fading the
+      page. One SiteMap per document, which is what a transition name needs.
+
+      This replaces nothing: the card title still flies to the h1. The map is
+      simply the half of the pair a visitor actually watches.
+    */
+    'view-transition-name: site-map',
     `--icon-terrain: url(${terrainIcon})`,
     `--icon-terrain-off: url(${terrainOffIcon})`,
     `--icon-fullscreen: url(${fullscreenIcon})`,

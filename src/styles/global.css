@@ -90,6 +90,18 @@ html {
   animation-duration: 320ms;
 }
 
+/*
+ * The overview map on /siti into the site's own map, and back.
+ *
+ * A fixed name, not one per site: there is exactly one map in each of these
+ * documents, so the pair is unambiguous. Longer than the root fade, for the
+ * same reason the poster morph is: it travels further than it cross-fades,
+ * and 180ms reads as a jump rather than as the same map moving.
+ */
+::view-transition-group(site-map) {
+  animation-duration: 320ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   @view-transition {
     navigation: none;
