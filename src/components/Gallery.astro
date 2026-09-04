@@ -163,6 +163,7 @@ const full = await Promise.all(
       items: NodeList | Element[];
       el?: Element;
       onOpen?: (container: HTMLElement) => void;
+      onClose?: () => void;
     }) => void;
   };
 
@@ -188,6 +189,32 @@ const full = await Promise.all(
     }
   }
 
+  /*
+    What the library does not declare: that this is a dialog.
+
+    It builds a plain <div> over the page, so a screen reader is told nothing
+    and keeps reading the article underneath, and focus stays on <body>: a
+    keyboard user tabs through the page behind the picture they just opened.
+    Below is the standard modal contract, and `inert` on everything else is
+    what actually puts the page out of reach.
+  */
+  function asDialog(container: HTMLElement) {
+    container.setAttribute('role', 'dialog');
+    container.setAttribute('aria-modal', 'true');
+    container.setAttribute('aria-label', 'Immagine ingrandita');
+    for (const sibling of document.body.children) {
+      if (sibling !== container) sibling.toggleAttribute('inert', true);
+    }
+    // The close button, so Escape and Tab both start from inside.
+    container.querySelector('button')?.focus();
+  }
+
+  /** Undoes it: the page is reachable again and focus returns to the thumbnail. */
+  function release(opener: Element) {
+    for (const child of document.body.children) child.removeAttribute('inert');
+    (opener as HTMLElement).focus();
+  }
+
   async function open(grid: Element, el: Element) {
     if (!bp) {
       const { default: BiggerPicture } = await import('bigger-picture');
@@ -201,7 +228,11 @@ const full = await Promise.all(
         previous pair is added when a second image exists, so the pass runs on
         every open rather than once.
       */
-      onOpen: (container: HTMLElement) => localise(container),
+      onOpen: (container: HTMLElement) => {
+        localise(container);
+        asDialog(container);
+      },
+      onClose: () => release(el),
     });
   }
 
