@@ -25,3 +25,6 @@ public/vendor/
 
 # Working GeoJSON produced by scripts/geo.mjs — the YAML is the source.
 geo/
+
+# Screenshots and scratch files handed to an agent. Never committed.
+scratch/
