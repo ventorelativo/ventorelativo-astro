@@ -164,23 +164,6 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
 
     <section class="home__band">
       <div class="container">
-        <H2>I nostri voli</H2>
-        <p class="home__lead">
-          Le tracce dai nostri decolli finiscono su XContest. Queste tre ricerche sono
-          già filtrate sulla zona.
-        </p>
-        <XContestLinks limit={3} />
-        <p>
-          <a class="home__more" href="/voli/">
-            Tutte le ricerche
-            <ArrowIcon />
-          </a>
-        </p>
-      </div>
-    </section>
-
-    <section class="home__band home__band--tint">
-      <div class="container">
         <H2>Ultime dal club</H2>
         <ul class="home__grid" role="list">
           {
@@ -196,6 +179,23 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
         <p>
           <a class="home__more" href="/news/">
             Tutte le news
+            <ArrowIcon />
+          </a>
+        </p>
+      </div>
+    </section>
+
+    <section class="home__band home__band--tint">
+      <div class="container">
+        <H2>I nostri voli</H2>
+        <p class="home__lead">
+          Le tracce dai nostri decolli finiscono su XContest. Queste tre ricerche sono
+          già filtrate sulla zona.
+        </p>
+        <XContestLinks limit={3} />
+        <p>
+          <a class="home__more" href="/voli/">
+            Tutte le ricerche
             <ArrowIcon />
           </a>
         </p>
