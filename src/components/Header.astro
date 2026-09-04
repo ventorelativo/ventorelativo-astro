@@ -81,7 +81,30 @@ const { transparent = false } = Astro.props;
     still needs the nav to be legible over the text.
   */
   @supports (animation-timeline: scroll()) {
-    .header--transparent {
+    /*
+      The glass is a layer that fades in, not colours that animate.
+
+      Animating `background-color` straight to `var(--color-header-bg)` worked
+      until someone changed the theme: a running animation keeps the keyframe
+      values it resolved when it started, so `light-dark()` had already been
+      collapsed to the old scheme's colour and the header stayed light on a
+      dark page until the next reload. Only the reload restarted the animation.
+
+      Fading a layer instead leaves every colour a live `var()` on a static
+      rule, which follows `color-scheme` the moment it flips, and animates the
+      one property that costs nothing to animate.
+    */
+    .header--transparent::after {
+      content: '';
+      position: absolute;
+      /* -1px so the layer's own border sits where the header's border is. */
+      inset: 0 0 -1px;
+      z-index: -1;
+      border-bottom: 1px solid var(--color-header-border);
+      background-color: color-mix(in srgb, var(--color-header-bg) 80%, transparent);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-chrome-down);
+
       /*
         Longhands, not the `animation` shorthand: the minifier folds
         `animation-timeline` into it as `animation: … scroll(root)`, which the
@@ -98,17 +121,11 @@ const { transparent = false } = Astro.props;
 
   @keyframes header-glass {
     from {
-      border-bottom-color: transparent;
-      background-color: transparent;
-      backdrop-filter: blur(0px);
-      box-shadow: none;
+      opacity: 0;
     }
 
     to {
-      border-bottom-color: var(--color-header-border);
-      background-color: color-mix(in srgb, var(--color-header-bg) 80%, transparent);
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow-chrome-down);
+      opacity: 1;
     }
   }
 
