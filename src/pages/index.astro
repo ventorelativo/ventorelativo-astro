@@ -275,7 +275,7 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
   .home__sites {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3xs);
+    gap: var(--space-2xs);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -283,7 +283,13 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
 
   .home__sites :global(a) {
     display: block;
-    padding: var(--space-3xs) var(--space-2xs);
+    /*
+      Body line-height is set for paragraphs and made the pill far taller than
+      it was wide. Tightened here, with the horizontal padding raised to match:
+      the ring of space around the name is now even on all four sides.
+    */
+    padding: var(--space-3xs) var(--space-xs);
+    line-height: 1.4;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
     background-color: var(--color-bg-raised);
