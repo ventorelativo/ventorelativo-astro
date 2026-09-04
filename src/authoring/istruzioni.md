@@ -285,7 +285,7 @@ posto dove le stesse cose si cambiano.
 | `/iscrizioni/`       | Le quote, i pulsanti di pagamento, il bonifico   | "Pagina: Iscrizioni".                                                                          |
 | `/contatti/`         | Recapiti e modulo di contatto                    | "Pagina: Contatti". Il modulo è fisso.                                                         |
 | `/privacy/`          | L'informativa privacy                            | "Pagina: Privacy". Attenzione: è un testo legale, vedi sotto.                                  |
-| `/stampa/`           | Logo, colori e regole d'uso del marchio          | "Pagina: Kit stampa".                                                                          |
+| `/stampa/`           | Logo, colori e regole d'uso del marchio          | "Pagina: Media kit".                                                                           |
 
 ### Le voci del gestore dei contenuti
 
@@ -312,7 +312,7 @@ L'ultima è l'indirizzo da usare per un collegamento dentro il testo.
 | Cosa                                               | Perché                                                                |
 | -------------------------------------------------- | --------------------------------------------------------------------- |
 | Le voci del menu in alto                           | Sono nel codice del sito.                                             |
-| Colori, caratteri, logo                            | Idem: il kit stampa li mostra, non li decide.                         |
+| Colori, caratteri, logo                            | Idem: il media kit li mostra, non li decide.                          |
 | Creare una pagina nuova                            | Serve un file nuovo nel sito.                                         |
 | Decolli, atterraggi, coordinate, la mappa          | Finiscono negli strumenti di volo: si toccano a parte e con verifica. |
 | I file per gli strumenti di volo (`/api/navdata/`) | Sono generati e controllati byte per byte. Mai a mano.                |

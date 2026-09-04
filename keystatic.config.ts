@@ -72,7 +72,7 @@ const contentComponents = {
 
   Swatch: block({
     label: 'Colore del marchio',
-    description: 'Un quadrato con il colore, il nome e il codice. Solo nel kit stampa.',
+    description: 'Un quadrato con il colore, il nome e il codice. Solo nel media kit.',
     schema: {
       color: fields.text({
         label: 'Codice esadecimale',
@@ -672,7 +672,7 @@ export default config({
 
     stampa: singleton({
       previewUrl: `${PREVIEW_BASE}/stampa/`,
-      label: 'Pagina: Kit stampa',
+      label: 'Pagina: Media kit',
       path: 'src/content/pages/stampa',
       format: { contentField: 'content' },
       schema: {
