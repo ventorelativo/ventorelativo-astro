@@ -129,7 +129,7 @@ requireFrontmatter: true)` against the entry's own data file path. A complete
 `.mdx` on the clipboard therefore fills the whole form.
 
 Verified on production, twice, with a real click: title, date, summary, body with
-its bold and its emoji, `category` switching the select to Competizioni, the
+its bold and its emoji, `category` switching the select to Competizione, the
 event checkbox ticked and its dates and places filled. Two fields stay empty on
 purpose: the slug, which has a regenerate button beside it that derives it from
 the title, and the image, which the volunteer picks.

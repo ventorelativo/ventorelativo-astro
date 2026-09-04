@@ -220,16 +220,16 @@ src/content/pages/          # singletons, one YAML/MDX per fixed page
 
 **`news`** (Drupal `node:article`)
 
-| Astro/Keystatic field | Type                                        | From                                                                 |
-| --------------------- | ------------------------------------------- | -------------------------------------------------------------------- |
-| `title`               | text                                        | `title`                                                              |
-| `slug`                | slug                                        | `path.alias`: **preserve existing**                                  |
-| `date`                | date                                        | `created`                                                            |
-| `summary`             | text (multiline)                            | `body.summary` (currently empty on all 3 → author it)                |
-| `image`               | object `{src: image, alt: text}`            | `field_image` (`alt` is required today)                              |
-| `category`            | select `Eventi \| Competizioni \| Hike&Fly` | `field_tags`: **pending D13** (§2.5); was `array(relationship→tags)` |
-| `draft`               | checkbox                                    | `!status`                                                            |
-| `content`             | mdx (contentField)                          | `body.value`                                                         |
+| Astro/Keystatic field | Type                                                     | From                                                                 |
+| --------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `title`               | text                                                     | `title`                                                              |
+| `slug`                | slug                                                     | `path.alias`: **preserve existing**                                  |
+| `date`                | date                                                     | `created`                                                            |
+| `summary`             | text (multiline)                                         | `body.summary` (currently empty on all 3 → author it)                |
+| `image`               | object `{src: image, alt: text}`                         | `field_image` (`alt` is required today)                              |
+| `category`            | select `Evento \| Competizione \| Hike&Fly \| Assemblea` | `field_tags`: **pending D13** (§2.5); was `array(relationship→tags)` |
+| `draft`               | checkbox                                                 | `!status`                                                            |
+| `content`             | mdx (contentField)                                       | `body.value`                                                         |
 
 **`sites`** (Drupal `node:sito`)
 

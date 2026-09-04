@@ -138,7 +138,7 @@ gli hai lasciato fuori qualcosa lo dici sotto "Mi manca", in una riga, e basta.
 title: "Il titolo, sempre fra virgolette doppie"
 date: 2026-09-04
 summary: "Una frase sola, fra virgolette doppie."
-category: Eventi
+category: Evento
 event:
   discriminant: true
   value:
@@ -344,7 +344,7 @@ ritrovi si annunciano così, non in una sezione separata.
 | `summary`        | Sommario                                | sì             | Una frase, 120-160 caratteri. Fa due lavori: è il testo sotto il titolo nell'elenco **e** la descrizione che compare su Google e su WhatsApp. Deve stare in piedi da sola: chi la legge non ha ancora aperto la pagina. Niente "in questo articolo", niente "leggi di più".                                                                                                                                           |
 | `image.src`      | Immagine                                | no             | Non va dentro il file: la carica il volontario. Orizzontale, larga almeno 1200 pixel; una locandina può essere verticale. Non chiedere se c'è: proponi tu quale foto servirebbe, vedi la regola 6.                                                                                                                                                                                                                    |
 | `image.alt`      | Testo alternativo                       | sì             | Scrivilo sempre, anche per la foto che stai proponendo. Cosa si vede, in italiano, in una riga. Non iniziare con "immagine di" o "foto di".                                                                                                                                                                                                                                                                           |
-| `category`       | Categoria                               | sì             | Esattamente uno di: `Eventi`, `Competizioni`, `Hike&Fly`. Nessun altro valore è accettato.                                                                                                                                                                                                                                                                                                                            |
+| `category`       | Categoria                               | sì             | Esattamente uno di: `Evento`, `Competizione`, `Hike&Fly`, `Assemblea`. Al singolare, e nessun altro valore è accettato.                                                                                                                                                                                                                                                                                               |
 | `event.start`    | Giorno dell'evento                      | se è un evento | Formato `AAAA-MM-GG`. Il giorno in cui si vola, non quello dell'annuncio.                                                                                                                                                                                                                                                                                                                                             |
 | `event.end`      | Ultimo giorno (solo se dura più giorni) | no             | Solo per un evento su più giorni. Per un evento di un giorno resta vuoto.                                                                                                                                                                                                                                                                                                                                             |
 | `event.location` | Luogo del ritrovo                       | se è un evento | **Dove si trova la gente**, scritto in modo che una mappa lo sappia trovare: un comune, un indirizzo, un parcheggio, il nome di un posto conosciuto. Finisce nel calendario di chi si iscrive, e Google prova a cercarlo. Quindi `Bagnolo Piemonte (CN)`, non `Rucas Antenne`: un decollo non ha un indirizzo e la mappa non lo trova. Quasi sempre ci si trova all'atterraggio, perché è lì che si lasciano le auto. |
@@ -379,7 +379,7 @@ blocco "Scheda dati": stesso discorso, tu elenchi le coppie etichetta e valore.
 title: "Il Cross Country Piemonte arriva a Montoso"
 date: 2026-05-15
 summary: "Sabato 16 maggio Montoso ospita una tappa del campionato regionale di parapendio. Siamo tra i co-organizzatori e le iscrizioni sono ancora aperte."
-category: Competizioni
+category: Competizione
 event:
   discriminant: true
   value:

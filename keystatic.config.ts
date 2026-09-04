@@ -352,11 +352,12 @@ export default config({
         category: fields.select({
           label: 'Categoria',
           options: [
-            { label: 'Eventi', value: 'Eventi' },
-            { label: 'Competizioni', value: 'Competizioni' },
+            { label: 'Evento', value: 'Evento' },
+            { label: 'Competizione', value: 'Competizione' },
             { label: 'Hike&Fly', value: 'Hike&Fly' },
+            { label: 'Assemblea', value: 'Assemblea' },
           ],
-          defaultValue: 'Eventi',
+          defaultValue: 'Evento',
         }),
         /*
           Filled in only when the post announces an event. Keystatic's

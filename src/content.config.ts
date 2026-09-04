@@ -71,7 +71,7 @@ const news = defineCollection({
        * single news category, rendered as a badge, which is what these terms
        * were actually for.
        */
-      category: z.enum(['Eventi', 'Competizioni', 'Hike&Fly']),
+      category: z.enum(['Evento', 'Competizione', 'Hike&Fly', 'Assemblea']),
       /**
        * Present when the post announces an event: a hike & fly, a competition
        * round, and absent when it is just news.
