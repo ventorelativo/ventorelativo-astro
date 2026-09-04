@@ -261,6 +261,15 @@ visitor asks for it. Details and the reasoning behind each rule:
   rather than with `--background` has to be stopped in its own terminal.
   Between them these have cost two debugging sessions. When in doubt,
   `npm run build && npm run preview` is authoritative.
+- **A schema change does not reach a running dev server, and empties the
+  collection.** `src/content.config.ts` is read once, at startup. Edit a Zod
+  schema while `astro dev` is up and every entry is still validated against the
+  old one: rename a `category` value and all four posts fail with "data does not
+  match collection schema", the collection reports itself empty, and `/news`
+  renders "Non ci sono ancora notizie pubblicate" while `dist/` has every card.
+  The error is in `npx astro dev logs`, not on the page. `npx astro dev stop`
+  and start it again. A build never sees this: it is a fresh process.
+
 - **`chrome --headless --window-size=390,844` lies on macOS**: the window is
   clamped to a 500px minimum width, so you get a 500px layout cropped to 390 and
   every narrow media query is wrong. Use `npm run shot`, which emulates device
