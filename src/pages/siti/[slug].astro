@@ -130,12 +130,23 @@ const takeoffs = features
     upcoming.length > 0 && (
       <ul class="upcoming" role="list">
         {upcoming.map(({ post, start, endsAt }) => (
-          <li data-upcoming data-ends={endsAt.toISOString()}>
-            <a class="upcoming__link" href={`/news/${post.id}/`}>
-              <span class="upcoming__label">Prossimo evento qui</span>
-              <span class="upcoming__title">{post.data.title}</span>
-              <span class="upcoming__when">{formatDate(start)}</span>
-            </a>
+          <li
+            class="card card--link upcoming__item"
+            data-upcoming
+            data-ends={endsAt.toISOString()}
+          >
+            <span class="upcoming__icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" width="20" height="20">
+                <rect x="3" y="4.5" width="14" height="13" rx="2" />
+                <path d="M3 8.5h14M7 2.5v4M13 2.5v4" />
+              </svg>
+            </span>
+            <span class="upcoming__body">
+              <a class="card__stretch upcoming__label" href={`/news/${post.id}/`}>
+                {post.data.title}
+              </a>
+              <span class="upcoming__hint">Si vola qui il {formatDate(start)}</span>
+            </span>
           </li>
         ))}
       </ul>
@@ -205,45 +216,54 @@ const takeoffs = features
 </script>
 
 <style>
+  /* The same mini card as the navigator files below, and as the site link on
+     the news post this points at: one shape for "here is a related page". */
   .upcoming {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
     margin: 0 0 var(--space-md);
     padding: 0;
     list-style: none;
   }
 
-  .upcoming__link {
+  .upcoming__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .upcoming__icon {
+    display: flex;
+    flex: none;
+    color: var(--color-accent);
+  }
+
+  .upcoming__icon svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .upcoming__body {
     display: flex;
     flex-direction: column;
     gap: var(--space-3xs);
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px solid var(--color-accent-subtle);
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg-subtle);
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .upcoming__link:hover {
-    border-color: var(--color-accent);
+    min-width: 0;
   }
 
   .upcoming__label {
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-  }
-
-  .upcoming__title {
-    color: var(--color-accent);
+    color: var(--color-text-strong);
     font-weight: 500;
-    text-decoration: underline;
   }
 
-  .upcoming__when {
+  .upcoming__hint {
     color: var(--color-text-muted);
     font-size: var(--text-sm);
   }
+
   /*
     A card row, not a button: it is a pointer to somebody else's page rather
     than an action on this one, and the source deserves saying out loud:

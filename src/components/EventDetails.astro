@@ -242,26 +242,34 @@ const JOINER = String.fromCharCode(0x2060);
 
 {
   site && (
-    <a class="event__place" href={`/siti/${site.id}/`}>
-      <svg
-        class="event__site"
-        viewBox="6.5 6 149.5 88"
-        width="28.3"
-        height="16.7"
-        aria-hidden="true"
-      >
-        <g transform="translate(62 0)">
-          <g class="glyph glyph--landing" set:html={FEATURE_SYMBOLS.landing} />
-        </g>
-        <g>
-          <g class="glyph glyph--takeoff" set:html={FEATURE_SYMBOLS.takeoff} />
-        </g>
-      </svg>
-      <span class="event__place-text">
-        <span class="event__place-label">Sito di volo</span>
-        <span class="event__place-name">{site.data.title}</span>
-      </span>
-    </a>
+    <ul class="event__site-list" role="list">
+      <li class="card card--link event__site-card">
+        <span class="event__site-icon" aria-hidden="true">
+          <svg
+            class="event__site"
+            viewBox="6.5 6 149.5 88"
+            width="28.3"
+            height="16.7"
+            aria-hidden="true"
+          >
+            <g transform="translate(62 0)">
+              <g class="glyph glyph--landing" set:html={FEATURE_SYMBOLS.landing} />
+            </g>
+            <g>
+              <g class="glyph glyph--takeoff" set:html={FEATURE_SYMBOLS.takeoff} />
+            </g>
+          </svg>
+        </span>
+        <span class="event__site-body">
+          <a class="card__stretch event__site-name" href={`/siti/${site.id}/`}>
+            {site.data.title}
+          </a>
+          <span class="event__site-hint">
+            Il sito di volo di questa giornata: decolli, atterraggi e mappa
+          </span>
+        </span>
+      </li>
+    </ul>
   )
 }
 
@@ -390,54 +398,51 @@ const JOINER = String.fromCharCode(0x2060);
   }
 
   /*
-    The site sits outside the event panel, between it and the article.
+    The site link is the same mini card as the navigator files at the foot of a
+    site page: icon left, name, one line saying what it is. It was a bespoke
+    box, and a second shape for the same idea is a second thing to maintain and
+    a second thing for a reader to learn.
 
-    Two reasons it is not a row of facts inside the panel. The two-glyph mark
-    is half again as wide as a calendar or a pin, so in that list either its
-    text started to the right of the others or the column grew and squeezed
-    the date onto two lines. And it is a different kind of thing: the date and
-    the place are this event, while the site is a page elsewhere, so it reads
-    as a pointer away rather than another detail of the day.
+    It sits outside the event panel, between it and the article: inside, it
+    read as a third detail of the day, when it is a pointer to a page
+    elsewhere.
   */
-  .event__place {
-    display: inline-flex;
-    /* Only as wide as it needs: full width left a mostly empty box at 1440. */
-    max-width: max-content;
+  .event__site-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    margin: 0 0 var(--space-md);
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Surface and hover come from `.card`; this is only the layout. */
+  .event__site-card {
+    display: flex;
     align-items: center;
-    gap: var(--space-xs);
-    /* No top margin: this is inline-level, so its margin would not collapse
-       with the panel's and the two would sit a double gap apart. It only ever
-       follows the panel, which already leaves space below itself. */
-    margin-block: 0 var(--space-md);
-    padding: var(--space-2xs) var(--space-xs);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg-subtle);
-    color: inherit;
-    text-decoration: none;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
   }
 
-  .event__place:hover {
-    border-color: var(--color-border-strong);
+  .event__site-icon {
+    display: flex;
+    flex: none;
   }
 
-  .event__place-text {
+  .event__site-body {
     display: flex;
     flex-direction: column;
+    gap: var(--space-3xs);
+    min-width: 0;
   }
 
-  .event__place-label {
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    line-height: 1.3;
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-  }
-
-  .event__place-name {
-    color: var(--color-accent);
+  .event__site-name {
+    color: var(--color-text-strong);
     font-weight: 500;
-    text-decoration: underline;
+  }
+
+  .event__site-hint {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 
   /*
