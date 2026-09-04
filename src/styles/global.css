@@ -419,8 +419,7 @@ hr {
  * own ring outlined the title and left the thing being activated undrawn. A
  * keyboard user could not see what they were about to open.
  */
-.card:has(> * > .card__stretch:focus-visible),
-.card:has(> .card__stretch:focus-visible) {
+.card:has(.card__stretch:focus-visible) {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
