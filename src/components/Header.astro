@@ -129,40 +129,52 @@ const { transparent = false } = Astro.props;
     }
   }
 
-  .header--transparent {
-    border-bottom-color: transparent;
-    background-color: transparent;
-    /*
-      No shadow over the photograph. Everywhere else the header casts onto a
-      content sheet and reads as depth; here it sits on the picture, where the
-      same shadow reads as a seam across it.
+  /*
+    The whole transparent treatment is conditional on scroll-driven animation.
 
-      It lives here rather than on the homepage because a page's `:global()`
-      rule cannot override a component's own scoped one: Astro compiles this
-      file's `.header` to `.header[data-astro-cid-…]`, one specificity point
-      above the bare `.header` a `:global()` produces.
-    */
-    box-shadow: none;
-    backdrop-filter: none;
+    Without it there is nothing to bring the glass back as the page scrolls, so
+    the nav would sit on the photograph for the whole visit: legible over the
+    dark end of it, barely legible over the bright sky. Firefox is the one that
+    matters today. Those browsers keep the ordinary opaque header the rest of
+    the site has, which is the honest fallback: less handsome, entirely
+    readable, and nothing to maintain.
+  */
+  @supports (animation-timeline: scroll()) {
+    .header--transparent {
+      border-bottom-color: transparent;
+      background-color: transparent;
+      /*
+        No shadow over the photograph. Everywhere else the header casts onto a
+        content sheet and reads as depth; here it sits on the picture, where the
+        same shadow reads as a seam across it.
 
-    /*
-      Over the homepage hero there is no chrome behind the nav, and the light
-      scheme's hero is a pale wash: `$gray-400` on top of it is all but
-      invisible. Dark mode keeps the grey, where it reads fine against the
-      photograph.
-    */
-    --color-nav-rule-hover: light-dark(rgba(0, 0, 0, 0.35), #ced4da);
+        It lives here rather than on the homepage because a page's `:global()`
+        rule cannot override a component's own scoped one: Astro compiles this
+        file's `.header` to `.header[data-astro-cid-…]`, one specificity point
+        above the bare `.header` a `:global()` produces.
+      */
+      box-shadow: none;
+      backdrop-filter: none;
 
-    /*
-      Dark mode's nav is 65% white everywhere else, over a solid header. Here
-      it sits on the photograph, and measured 3.72:1 against the sky behind it:
-      below the 4.5 a 17.6px link needs. 85% takes it to 5.06 and still reads
-      as quieter than the active item, which is pure white.
+      /*
+        Over the homepage hero there is no chrome behind the nav, and the light
+        scheme's hero is a pale wash: `$gray-400` on top of it is all but
+        invisible. Dark mode keeps the grey, where it reads fine against the
+        photograph.
+      */
+      --color-nav-rule-hover: light-dark(rgba(0, 0, 0, 0.35), #ced4da);
 
-      Light mode is untouched at 6.38:1: the scrim is doing the work there.
-    */
-    --color-nav: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.85));
-    --color-nav-hover: light-dark(rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.95));
+      /*
+        Dark mode's nav is 65% white everywhere else, over a solid header. Here
+        it sits on the photograph, and measured 3.72:1 against the sky behind it:
+        below the 4.5 a 17.6px link needs. 85% takes it to 5.06 and still reads
+        as quieter than the active item, which is pure white.
+
+        Light mode is untouched at 6.38:1: the scrim is doing the work there.
+      */
+      --color-nav: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.85));
+      --color-nav-hover: light-dark(rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.95));
+    }
   }
 
   .header__inner {
