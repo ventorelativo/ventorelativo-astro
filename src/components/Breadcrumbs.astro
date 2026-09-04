@@ -98,6 +98,17 @@ const show = crumbs.length > 0;
     text-decoration: none;
   }
 
+  /*
+    The home crumb is 15px of drawing and nothing else, where WCAG 2.2 asks for
+    24 on a target that is not a link inside a sentence. The padding makes the
+    hit area 25px square; the matching negative margin gives the box its old
+    size back, so the chevron and everything after it sit where they sat.
+  */
+  li:first-child a {
+    padding: 5px;
+    margin: -5px;
+  }
+
   a:hover {
     color: var(--color-accent);
     text-decoration: underline;
