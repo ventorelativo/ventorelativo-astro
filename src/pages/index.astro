@@ -170,7 +170,7 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
                the fold, so they stay lazy. */
             latest.map((entry) => (
               <li>
-                <ArticleCard entry={entry} />
+                <ArticleCard entry={entry} headingLevel={3} />
               </li>
             ))
           }

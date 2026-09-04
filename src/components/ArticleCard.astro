@@ -23,9 +23,13 @@ interface Props {
    * until layout has run. On slow 3G that cost 1.5s here.
    */
   priority?: boolean;
+  /**
+   * 3 on the home page, where these sit under the section's own h2. See H2.
+   */
+  headingLevel?: 2 | 3;
 }
 
-const { entry, priority = false } = Astro.props;
+const { entry, priority = false, headingLevel = 2 } = Astro.props;
 
 /*
   Half of the morph into the article's hero (see global.css). The name has to
@@ -104,7 +108,7 @@ const href = `/news/${entry.id}/`;
       <time datetime={isoDate(date)}>{formatDate(date)}</time>
     </p>
 
-    <H2 class="card__title">
+    <H2 class="card__title" level={headingLevel}>
       <a class="card__stretch" href={href}>
         {title}
       </a>
@@ -211,8 +215,9 @@ const href = `/news/${entry.id}/`;
   /* The size and weight are the old card's; the colour is the heading blue,
      as it is on every other heading. */
   /*
-    Its own size, not the heading scale's: a card title is a card title, and
-    the scale is tuned for headings that open a section.
+    Its own size, not the heading scale's: the card is the same object whether
+    its title is an h2 on /news or an h3 on the home page, and it should not
+    change size with its depth.
   */
   .card__title {
     font-size: var(--text-lg);

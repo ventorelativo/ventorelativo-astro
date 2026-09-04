@@ -1,6 +1,6 @@
 ---
 /**
- * An `h2` that gives itself an `id`, derived from its own text.
+ * A section heading that gives itself an `id`, derived from its own text.
  *
  * Headings written in MDX get one from Astro's markdown pipeline. Headings
  * rendered by a component got nothing, so "Dati per il navigatore", "Punti di
@@ -15,6 +15,12 @@
  * The slot is rendered once, to a string, and its text is what the slug is
  * built from. That is what lets a card title work: its heading contains an
  * anchor, and the tags come out before slugging.
+ *
+ * `level` exists because the same card appears at two depths. On /news the
+ * cards sit under the page's h1 and are h2; on the home page they sit inside
+ * a section that already has an h2, where a second h2 would make the cards
+ * siblings of the section that contains them. Nothing visual follows from it:
+ * a card title sets its own size, so the two read identically.
  */
 import { slugify } from '../lib/slug';
 
@@ -23,9 +29,21 @@ interface Props {
   style?: string;
   /** Override when the visible words make a poor or colliding anchor. */
   id?: string;
+  /** 3 when this heading sits inside a section that already has an h2. */
+  level?: 2 | 3;
 }
 
-const { class: className, style, id } = Astro.props;
+/*
+  `...rest` is not decoration: it carries the caller's `data-astro-cid-…`.
+
+  Astro stamps a scoped parent's id onto the elements it can see at compile
+  time, and a dynamic `<Tag>` is not one of them, so the attribute silently
+  stopped arriving and every rule the cards write for `.card__title` stopped
+  matching. The titles went back to the heading scale, which is the opposite of
+  what this component is for. Spreading it puts it back on the element.
+*/
+const { class: className, style, id, level = 2, ...rest } = Astro.props;
+const Tag = `h${level}` as 'h2' | 'h3';
 
 /*
   Entities are decoded before slugging. The slot arrives as *rendered HTML*, so
@@ -46,6 +64,6 @@ const text = html
   .trim();
 ---
 
-<h2 id={id ?? slugify(text)} class:list={[className]} style={style}>
+<Tag id={id ?? slugify(text)} class:list={[className]} style={style} {...rest}>
   <Fragment set:html={html} />
-</h2>
+</Tag>
