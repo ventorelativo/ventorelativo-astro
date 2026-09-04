@@ -210,8 +210,12 @@ const href = `/news/${entry.id}/`;
 
   /* The size and weight are the old card's; the colour is the heading blue,
      as it is on every other heading. */
+  /*
+    Its own size, not the heading scale's: a card title is a card title, and
+    the scale is tuned for headings that open a section.
+  */
   .card__title {
-    font-size: 1.5rem;
+    font-size: var(--text-lg);
     font-weight: 500;
   }
 
