@@ -478,7 +478,6 @@ Ogni "Pagina: ..." ha sempre gli stessi tre campi, più i suoi.
 | Campo  | Etichetta | Obbligatorio | Regole                                                                                                                                                                                                               |
 | ------ | --------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `hero` | Sfondo    | sì           | La foto grande dietro il titolo, con "Testo alternativo" (lasciare vuoto: è decorativa) e "Crediti foto" (autore e link all'originale). Il credito sta dentro la foto, quindi cambiando foto si cambia anche quello. |
-| `ctas` | Pulsanti  | no           | I pulsanti sotto il titolo: testo e indirizzo. Uno solo va segnato "Pulsante principale", gli altri sono con il contorno.                                                                                            |
 
 ### Pagina: Iscrizioni
 

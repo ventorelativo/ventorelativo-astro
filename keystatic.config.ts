@@ -562,17 +562,6 @@ export default config({
           },
           { label: 'Sfondo' },
         ),
-        ctas: fields.array(
-          fields.object({
-            label: fields.text({ label: 'Testo', validation: { isRequired: true } }),
-            href: fields.text({ label: 'Indirizzo', validation: { isRequired: true } }),
-            primary: fields.checkbox({
-              label: 'Pulsante principale',
-              description: 'Uno solo: gli altri sono con il contorno.',
-            }),
-          }),
-          { label: 'Pulsanti', itemLabel: (props) => props.fields.label.value },
-        ),
         content: fields.mdx({
           label: 'Testo della home',
           description:

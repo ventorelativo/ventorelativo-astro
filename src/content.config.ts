@@ -249,17 +249,6 @@ const pages = defineCollection({
           credit: z.object({ text: z.string(), href: z.url() }).optional(),
         })
         .optional(),
-      ctas: z
-        .array(
-          z.object({
-            label: z.string(),
-            href: z.string(),
-            /** Exactly one should be primary; the rest are outlines. */
-            primary: z.boolean().default(false),
-          }),
-        )
-        .optional(),
-
       /** /iscrizioni, the pricing cards (§2.4, §5). */
       tiers: z
         .array(

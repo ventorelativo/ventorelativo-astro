@@ -37,7 +37,6 @@ import ExternalIcon from '../components/ExternalIcon.astro';
 const home = await getEntry('pages', 'home');
 if (!home?.data.hero) throw new Error('src/content/pages/home.mdx needs a hero image');
 const HERO = home.data.hero;
-const CTAS = home.data.ctas ?? [];
 
 /*
   The homepage was the hero and nothing else: 60 words, no headings, no links
@@ -106,16 +105,6 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
       }
       <h1 class="visually-hidden">{SITE.name}</h1>
       <p class="visually-hidden">{SITE.slogan}</p>
-
-      <p class="hero__ctas">
-        {
-          CTAS.map(({ label, href, primary }) => (
-            <a href={href} class:list={['button', !primary && 'button--outline']}>
-              {label}
-            </a>
-          ))
-        }
-      </p>
     </div>
 
     {
@@ -452,30 +441,6 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
     align-items: center;
     gap: var(--space-xs);
     padding-block: var(--header-height);
-  }
-
-  /*
-    The outline buttons sit on a photograph, not on a page.
-
-    In dark mode their label is `--color-accent`, a light blue that measured
-    2.1:1 against this sky before any of today's changes and 2.5:1 after the
-    pool went in, readable to nobody either way. White takes it to 7.2:1 and
-    costs nothing: the button is over a picture, so the accent was never
-    carrying brand meaning here that the mark above it does not carry better.
-
-    Light mode keeps the accent, which measures 5.9:1 and is the colour the old
-    theme used.
-  */
-  .hero__ctas :global(.button--outline) {
-    --button-outline-color: light-dark(var(--color-accent), var(--color-on-brand));
-  }
-
-  .hero__ctas {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-2xs);
-    margin-block-start: var(--space-md);
   }
 
   /*
