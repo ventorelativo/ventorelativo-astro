@@ -37,6 +37,13 @@ import ExternalIcon from '../components/ExternalIcon.astro';
 const home = await getEntry('pages', 'home');
 if (!home?.data.hero) throw new Error('src/content/pages/home.mdx needs a hero image');
 const HERO = home.data.hero;
+/*
+  Every band's words come from the entry, so a volunteer can rewrite the home
+  page without opening this file. A throw rather than a fallback string: two
+  copies of the same sentence, one of them invisible, is how they drift.
+*/
+const SECTIONS = home.data.sections;
+if (!SECTIONS) throw new Error('src/content/pages/home.mdx has no "sections".');
 
 /*
   The homepage was the hero and nothing else: 60 words, no headings, no links
@@ -147,11 +154,8 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
 
     <section class="home__band home__band--tint">
       <div class="container">
-        <H2>Dove voliamo</H2>
-        <p class="home__lead">
-          Quattordici siti tra le valli, ognuno con i suoi decolli e atterraggi, le
-          coordinate, la mappa e i file da caricare nello strumento.
-        </p>
+        <H2>{SECTIONS.siti.title}</H2>
+        {SECTIONS.siti.intro && <p class="home__lead">{SECTIONS.siti.intro}</p>}
         <ul class="home__sites" role="list">
           {
             sites.map((site) => (
@@ -163,7 +167,7 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
         </ul>
         <p>
           <a class="home__more" href="/siti/">
-            Tutti i siti di volo, con le mappe
+            {SECTIONS.siti.link}
             <ArrowIcon />
           </a>
         </p>
@@ -172,7 +176,8 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
 
     <section class="home__band">
       <div class="container">
-        <H2>Eventi e ultime dal club</H2>
+        <H2>{SECTIONS.news.title}</H2>
+        {SECTIONS.news.intro && <p class="home__lead">{SECTIONS.news.intro}</p>}
         <ul class="home__grid" role="list">
           {
             /* No `priority`: the LCP here is the hero, and these sit far below
@@ -186,7 +191,7 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
         </ul>
         <p>
           <a class="home__more" href="/news/">
-            Tutte le news
+            {SECTIONS.news.link}
             <ArrowIcon />
           </a>
         </p>
@@ -195,15 +200,12 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
 
     <section class="home__band home__band--tint">
       <div class="container">
-        <H2>I nostri voli</H2>
-        <p class="home__lead">
-          Le tracce dai nostri decolli finiscono su XContest. Queste tre ricerche sono
-          già filtrate sulla zona.
-        </p>
+        <H2>{SECTIONS.voli.title}</H2>
+        {SECTIONS.voli.intro && <p class="home__lead">{SECTIONS.voli.intro}</p>}
         <XContestLinks limit={3} />
         <p>
           <a class="home__more" href="/voli/">
-            Tutte le ricerche
+            {SECTIONS.voli.link}
             <ArrowIcon />
           </a>
         </p>
@@ -214,17 +216,14 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
       tiers.length > 0 && (
         <section class="home__band">
           <div class="container">
-            <H2>Iscriversi</H2>
-            <p class="home__lead">
-              La quota tiene in piedi i decolli, gli atterraggi, le gare e questo sito:
-              nessuno ci paga per farlo. Il Sostenitore dà una mano senza entrare
-              nell’associazione, il Socio vota in assemblea e decide insieme agli altri.
-              Si paga con Satispay o con un bonifico.
-            </p>
+            <H2>{SECTIONS.iscrizioni.title}</H2>
+            {SECTIONS.iscrizioni.intro && (
+              <p class="home__lead">{SECTIONS.iscrizioni.intro}</p>
+            )}
             <PricingTiers tiers={tiers} />
             <p>
               <a class="home__more" href="/iscrizioni/">
-                Come iscriversi e come pagare
+                {SECTIONS.iscrizioni.link}
                 <ArrowIcon />
               </a>
             </p>

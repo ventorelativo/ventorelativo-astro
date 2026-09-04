@@ -226,6 +226,14 @@ const sites = defineCollection({
  * page-specific optional; Keystatic will define the exact field set per
  * singleton anyway, and Zod is here to catch what it or a hand edit gets wrong.
  */
+/** One band on the home page: what it is called, what it says, where it goes. */
+const homeSection = z.object({
+  title: z.string(),
+  /** Empty on the news band, where the cards speak for themselves. */
+  intro: z.string().default(''),
+  link: z.string(),
+});
+
 const pages = defineCollection({
   loader: glob({ base: './src/content/pages', pattern: '**/*.mdx' }),
   schema: ({ image }) =>
@@ -247,6 +255,25 @@ const pages = defineCollection({
           /** Decorative by default: the page's meaning does not depend on it. */
           alt: z.string().default(''),
           credit: z.object({ text: z.string(), href: z.url() }).optional(),
+        })
+        .optional(),
+      /**
+       * The home page's bands: the words around each one, not its contents.
+       *
+       * Only `home` carries these, so the object is optional here and the page
+       * throws if it is missing: every other page in this collection would
+       * have to declare four sections it does not have.
+       *
+       * The destination of each link is not a field. It is the site's own
+       * section, /siti or /news or /voli or /iscrizioni, and a typo in an
+       * editable address would break the home page's navigation silently.
+       */
+      sections: z
+        .object({
+          siti: homeSection,
+          news: homeSection,
+          voli: homeSection,
+          iscrizioni: homeSection,
         })
         .optional(),
       /** /iscrizioni, the pricing cards (§2.4, §5). */

@@ -110,6 +110,25 @@ const contentComponents = {
   }),
 };
 
+/** One band of the home page, as an editor sees it. */
+const homeSection = (label: string) =>
+  fields.object(
+    {
+      title: fields.text({ label: 'Titolo', validation: { isRequired: true } }),
+      intro: fields.text({
+        label: 'Testo introduttivo',
+        description: 'Una o due frasi sotto il titolo. Si può lasciare vuoto.',
+        multiline: true,
+      }),
+      link: fields.text({
+        label: 'Testo del link in fondo',
+        description: 'Dove porta è fisso: la sezione corrispondente del sito.',
+        validation: { isRequired: true },
+      }),
+    },
+    { label },
+  );
+
 /** Reused by both content collections: an image with its alt text. */
 const imageWithAlt = (directory: string, publicPath: string) =>
   fields.object(
@@ -581,6 +600,22 @@ export default config({
             ),
           },
           { label: 'Sfondo' },
+        ),
+        /*
+          The words around each band of the home page. Not its contents: the
+          site list, the news cards, the searches and the quote cards all come
+          from the entries themselves, and the address each link points at is
+          the site's own section, so it stays in the code where a typo cannot
+          quietly break the home page.
+        */
+        sections: fields.object(
+          {
+            siti: homeSection('Dove voliamo'),
+            news: homeSection('Eventi e news'),
+            voli: homeSection('I nostri voli'),
+            iscrizioni: homeSection('Iscriversi'),
+          },
+          { label: 'Sezioni della home' },
         ),
         content: fields.mdx({
           label: 'Testo della home',
