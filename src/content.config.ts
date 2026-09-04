@@ -159,6 +159,20 @@ const sites = defineCollection({
        * page each. It is also the only outward link here with no coordinate to
        * derive it from, unlike the forecast and the directions.
        */
+      /**
+       * The sentence Google shows under the title.
+       *
+       * Separate from `summary` because the two want opposite things.
+       * `summary` is the card's spec line, "1969m, S-SE, Roure (TO)", which is
+       * exactly what a pilot scanning the list wants and exactly what a
+       * searcher learns nothing from. It was doing both jobs and doing the
+       * second badly: fourteen pages whose entire pitch to a search engine was
+       * three numbers.
+       *
+       * Optional, and falls back to `summary`, so nothing breaks while these
+       * are being written.
+       */
+      description: z.string().optional(),
       guideUrl: z.url().optional(), // z.string().url() is deprecated in Zod 4
       /**
        * From Drupal `sticky`. Sorts to the top of /siti.

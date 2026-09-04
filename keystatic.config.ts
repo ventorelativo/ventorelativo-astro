@@ -411,6 +411,12 @@ export default config({
             'Quota, esposizione e comune. Per esempio "1969m, S-SE, Roure (TO)". Compare nell’elenco dei siti e su Google.',
           validation: { isRequired: true },
         }),
+        description: fields.text({
+          label: 'Descrizione per Google',
+          description:
+            'Una o due frasi che dicano dove si trova e cosa ci si vola. Compare nei risultati di ricerca, dove la scheda breve qui sopra non dice niente a chi non conosce il posto. Nomina il comune e i paesi vicini: è così che ti trovano.',
+          multiline: true,
+        }),
         guideUrl: fields.url({
           label: 'Windgram',
           description:

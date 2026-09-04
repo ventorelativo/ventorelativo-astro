@@ -23,6 +23,8 @@ interface Props {
   type?: 'website' | 'article';
   /** ISO date, for articles. */
   publishedTime?: string;
+  /** What follows the pipe in the title. Defaults to the club's full name. */
+  suffix?: string;
 }
 
 const {
@@ -32,10 +34,20 @@ const {
   imageAlt,
   type = 'website',
   publishedTime,
+  suffix = `${SITE.name} ${SITE.slogan}`,
 } = Astro.props;
 
-// metatag.metatag_defaults.global.yml: '[current-page:title] | [site:name]'
-const pageTitle = title ? `${title} | ${SITE.name}` : SITE.name;
+/*
+  Drupal's template was '[current-page:title] | [site:name]', so every title
+  ended "| VentoRelativo" and the word people actually search for, the sport,
+  appeared on no page but the home one. The suffix carries the slogan now, so
+  "Bourcet" can be found by "bourcet parapendio" and not only by the club's
+  name.
+
+  A prop, because the homepage's own title says "Parapendio" already and would
+  otherwise say it twice.
+*/
+const pageTitle = title ? `${title} | ${suffix}` : suffix;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
 const ogImage = new URL(

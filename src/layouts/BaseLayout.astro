@@ -27,6 +27,8 @@ interface Props {
   imageAlt?: string;
   type?: 'website' | 'article';
   publishedTime?: string;
+  /** What follows the pipe in the title; only the homepage overrides it. */
+  titleSuffix?: string;
   /** Labels for intermediate breadcrumb segments, for the BreadcrumbList. */
   breadcrumbLabels?: Record<string, string>;
   /**
@@ -75,6 +77,7 @@ const {
   imageAlt,
   type,
   publishedTime,
+  titleSuffix,
   breadcrumbLabels,
   article,
   event,
@@ -98,6 +101,7 @@ const {
       imageAlt={imageAlt}
       type={type}
       publishedTime={publishedTime}
+      suffix={titleSuffix}
     />
 
     {/* Favicons copied verbatim from the vr theme (S6). */}

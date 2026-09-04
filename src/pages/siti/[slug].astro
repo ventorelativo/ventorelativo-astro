@@ -23,7 +23,7 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { title, summary, images, tags, guideUrl } = entry.data;
+const { title, summary, description, images, tags, guideUrl } = entry.data;
 
 /*
   Who to thank for the windgram.
@@ -55,7 +55,7 @@ const features = (await getEntries(entry.data.mapFeatures)).map(
 );
 
 // `summary` is deliberately not rendered here, as on news articles: it is the
-// card blurb and the meta description (D7), and on the page it only repeated
+// card blurb (D7), and on the page it only repeated
 // the Località / Altitudine / Esposizione the body opens with.
 const { Content } = await render(entry);
 
@@ -78,10 +78,10 @@ const takeoffs = features
 
 <EntryLayout
   title={title}
-  description={summary}
+  description={description ?? summary}
   breadcrumbLabels={{ '/siti': 'Siti di volo' }}
   ogRoute={`siti/${entry.id}`}
-  place={{ name: title, description: summary, takeoffs, tags }}
+  place={{ name: title, description: description ?? summary, takeoffs, tags }}
   titleTransition={`site-${entry.id}`}
 >
   {
