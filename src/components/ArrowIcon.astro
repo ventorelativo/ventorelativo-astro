@@ -1,0 +1,53 @@
+---
+/**
+ * The arrow on a "see all of them" link.
+ *
+ * Its own component because four sections use it and each would otherwise
+ * carry its own copy of the path. Stroked in `currentColor`, and it nudges on
+ * hover of the link around it, which is what says it goes somewhere.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg
+  class:list={['arrow', className]}
+  viewBox="0 0 20 20"
+  width="16"
+  height="16"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d="M4 10h12M11 5l5 5-5 5"></path>
+</svg>
+
+<style>
+  .arrow {
+    display: inline-block;
+    flex: none;
+    vertical-align: -0.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--transition);
+  }
+
+  :global(a:hover) > .arrow {
+    transform: translateX(2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arrow {
+      transition: none;
+    }
+
+    :global(a:hover) > .arrow {
+      transform: none;
+    }
+  }
+</style>

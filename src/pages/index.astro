@@ -19,8 +19,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
 import H2 from '../components/H2.astro';
-import SiteCard from '../components/SiteCard.astro';
 import ArticleCard from '../components/ArticleCard.astro';
+import XContestLinks from '../components/XContestLinks.astro';
+import PricingTiers from '../components/PricingTiers.astro';
+import ArrowIcon from '../components/ArrowIcon.astro';
 import { getCollection, getEntry, render } from 'astro:content';
 import ExternalIcon from '../components/ExternalIcon.astro';
 
@@ -48,9 +50,15 @@ const CTAS = home.data.ctas ?? [];
 */
 const { Content: Intro } = await render(home);
 
-const featured = (await getCollection('sites'))
-  .filter((entry) => entry.data.featured)
-  .sort((a, b) => a.data.title.localeCompare(b.data.title, 'it'));
+/* Every site, as a line of links: fourteen names is a paragraph, and it puts
+   fourteen internal links on the strongest page on the domain. Five bespoke
+   cards said less and looked like an arbitrary shortlist. */
+const sites = (await getCollection('sites')).sort((a, b) =>
+  a.data.title.localeCompare(b.data.title, 'it'),
+);
+
+const iscrizioni = await getEntry('pages', 'iscrizioni');
+const tiers = iscrizioni?.data.tiers ?? [];
 
 const latest = (await getCollection('news', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
@@ -132,63 +140,134 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
     }
   </section>
 
-  <div class="container home">
-    <div class="prose home__intro">
-      <Intro />
-    </div>
-
-    <section class="home__block">
-      <H2>Dove voliamo</H2>
-      <p class="home__lead">
-        I siti che usiamo più spesso. Gli altri, con mappe e coordinate, sono
-        nell'elenco completo.
-      </p>
-      <ul class="home__grid" role="list">
-        {
-          featured.map((entry) => (
-            <li>
-              <SiteCard entry={entry} />
-            </li>
-          ))
-        }
-      </ul>
-      <p><a class="button button--outline" href="/siti/">Tutti i siti di volo</a></p>
+  <div class="home">
+    <section class="home__band">
+      <div class="container">
+        <div class="home__intro"><Intro /></div>
+      </div>
     </section>
 
-    <section class="home__block">
-      <H2>Ultime dal club</H2>
-      <ul class="home__grid" role="list">
-        {
-          /* No `priority`: the LCP here is the hero, and these sit far below
-             the fold, so they stay lazy. */
-          latest.map((entry) => (
-            <li>
-              <ArticleCard entry={entry} />
-            </li>
-          ))
-        }
-      </ul>
-      <p><a class="button button--outline" href="/news/">Tutte le news</a></p>
+    <section class="home__band home__band--tint">
+      <div class="container">
+        <H2>Dove voliamo</H2>
+        <p class="home__lead">
+          Quattordici siti tra le valli, ognuno con i suoi decolli e atterraggi, le
+          coordinate, la mappa e i file da caricare nello strumento.
+        </p>
+        <p class="home__sites">
+          {
+            sites.map((site, i) => (
+              <>
+                {i > 0 && <span aria-hidden="true"> · </span>}
+                <a href={`/siti/${site.id}/`}>{site.data.title}</a>
+              </>
+            ))
+          }
+        </p>
+        <p>
+          <a class="home__more" href="/siti/">
+            Tutti i siti di volo, con le mappe
+            <ArrowIcon />
+          </a>
+        </p>
+      </div>
     </section>
+
+    <section class="home__band">
+      <div class="container">
+        <H2>Ultime dal club</H2>
+        <ul class="home__grid" role="list">
+          {
+            /* No `priority`: the LCP here is the hero, and these sit far below
+               the fold, so they stay lazy. */
+            latest.map((entry) => (
+              <li>
+                <ArticleCard entry={entry} />
+              </li>
+            ))
+          }
+        </ul>
+        <p>
+          <a class="home__more" href="/news/">
+            Tutte le news
+            <ArrowIcon />
+          </a>
+        </p>
+      </div>
+    </section>
+
+    <section class="home__band home__band--tint">
+      <div class="container">
+        <H2>I nostri voli</H2>
+        <p class="home__lead">
+          Le tracce dai nostri decolli finiscono su XContest. Queste due ricerche sono
+          già filtrate sulla zona.
+        </p>
+        <XContestLinks limit={2} />
+        <p>
+          <a class="home__more" href="/voli/">
+            Tutte le ricerche
+            <ArrowIcon />
+          </a>
+        </p>
+      </div>
+    </section>
+
+    {
+      tiers.length > 0 && (
+        <section class="home__band">
+          <div class="container">
+            <H2>Iscriversi</H2>
+            <p class="home__lead">
+              La quota tiene in piedi i decolli, gli atterraggi e questo sito.
+            </p>
+            <PricingTiers tiers={tiers} />
+            <p>
+              <a class="home__more" href="/iscrizioni/">
+                Come iscriversi e come pagare
+                <ArrowIcon />
+              </a>
+            </p>
+          </div>
+        </section>
+      )
+    }
   </div>
 </BaseLayout>
 
 <style>
-  .home {
+  /*
+    Full-bleed bands, alternating, rather than one column on a white page.
+
+    Every section is edge to edge and the `.container` inside it keeps the text
+    where the rest of the site keeps it. The tint is what separates one subject
+    from the next now that the page has five of them.
+  */
+  .home__band {
     padding-block: var(--space-xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
   }
 
+  .home__band--tint {
+    background-color: var(--color-bg-subtle);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .home__band > .container > :global(* + *) {
+    margin-block-start: var(--space-sm);
+  }
+
+  /*
+    No `.prose` here. The intro is the page's opening statement and the
+    measure that suits a long article left two thirds of a wide screen empty
+    beside it. It gets a wider ceiling of its own.
+  */
   .home__intro {
+    max-width: 52rem;
     font-size: var(--text-lg);
   }
 
-  .home__block {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
+  .home__intro :global(p + p) {
+    margin-block-start: var(--space-sm);
   }
 
   .home__lead {
@@ -196,7 +275,36 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
     color: var(--color-text-muted);
   }
 
-  /* The same grid the listings use, so a card is the same size everywhere. */
+  /* Fourteen names as one paragraph: a list of links a reader can scan and a
+     search engine can follow, without fourteen boxes. */
+  .home__sites {
+    max-width: 52rem;
+    line-height: 1.9;
+  }
+
+  .home__sites :global(a) {
+    text-decoration: none;
+  }
+
+  .home__sites :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .home__more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .home__more:hover {
+    text-decoration: underline;
+  }
+
+  /* The same grid the listings use, so a card is the same size everywhere.
+     `align-items: stretch` is the default and is the point: the cards in a row
+     match, instead of each ending where its own summary does. */
   .home__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
@@ -204,6 +312,14 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .home__grid > li {
+    display: flex;
+  }
+
+  .home__grid > li > :global(*) {
+    flex: 1;
   }
 
   .hero {

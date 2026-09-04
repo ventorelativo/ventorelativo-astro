@@ -36,6 +36,19 @@ interface Link {
   under each saying what it returns: the labels alone made you open all five to
   learn the difference between "giornata" and "sempre".
 */
+interface Props {
+  /**
+   * How many searches to show, from the top of the list.
+   *
+   * The homepage takes the first two, the ones anybody wants at a glance:
+   * what has just been flown and today's best. The rest are on /voli, which
+   * is where the section links.
+   */
+  limit?: number;
+}
+
+const { limit } = Astro.props;
+
 const LINKS: Link[] = [
   {
     icon: '⏱️',
@@ -75,7 +88,7 @@ const LINKS: Link[] = [
 
 <ul class="xc">
   {
-    LINKS.map(({ icon, label, hint, href, scope }) => (
+    LINKS.slice(0, limit).map(({ icon, label, hint, href, scope }) => (
       <li class="xc__item">
         <a
           class="xc__link card card--link"

@@ -193,7 +193,10 @@ npm run build && npm run preview
 npm run weight -- http://localhost:4399/siti/
 ```
 
-Current budget, at 390x844: `/` 94 kB (it grew by 3 kB of HTML when the home page stopped being a hero and nothing else); `/siti/` 97 kB; a photo-heavy site page
+Current budget, at 390x844: `/` 160 kB, of which the first screen is still
+only the hero: the home page is five sections now, and one news thumbnail sits
+inside Chrome's lazy-loading threshold and is fetched even though it is 1700px
+down. The other two are not.; `/siti/` 97 kB; a photo-heavy site page
 99 kB above the fold and ~350 kB scrolled, almost all of it photographs. Every
 page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
 the footer's contour texture: the biggest non-photograph item on the site, and
