@@ -119,7 +119,9 @@ const news = defineCollection({
              * `reference()` will not take, hence the preprocess.
              */
             site: z.preprocess(
-              (value) => value ?? undefined,
+              /* Keystatic's select has no empty state, so "no site" arrives as
+                 the empty string; a hand-written file just omits the key. */
+              (value) => (value === '' || value === null ? undefined : value),
               reference('sites').optional(),
             ),
           })

@@ -169,6 +169,55 @@ for (const tag of tagsDocumented) {
   }
 }
 
+/*
+  The generated site list against the sites themselves.
+
+  `src/lib/siteOptions.ts` feeds the "Sito di volo" picker, and is written by
+  scripts/build-site-options.mjs before every dev and build. It is committed,
+  because `astro check` runs before the build and an import of a file that does
+  not exist fails it. Committed means it can be committed stale, so it is
+  checked: run `node scripts/build-site-options.mjs` and the difference goes.
+*/
+const generated = new Map(
+  [
+    ...(await readFile('src/lib/siteOptions.ts', 'utf8')).matchAll(
+      /\{ label: "((?:[^"\\]|\\.)*)", value: "([^"]*)" \}/g,
+    ),
+  ].map((m) => [m[2], m[1].replaceAll('\\"', '"')]),
+);
+
+const real = new Map();
+for (const file of await readdir('src/content/sites')) {
+  if (!file.endsWith('.mdx')) continue;
+  const raw = (await readFile(join('src/content/sites', file), 'utf8')).match(
+    /^title:\s*(.+)$/m,
+  )[1];
+  const value = raw.trim();
+  /* YAML doubles an apostrophe inside single quotes: 'Pian dell''Alpe'. */
+  const title = /^'.*'$/.test(value)
+    ? value.slice(1, -1).replaceAll("''", "'")
+    : value.replace(/^"(.*)"$/, '$1');
+  real.set(file.replace(/\.mdx$/, ''), title);
+}
+
+for (const [slug, title] of real) {
+  if (generated.get(slug) !== title) {
+    report(
+      `src/lib/siteOptions.ts is out of date: "${title}" (${slug}) is ` +
+        `${generated.has(slug) ? `listed as "${generated.get(slug)}"` : 'missing'}.` +
+        `\n    Run: node scripts/build-site-options.mjs`,
+    );
+  }
+}
+for (const [slug] of generated) {
+  if (!real.has(slug)) {
+    report(
+      `src/lib/siteOptions.ts offers "${slug}", which is not a site.` +
+        `\n    Run: node scripts/build-site-options.mjs`,
+    );
+  }
+}
+
 if (problems.length) {
   console.error(`\n${problems.join('\n\n')}\n`);
   console.error(`${problems.length} problem(s) in the authoring contract.\n`);

@@ -27,6 +27,8 @@
 import { createElement } from 'react';
 
 import { config, collection, singleton, fields } from '@keystatic/core';
+
+import { SITE_OPTIONS } from './src/lib/siteOptions';
 import { block } from '@keystatic/core/content-components';
 
 /**
@@ -344,11 +346,30 @@ export default config({
                   'Un indirizzo, un comune, un parcheggio: qualcosa che Google Maps sappia trovare, perché finisce nel calendario di chi si iscrive. Es. "Bagnolo Piemonte (CN)".',
                 validation: { isRequired: true },
               }),
-              site: fields.relationship({
+              /*
+                A select, not `fields.relationship`, for one reason: the
+                relationship input renders `<Item>{item.slug}</Item>`, so the
+                picker would offer "pian-dellalpe" where a volunteer is looking
+                for "Pian dell'Alpe". A select takes a label and a value.
+
+                The list is generated from the sites themselves by
+                scripts/build-site-options.mjs, before every dev and build, so
+                renaming or adding a site is a content change and nothing else.
+                This file is bundled for the browser and cannot read the
+                content directory itself.
+              */
+              site: fields.select({
                 label: 'Sito di volo',
                 description:
-                  'Facoltativo. Se si vola in uno dei nostri siti, scegliilo qui: la news mostra il collegamento alla sua scheda, con decolli e atterraggi.',
-                collection: 'sites',
+                  'Se si vola in uno dei nostri siti, scegli quale: la news mostra il collegamento alla sua scheda, che dice dove sono i decolli.',
+                defaultValue: '',
+                options: [
+                  /* Empty, not absent: a select has no empty state, so "no
+                     site" needs a value of its own. Zod turns it back into
+                     undefined. */
+                  { label: '(nessuno)', value: '' },
+                  ...SITE_OPTIONS,
+                ],
               }),
             }),
           },
