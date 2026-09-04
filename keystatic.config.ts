@@ -188,15 +188,30 @@ const LOGO_BODY = logoQuadrato
   .slice(logoQuadrato.indexOf('>') + 1, logoQuadrato.lastIndexOf('</svg>'))
   .replace('<rect width="600" height="600" fill="white"/>', '');
 
+/*
+ * The mark, wrapped in a link to the site itself.
+ *
+ * Keystatic draws the brand as plain decoration, and a logo in the corner is
+ * the one thing everybody clicks. It goes to the front page rather than to
+ * the dashboard, which the sidebar's first item already reaches: what an
+ * editor wants from here is to see what they published.
+ */
 function BrandMark() {
-  return createElement('svg', {
-    viewBox: '0 168 600 189',
-    width: 63,
-    height: 20,
-    role: 'img',
-    'aria-label': 'VentoRelativo',
-    dangerouslySetInnerHTML: { __html: LOGO_BODY },
-  });
+  return createElement(
+    'a',
+    {
+      href: '/',
+      'aria-label': 'Vai al sito',
+      style: { display: 'inline-flex', color: 'inherit' },
+    },
+    createElement('svg', {
+      viewBox: '0 168 600 189',
+      width: 63,
+      height: 20,
+      'aria-hidden': true,
+      dangerouslySetInnerHTML: { __html: LOGO_BODY },
+    }),
+  );
 }
 
 export default config({
