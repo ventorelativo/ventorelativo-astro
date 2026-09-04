@@ -16,12 +16,19 @@ const { Content } = await render(page);
     <Content />
   </div>
 
-  <div class="links">
+  <div class="links prose">
     <XContestLinks layout="list" />
   </div>
 </PageLayout>
 
 <style>
+  /*
+    `.prose` for the measure: stacked full-container rows read as a wall of
+    identical bars, and these are five links, not a table. The component's own
+    grid outranks `.prose ul` (a class plus Astro's scope attribute beats a
+    class plus a type), and the external glyph `.prose` adds to outward links
+    skips these: each one already draws the real icon.
+  */
   .links {
     margin-block-start: var(--space-lg);
   }
