@@ -332,7 +332,9 @@ export default config({
           },
         }),
         date: fields.date({
-          label: 'Data',
+          label: 'Data di pubblicazione',
+          description:
+            'Il giorno in cui esce la notizia. Non è la data dell’evento: quella si scrive più in basso, in "È un evento".',
           validation: { isRequired: true },
           defaultValue: { kind: 'today' },
         }),
