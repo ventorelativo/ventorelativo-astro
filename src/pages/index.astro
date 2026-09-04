@@ -381,17 +381,18 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
       on the ridge line, which is the one part of the picture worth seeing.
       The credit sits over the clear end, and is the only thing there.
 
-      LIGHT: a pale wash, as the Drupal theme had it, but no longer bleaching
-      the mountains out: that was a side effect of the old direction, not the
-      intent.
+      LIGHT: barely there. The Drupal theme washed the picture out because its
+      photograph was a flat grey sky worth hiding; this one is the reason the
+      page has a photograph at all, and the header sits on pale blue where dark
+      type holds up on its own.
 
-      DARK: lighter again, so the snow and the ridge read properly behind
-      light text.
+      DARK: heavier than light, and heavier than it was: white type needs a
+      ground, and the sky here is bright enough to take it away.
 
       Both are expressed as one light-dark() pair per gradient stop, so there is
       still a single place to tune each.
     */
-    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.6), rgb(22 25 28 / 0.62));
+    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.16), rgb(22 25 28 / 0.67));
     --hero-scrim-bottom: light-dark(rgb(255 255 255 / 0.24), rgb(22 25 28 / 0.14));
 
     /*
