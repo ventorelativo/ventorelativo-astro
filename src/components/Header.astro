@@ -63,6 +63,55 @@ const { transparent = false } = Astro.props;
     box-shadow: var(--shadow-chrome-down);
   }
 
+  /*
+    Transparent over the hero, glass once you leave it.
+
+    The homepage used to be one screen, so a header that was transparent all
+    the way down was right. It scrolls now, and the nav sat on the article text
+    with nothing behind it.
+
+    A scroll-driven animation, so this costs no JavaScript: the timeline is the
+    document's own scroll, and the range is the height of the header itself, so
+    the glass has arrived by the time anything has slid under it. Firefox has
+    not shipped `animation-timeline` yet and simply keeps the transparent
+    header it has today, which is the state this page shipped with.
+
+    Not gated on `prefers-reduced-motion`: nothing moves. It is a cross-fade
+    tied to scroll position, and a reader who has asked for less movement
+    still needs the nav to be legible over the text.
+  */
+  @supports (animation-timeline: scroll()) {
+    .header--transparent {
+      /*
+        Longhands, not the `animation` shorthand: the minifier folds
+        `animation-timeline` into it as `animation: … scroll(root)`, which the
+        shorthand does not accept, so the whole declaration is dropped and
+        nothing animates. Checked in the built CSS, not assumed.
+      */
+      animation-name: header-glass;
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+      animation-timeline: scroll(root block);
+      animation-range: 0 var(--header-height);
+    }
+  }
+
+  @keyframes header-glass {
+    from {
+      border-bottom-color: transparent;
+      background-color: transparent;
+      backdrop-filter: blur(0px);
+      box-shadow: none;
+    }
+
+    to {
+      border-bottom-color: var(--color-header-border);
+      background-color: color-mix(in srgb, var(--color-header-bg) 80%, transparent);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-chrome-down);
+    }
+  }
+
   .header--transparent {
     border-bottom-color: transparent;
     background-color: transparent;
