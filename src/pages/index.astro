@@ -79,11 +79,20 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
   ogRoute="home"
 >
   <section class="hero">
+    {
+      /*
+        `quality` is below the default on purpose: this photograph costs more
+        than the fog it replaced, because rock and scrub compress far worse.
+        And the comment sits here rather than inside the tag, where Astro reads
+        each of its words as an attribute and prints them into the <img>.
+      */
+    }
     <Picture
       src={HERO.src}
       formats={['avif', 'webp']}
       widths={[800, 1200, 1600]}
       sizes="100vw"
+      quality={40}
       alt={HERO.alt}
       loading="eager"
       fetchpriority="high"
@@ -382,7 +391,7 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
       Both are expressed as one light-dark() pair per gradient stop, so there is
       still a single place to tune each.
     */
-    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.84), rgb(22 25 28 / 0.62));
+    --hero-scrim-top: light-dark(rgb(255 255 255 / 0.6), rgb(22 25 28 / 0.62));
     --hero-scrim-bottom: light-dark(rgb(255 255 255 / 0.24), rgb(22 25 28 / 0.14));
 
     /*
@@ -422,8 +431,17 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Matches the old theme's `right 20% bottom` background-position. */
-    object-position: 80% bottom;
+    /*
+      The Monviso, and the sky above it, are what this photograph is for.
+
+      A wide hero crops a 3:2 picture hard, top and bottom, and `bottom` (which
+      the old theme used, for a photograph whose subject was the ridge at its
+      foot) cropped the peak away entirely and left a slope. 27% down puts the
+      summit at about the middle of the band; on a phone, where the frame is
+      taller than the picture and the crop happens sideways instead, only the
+      50% matters.
+    */
+    object-position: 50% 27%;
   }
 
   /*
