@@ -16,6 +16,7 @@ import FeatureTable from '../../components/FeatureTable.astro';
 import XContestTakeoffs from '../../components/XContestTakeoffs.astro';
 import ExternalIcon from '../../components/ExternalIcon.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
+import { formatDate } from '../../utils/date';
 
 export async function getStaticPaths() {
   const sites = await getCollection('sites');
@@ -24,6 +25,28 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { title, summary, description, images, tags, guideUrl } = entry.data;
+
+/*
+  Events happening here, and only the ones still to come.
+
+  A static build has to answer "is it in the past" twice: once now, so the
+  page ships without events that are already over, and once in the browser,
+  because the build is not rebuilt the morning after an event. Same trick the
+  event panel uses for its "Evento concluso" state: render the answer, stamp
+  the deadline in `data-ends`, and let three lines of script correct it.
+
+  `endsAt` is the day after the last day, so an event is still "upcoming"
+  while it is happening.
+*/
+const upcoming = (await getCollection('news', ({ data }) => !data.draft))
+  .flatMap((post) => {
+    const event = post.data.event;
+    if (event?.site?.id !== entry.id) return [];
+    const endsAt = new Date(event.end ?? event.start);
+    endsAt.setUTCDate(endsAt.getUTCDate() + 1);
+    return endsAt.getTime() > Date.now() ? [{ post, start: event.start, endsAt }] : [];
+  })
+  .sort((a, b) => a.start.getTime() - b.start.getTime());
 
 /*
   Who to thank for the windgram.
@@ -98,6 +121,27 @@ const takeoffs = features
   <FeatureIcons slot="media" />
   <SiteMap features={features} title={title} slot="media" />
 
+  {
+    /*
+      Above the body, because it is the one thing on this page with a deadline:
+      somebody who lands here in the week of an event should not have to scroll
+      past the aerology to find out it is happening.
+    */
+    upcoming.length > 0 && (
+      <ul class="upcoming" role="list">
+        {upcoming.map(({ post, start, endsAt }) => (
+          <li data-upcoming data-ends={endsAt.toISOString()}>
+            <a class="upcoming__link" href={`/news/${post.id}/`}>
+              <span class="upcoming__label">Prossimo evento qui</span>
+              <span class="upcoming__title">{post.data.title}</span>
+              <span class="upcoming__when">{formatDate(start)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
   <Content components={MDX_COMPONENTS} />
 
   {
@@ -147,7 +191,59 @@ const takeoffs = features
   {images.length > 0 && <Gallery images={images} title="Immagini" slot="sections" />}
 </EntryLayout>
 
+<script>
+  /*
+    The build decided what was upcoming on the day it ran. A page served three
+    weeks later is stale by exactly that much, so each card carries the day
+    after its last day and checks it here. Same shape as the event panel's
+    "Evento concluso" switch.
+  */
+  for (const card of document.querySelectorAll<HTMLElement>('[data-upcoming]')) {
+    const ends = Date.parse(card.dataset.ends ?? '');
+    if (ends && Date.now() >= ends) card.hidden = true;
+  }
+</script>
+
 <style>
+  .upcoming {
+    margin: 0 0 var(--space-md);
+    padding: 0;
+    list-style: none;
+  }
+
+  .upcoming__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--color-accent-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-subtle);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .upcoming__link:hover {
+    border-color: var(--color-accent);
+  }
+
+  .upcoming__label {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .upcoming__title {
+    color: var(--color-accent);
+    font-weight: 500;
+    text-decoration: underline;
+  }
+
+  .upcoming__when {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
   /*
     A card row, not a button: it is a pointer to somebody else's page rather
     than an action on this one, and the source deserves saying out loud:
