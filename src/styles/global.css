@@ -385,6 +385,38 @@ hr {
  * an <a> instead would make a screen reader announce the date, the badge and
  * the summary as part of the link text, and would nest links illegally.
  */
+/*
+ * The stretched link is the card, so it is styled here and not in the six
+ * components that draw one.
+ *
+ * `text-decoration: none` belongs at this level because the components tried
+ * it and it silently did nothing: `.card__title a` in SiteCard compiles to
+ * `.card__title[data-astro-cid-X] a[data-astro-cid-X]`, and the `<h2>` comes
+ * from the H2 component, so it carries a different id and the selector never
+ * matched. Every card title has been underlined since.
+ */
+.card__stretch {
+  color: inherit;
+  text-decoration: none;
+}
+
+/*
+ * The ring goes round the card, not the words.
+ *
+ * The anchor is a few words inside a box it covers entirely, so the browser's
+ * own ring outlined the title and left the thing being activated undrawn. A
+ * keyboard user could not see what they were about to open.
+ */
+.card:has(> * > .card__stretch:focus-visible),
+.card:has(> .card__stretch:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.card__stretch:focus-visible {
+  outline: none;
+}
+
 .card__stretch::after {
   content: '';
   position: absolute;
