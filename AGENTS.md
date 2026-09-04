@@ -193,7 +193,7 @@ npm run build && npm run preview
 npm run weight -- http://localhost:4399/siti/
 ```
 
-Current budget, at 390x844: `/` 165 kB, of which the first screen is still
+Current budget, at 390x844: `/` 100 to 130 kB, depending on how many news thumbnails Chrome decides are near enough to fetch, of which the first screen is still
 only the hero: the home page is five sections now, and one news thumbnail sits
 inside Chrome's lazy-loading threshold and is fetched even though it is 1700px
 down. The other two are not.; `/siti/` 97 kB; a photo-heavy site page

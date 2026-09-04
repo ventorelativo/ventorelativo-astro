@@ -343,7 +343,7 @@ These must be lifted out of prose into structured fields:
 
 | Current raw HTML                                                                | Becomes                                                                                                                                              |
 | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Homepage 3 CTA buttons                                                          | `ctas: array(object({label, href, style: select(primary\|outline)}))`                                                                                |
+| Homepage 3 CTA buttons (removed later: the hero is the logo alone)              | `ctas: array(object({label, href, style: select(primary\|outline)}))`                                                                                |
 | Iscrizioni pricing cards (€10 Sostenitore, €30 Socio, benefit lists, pay links) | `tiers: array(object({name, price, benefits: array(text), payUrl, highlight: checkbox}))`, this is also exactly the shape the Stripe work needs (§5) |
 | Phone / WhatsApp button rows (×3 near-identical blocks)                         | `contacts: array(object({kind: select(phone\|whatsapp\|email), label, href}))`                                                                       |
 | Social media block                                                              | `social: array(object({network, url}))`                                                                                                              |
@@ -391,7 +391,8 @@ What stays dropped is the shared vocabulary, the relationship and the archive ro
 1. **Drop the shared `tags` collection and the `/tags/*` archive routes entirely.** Five
    thin URLs, no inbound links (D9), nothing lost.
 2. **Keep categories on news only**, as a plain `select` on the `news` collection:
-   `Eventi | Competizioni | Hike&Fly`. No relationship, no separate collection, no archive
+   `Evento | Competizione | Hike&Fly | Assemblea` (singular since 2026-09-04, and
+   Assemblea added then). No relationship, no separate collection, no archive
    page. Rendered as a badge on the card and the article header, which is what they're
    actually for: scanning a news list.
 3. **Drop "Adatto ai principianti" for now.** It's genuinely useful information, but it's
@@ -1065,7 +1066,8 @@ Three details worth keeping, all read off `NavdataController.php` rather than in
   load-bearing today: `it` was taken as the one that stays right if a name changes.
 
 **The rest landed 2026-09-02/03, and Phase 4 is done.** The maps (M-series) as a facade:
-poster and feature table at build, MapLibre on interaction, with 3D terrain, the KK7
+an empty frame and the feature table at build (the poster it shipped with is gone, see
+§4b), MapLibre on interaction, with 3D terrain, the KK7
 thermal layers, the Tracestrack topo base, the overview map on `/siti`, XContest links per
 takeoff (X4), and `geo:export`/`geo:import` for round-tripping features through GeoJSON.
 `/api/sites/all/geo.json` was dropped along the way: it existed to feed the old MapTiler

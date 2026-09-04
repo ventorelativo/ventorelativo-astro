@@ -23,6 +23,12 @@ else about it is the same.)
 Locally, `npm run dev` then <http://localhost:4321/keystatic> gives the same
 editor writing to the files in your working copy, with no login.
 
+**The home page is in there too.** "Pagina: Home" holds the photograph behind
+the logo with its credit, and the five bands below it: for each one a title, an
+optional line of introduction, and the words on the link at its foot. What the
+bands _contain_ comes from the entries themselves, the sites, the news, the
+searches, the membership cards, and where each link goes is fixed.
+
 **A save publishes, unless you make a branch first.** Keystatic commits to
 whichever branch the picker at the top left is showing, and that is `main` by
 default: press Save there and the site rebuilds and goes live, with no preview

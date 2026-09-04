@@ -14,10 +14,16 @@ Measured on the production build (`npm run build && npm run preview`), at
 
 | Page             | Total  | JavaScript | CSS    |
 | ---------------- | ------ | ---------- | ------ |
-| `/`              | 108 kB | 1.5 kB     | 4.8 kB |
-| `/siti/`         | 97 kB  | 8.1 kB     | 6.5 kB |
-| `/news/`         | 213 kB | 1.5 kB     | 4.8 kB |
-| `/siti/roletto/` | 350 kB | 9.0 kB     | 9.3 kB |
+| `/`              | 269 kB | 1.5 kB     | 5.0 kB |
+| `/siti/`         | 96 kB  | 8.5 kB     | 6.3 kB |
+| `/news/`         | 221 kB | 1.5 kB     | 5.0 kB |
+| `/siti/roletto/` | 350 kB | 9.5 kB     | 9.2 kB |
+
+The home page nearly trebled when it stopped being one column and became six
+bands: it now carries three news thumbnails and a photograph chosen to be
+looked at. On a phone the same page is 100 to 130 kB, because the thumbnails
+below the fold are lazy and how many of them Chrome decides to fetch varies
+run to run.
 
 Almost all of the weight is photographs. The JavaScript column counts external
 files: the pages with a map carry its facade, everything else carries only
@@ -161,8 +167,10 @@ the translation widget. Both ship as a **facade**: the part a visitor sees is
 static HTML that costs a few hundred bytes, and the real thing is fetched only
 once they show they want it.
 
-- **The map** (`SiteMap.astro`) paints an SVG of the markers, and loads MapLibre
-  (240 kB) on click.
+- **The map** (`SiteMap.astro`) paints an empty frame in the basemap's own
+  ground colour, and loads MapLibre (240 kB) on click. It drew an SVG of the
+  markers until 2026-09-04: MapLibre starts long before its first tile lands,
+  so all the drawing did was flash its colours and vanish.
 - **The language switcher** (`LanguageSwitcher.astro`) is a flag and a menu of
   five, and loads Google's `translate_a/element.js` on hover or click, never
   on page load. A visitor who has translated before carries a `googtrans` cookie, and
