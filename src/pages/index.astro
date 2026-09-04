@@ -18,7 +18,10 @@ import { Picture } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
-import { getEntry } from 'astro:content';
+import H2 from '../components/H2.astro';
+import SiteCard from '../components/SiteCard.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { getCollection, getEntry, render } from 'astro:content';
 import ExternalIcon from '../components/ExternalIcon.astro';
 
 /*
@@ -33,6 +36,25 @@ const home = await getEntry('pages', 'home');
 if (!home?.data.hero) throw new Error('src/content/pages/home.mdx needs a hero image');
 const HERO = home.data.hero;
 const CTAS = home.data.ctas ?? [];
+
+/*
+  The homepage was the hero and nothing else: 60 words, no headings, no links
+  to the pages it exists to send people to. It is the strongest page on the
+  domain and it was ranking on the club's name alone.
+
+  The prose comes from the `home` entry's own body, a field that already
+  existed in Keystatic and was labelled "not used today". So the club can edit
+  the front page's words without touching code, which is the point of the CMS.
+*/
+const { Content: Intro } = await render(home);
+
+const featured = (await getCollection('sites'))
+  .filter((entry) => entry.data.featured)
+  .sort((a, b) => a.data.title.localeCompare(b.data.title, 'it'));
+
+const latest = (await getCollection('news', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
 ---
 
 {
@@ -109,18 +131,95 @@ const CTAS = home.data.ctas ?? [];
       )
     }
   </section>
+
+  <div class="container home">
+    <div class="prose home__intro">
+      <Intro />
+    </div>
+
+    <section class="home__block">
+      <H2>Dove voliamo</H2>
+      <p class="home__lead">
+        I siti che usiamo più spesso. Gli altri, con mappe e coordinate, sono
+        nell'elenco completo.
+      </p>
+      <ul class="home__grid" role="list">
+        {
+          featured.map((entry) => (
+            <li>
+              <SiteCard entry={entry} />
+            </li>
+          ))
+        }
+      </ul>
+      <p><a class="button button--outline" href="/siti/">Tutti i siti di volo</a></p>
+    </section>
+
+    <section class="home__block">
+      <H2>Ultime dal club</H2>
+      <ul class="home__grid" role="list">
+        {
+          /* No `priority`: the LCP here is the hero, and these sit far below
+             the fold, so they stay lazy. */
+          latest.map((entry) => (
+            <li>
+              <ArticleCard entry={entry} />
+            </li>
+          ))
+        }
+      </ul>
+      <p><a class="button button--outline" href="/news/">Tutte le news</a></p>
+    </section>
+  </div>
 </BaseLayout>
 
 <style>
+  .home {
+    padding-block: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .home__intro {
+    font-size: var(--text-lg);
+  }
+
+  .home__block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .home__lead {
+    max-width: var(--prose-width);
+    color: var(--color-text-muted);
+  }
+
+  /* The same grid the listings use, so a card is the same size everywhere. */
+  .home__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
   .hero {
     position: relative;
     /*
-      Fills whatever the footer leaves: body is a 100svh flex column, so this
-      is the viewport minus the footer rather than the whole viewport. A
-      `min-height: 100svh` here would push the footer below the fold on every
-      screen size, which is exactly what it used to do.
+      Fills whatever is left of the first screen: body is a 100svh flex column,
+      so `flex: 1` took the viewport minus the footer back when the hero was
+      the only thing on the page. It is not any more, and with a sibling below
+      it there is no free space to claim, so it collapsed to its content.
+
+      Hence the floor. Not 100svh: a little of the text below should show, both
+      because it says what the club is and because it is the only thing telling
+      a phone there is more to scroll.
     */
     flex: 1;
+    min-block-size: 60svh;
     display: grid;
     place-items: center;
     overflow: hidden;

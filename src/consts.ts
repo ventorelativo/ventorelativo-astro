@@ -20,9 +20,15 @@ export const SITE = {
   lang: 'it',
   /** system.site.yml: mail */
   email: 'segreteria@ventorelativo.it',
-  /** metatag.metatag_defaults.global.yml: description */
+  /**
+   * The fallback description, for a page that passes none.
+   *
+   * Drupal's was 294 characters of "esplora la passione per il parapendio",
+   * which Google cut at 160 and which said nothing in the part it kept. This
+   * one fits, and leads with what somebody is searching for.
+   */
   description:
-    'Esplora la passione per il parapendio con Ventorelativo: il tuo punto di riferimento per il parapendio club situato tra Pinerolo, Val Chisone e Val Pellice. Trova informazioni essenziali per i soci, rimani aggiornato sugli eventi del club e scopri dettagli sui migliori siti di volo della zona.',
+    'Parapendio club tra Pinerolo, la Val Chisone e la Val Pellice: quattordici siti di volo con decolli, atterraggi, mappe e file per lo strumento.',
 } as const;
 
 /**

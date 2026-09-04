@@ -573,7 +573,11 @@ export default config({
           }),
           { label: 'Pulsanti', itemLabel: (props) => props.fields.label.value },
         ),
-        content: fields.mdx({ label: 'Testo (non usato oggi)' }),
+        content: fields.mdx({
+          label: 'Testo della home',
+          description:
+            'I paragrafi sotto la foto grande. Dì che club siamo, dove voliamo e nomina i paesi: è così che ci trova chi cerca "parapendio" e il nome di un posto.',
+        }),
       },
     }),
 
