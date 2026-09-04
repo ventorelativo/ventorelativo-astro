@@ -42,15 +42,38 @@ interface Props {
 
 const { images, title } = Astro.props;
 
-/** Astro never upscales, so cap the request at the source's own width. */
-const LIGHTBOX_WIDTH = 1600;
+/*
+  Two candidates, because the lightbox is nearly the whole window.
+
+  One 1600px file was short of what a 2x screen wants: the viewer showed it at
+  1075 CSS px, which asks for 2150 device pixels, and Lighthouse called it a
+  low-resolution image. A `srcset` lets the browser choose instead, so a phone
+  at 1x still fetches the small one and only a retina screen pays for the
+  large.
+
+  Astro never upscales, so each candidate is capped at the source's own width
+  and duplicates collapse: three of the gallery's photographs are 1599px
+  originals, which is all they will ever be.
+*/
+const LIGHTBOX_WIDTHS = [1200, 2400];
 
 const full = await Promise.all(
   images.map(async (img) => {
-    const width = Math.min(LIGHTBOX_WIDTH, img.src.width);
-    const generated = await getImage({ src: img.src, width, format: 'webp' });
+    const widths = [...new Set(LIGHTBOX_WIDTHS.map((w) => Math.min(w, img.src.width)))];
+    const sources = await Promise.all(
+      widths.map((width) =>
+        /*
+          Explicit quality, as the thumbnails have. Left to the default these
+          came out at 844 kB for a single 1920px photograph, which is a lot to
+          spend on one picture even when a visitor asked for it.
+        */
+        getImage({ src: img.src, width, format: 'webp', quality: 72 }),
+      ),
+    );
+    const width = widths[widths.length - 1];
     return {
-      src: generated.src,
+      src: sources[sources.length - 1].src,
+      srcset: sources.map((source, i) => `${source.src} ${widths[i]}w`).join(', '),
       width,
       height: Math.round(width * (img.src.height / img.src.width)),
     };
@@ -78,7 +101,7 @@ const full = await Promise.all(
           <a
             href={full[i].src}
             aria-label={`Ingrandisci: ${img.alt}`}
-            data-img={full[i].src}
+            data-img={full[i].srcset}
             data-alt={img.alt}
             data-width={full[i].width}
             data-height={full[i].height}
