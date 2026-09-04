@@ -32,6 +32,8 @@
  */
 import { Image } from 'astro:assets';
 
+import { getCollection } from 'astro:content';
+
 import PageLayout from '../../layouts/PageLayout.astro';
 import H2 from '../../components/H2.astro';
 import { linkPrompt, prompt } from '../../lib/authoring';
@@ -39,8 +41,13 @@ import pasteButton from '../../assets/redazione/paste-entry.png';
 
 const site = Astro.site ?? new URL('https://www.ventorelativo.it');
 
+const sites = (await getCollection('sites')).map((entry) => ({
+  id: entry.id,
+  title: entry.data.title,
+}));
+
 const short = linkPrompt(site);
-const full = prompt(site);
+const full = prompt(site, sites);
 const keystatic = new URL('/keystatic', site).href;
 /* Straight to the empty form, which saves a volunteer two steps. The branch
    segment is not optional: in GitHub mode `/keystatic/collection/news/create`

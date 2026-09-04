@@ -14,12 +14,18 @@
  * followed. This is the index; `istruzioni.txt` is the instruction.
  */
 import type { APIRoute } from 'astro';
+import { getCollection } from 'astro:content';
+
 import { contentModel } from '../../lib/authoring';
 
-export const GET: APIRoute = ({ site }) => {
+export const GET: APIRoute = async ({ site }) => {
   const origin = site ?? new URL('https://www.ventorelativo.it');
+  const sites = (await getCollection('sites')).map((entry) => ({
+    id: entry.id,
+    title: entry.data.title,
+  }));
 
-  return new Response(`${JSON.stringify(contentModel(origin), null, 2)}\n`, {
+  return new Response(`${JSON.stringify(contentModel(origin, sites), null, 2)}\n`, {
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
   });
 };

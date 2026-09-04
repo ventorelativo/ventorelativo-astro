@@ -56,7 +56,36 @@ for (const name of [...ALWAYS, 'news', 'siti', 'pagine', 'chiusura']) {
   }
 }
 
-function fill(text: string, site: URL): string {
+/**
+ * The flight sites, as the document's own table.
+ *
+ * Generated from the collection and injected at `{{siti}}`, because the model
+ * needs two things it cannot guess: the slug that goes in an event's `site`
+ * field, and the address to link when a post mentions a site. A hand-typed
+ * list would be a fifth description of the same data and would rot the first
+ * time a site is added.
+ */
+function siteTable(sites: SiteRef[]): string {
+  const rows = [...sites].sort((a, b) => a.title.localeCompare(b.title, 'it'));
+  return [
+    '| Sito | Da scrivere in `site` | Indirizzo della pagina |',
+    '| ---- | --------------------- | ---------------------- |',
+    ...rows.map((s) => `| ${s.title} | \`${s.id}\` | \`/siti/${s.id}/\` |`),
+  ].join('\n');
+}
+
+/** A flight site, as much of it as the instructions need. */
+export interface SiteRef {
+  id: string;
+  title: string;
+}
+
+function fill(text: string, site: URL, sites: SiteRef[]): string {
+  const filled = text.replaceAll('{{siti}}', siteTable(sites));
+  return fillUrls(filled, site);
+}
+
+function fillUrls(text: string, site: URL): string {
   return (
     text
       .replaceAll('{{keystatic}}', new URL('/keystatic', site).href)
@@ -83,6 +112,7 @@ function fill(text: string, site: URL): string {
  */
 export function instructions(
   site: URL,
+  sites: SiteRef[],
   kinds: Kind[] = ['news', 'siti', 'pagine'],
 ): string {
   return fill(
@@ -93,6 +123,7 @@ export function instructions(
       blocks.get('chiusura'),
     ].join('\n\n'),
     site,
+    sites,
   );
 }
 
@@ -107,7 +138,7 @@ export function instructions(
  * No date here on purpose: the copy script prepends today's, so it is the day
  * the volunteer copied and not the day the site was built.
  */
-export function prompt(site: URL): string {
+export function prompt(site: URL, sites: SiteRef[]): string {
   return [
     /* One line per paragraph, not wrapped at 80 columns like the document
        below it: this part is read inside a narrow box on a phone, where a hard
@@ -120,7 +151,7 @@ export function prompt(site: URL): string {
     '',
     '----- ISTRUZIONI DEL CLUB -----',
     '',
-    instructions(site),
+    instructions(site, sites),
     '',
     '----- FINE DELLE ISTRUZIONI -----',
     '',
@@ -244,8 +275,13 @@ function tables(block: string): Table[] {
   return found;
 }
 
-export function contentModel(site: URL) {
+export function contentModel(site: URL, sites: SiteRef[]) {
   return {
+    siti: sites.map((s) => ({
+      nome: s.title,
+      site: s.id,
+      pagina: new URL(`/siti/${s.id}/`, site).href,
+    })),
     sito: site.origin,
     gestoreContenuti: new URL('/keystatic', site).href,
     istruzioni: new URL('/redazione/istruzioni.txt', site).href,

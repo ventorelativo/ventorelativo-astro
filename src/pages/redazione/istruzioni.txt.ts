@@ -12,12 +12,18 @@
  * a model, which reads Markdown perfectly well and does not want a stylesheet.
  */
 import type { APIRoute } from 'astro';
+import { getCollection } from 'astro:content';
+
 import { instructions } from '../../lib/authoring';
 
-export const GET: APIRoute = ({ site }) => {
+export const GET: APIRoute = async ({ site }) => {
   const origin = site ?? new URL('https://www.ventorelativo.it');
+  const sites = (await getCollection('sites')).map((entry) => ({
+    id: entry.id,
+    title: entry.data.title,
+  }));
 
-  return new Response(instructions(origin), {
+  return new Response(instructions(origin, sites), {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });
 };
