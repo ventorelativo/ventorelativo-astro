@@ -83,6 +83,10 @@ reversible one.
 `*.netlify.app` address, which is the rollback: move the domain back and the old
 site is live again in the time it takes DNS to notice.
 
+**Done on 2026-09-05.** The old project is now named `ventorelativo-drupal` and
+answers at <https://ventorelativo-drupal.netlify.app>, which is the address to
+check the rollback with: `ventorelativo.netlify.app` is not it and returns 404.
+
 ## After
 
 Check, in this order, because each one catches a different failure:
