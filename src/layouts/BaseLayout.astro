@@ -7,6 +7,15 @@
  * so pages aren't shipping without a title or description in the meantime.
  */
 import '@fontsource-variable/outfit';
+/*
+  The URL of the one subset this site actually paints, so it can be preloaded.
+  Fontsource splits Outfit by `unicode-range`; Italian never leaves the latin
+  block, and the latin-ext face stays unloaded (checked in the browser: one
+  woff2, 32 kB). Without a preload the font is discovered only after the
+  stylesheet that declares it has been fetched and parsed, which on a slow
+  connection is a quarter of a second of text in the fallback face.
+*/
+import outfitLatin from '@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2?url';
 import '../styles/global.css';
 
 import Header from '../components/Header.astro';
@@ -91,6 +100,9 @@ const {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Before the stylesheet that names it: see the import. */}
+    <link rel="preload" as="font" type="font/woff2" href={outfitLatin} crossorigin />
 
     {noindex && <meta name="robots" content="noindex, follow" />}
 
