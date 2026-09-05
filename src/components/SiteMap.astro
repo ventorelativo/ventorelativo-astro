@@ -15,6 +15,8 @@
  * Hover and focus start the fetch even earlier, so by the time the click lands
  * the download is usually already running.
  */
+import { Image } from 'astro:assets';
+
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { MAPTILER_KEY } from '../lib/mapConfig';
 /*
@@ -66,9 +68,17 @@ interface Feature {
 
 interface Props {
   features: Feature[];
+  /**
+   * The map as it looks once it has finished arriving, rendered at build time
+   * by `scripts/map-posters.mjs` and captured from this very component.
+   *
+   * A page without one falls back to the flat ground below, which is what the
+   * basemap paints before its first tile: correct, and dull.
+   */
+  poster?: ImageMetadata;
 }
 
-const { features } = Astro.props;
+const { features, poster } = Astro.props;
 
 /*
   The geometry, as GeoJSON, in a script tag rather than a data attribute: it is
@@ -160,8 +170,29 @@ const typeNames = Object.fromEntries(
     `--icon-fullscreen-close: url(${fullscreenCloseIcon})`,
   ].join('; ')}
 >
-  {/* Nothing to look at on purpose: see the comment on `.map__ground`. */}
-  <div class="map__ground"></div>
+  {
+    poster ? (
+      /*
+        The still, standing in for the map until someone asks for the map.
+
+        Captured at the width the container reaches on a laptop and shown as a
+        centred crop, which is what the live map does when the window narrows:
+        same centre, less of the sides.
+      */
+      <Image
+        class="map__poster"
+        src={poster}
+        alt=""
+        widths={[400, 700, 1040, 2076]}
+        sizes="(width < 68rem) 100vw, 65rem"
+        quality={68}
+        loading="lazy"
+      />
+    ) : (
+      /* No poster for this map: the ground the basemap paints, and nothing. */
+      <div class="map__ground" />
+    )
+  }
 
   {
     interactive && (
@@ -311,8 +342,26 @@ const typeNames = Object.fromEntries(
     border-radius: inherit;
   }
 
-  .map--open .map__ground {
+  .map--open .map__ground,
+  .map--open :global(.map__poster) {
     display: none;
+  }
+
+  /*
+    The same box as the ground and the canvas, so opening the map moves
+    nothing. `cover` and a centred position because the capture is one width:
+    a narrower viewport sees the middle of it, exactly as the live map shows
+    the middle when the window shrinks.
+  */
+  .map :global(.map__poster) {
+    display: block;
+    width: 100%;
+    height: var(--map-height);
+    object-fit: cover;
+    object-position: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-map-ground);
   }
 
   .map--open .map__open {
@@ -553,7 +602,12 @@ const typeNames = Object.fromEntries(
     button.addEventListener('focus', warm, { once: true });
 
     let started = false;
-    scheduleAutoLoad(root, button);
+    /*
+      No auto-load any more: the facade is a picture of this very map, so
+      opening it unasked would buy a visitor nothing and cost them 6.5 MB of
+      terrain tiles and eight seconds of blocked main thread. The tap is the
+      whole difference between the still and the real thing.
+    */
     button.addEventListener('click', () => {
       if (started) return;
       started = true;
@@ -568,57 +622,6 @@ const typeNames = Object.fromEntries(
 
       void open(root, canvas, button, label);
     });
-  }
-
-  /**
-   * Open the map without being asked, but late, and only when it is worth it.
-   *
-   * Four gates, and every one of them exists to keep a 240 kB download off
-   * somebody's critical path:
-   *
-   *  - **After `load`.** Nothing competes with the page's own resources.
-   *  - **Only when visible.** A map further down the page is not downloaded
-   *    until it is scrolled to, so a visitor who reads the text and leaves
-   *    never fetches it.
-   *  - **When the browser is idle**, so it never delays an interaction.
-   *  - **Not on a metered or slow connection.** Save-Data and
-   *    `prefers-reduced-data` are explicit requests not to do this, and 2G is
-   *    a mountain valley: the audience this site is actually built for. Those
-   *    visitors keep the empty frame and the button, which is the honest
-   *    trade: they
-   *    can still have the map, but they choose to spend the bytes.
-   */
-  function scheduleAutoLoad(root: HTMLElement, button: HTMLButtonElement) {
-    const connection = (
-      navigator as Navigator & {
-        connection?: { saveData?: boolean; effectiveType?: string };
-      }
-    ).connection;
-    if (connection?.saveData) return;
-    if (/(^|-)2g$/.test(connection?.effectiveType ?? '')) return;
-    if (matchMedia('(prefers-reduced-data: reduce)').matches) return;
-    if (!('IntersectionObserver' in window)) return;
-
-    const whenIdle = (run: () => void) => {
-      const idle = () =>
-        'requestIdleCallback' in window
-          ? requestIdleCallback(run, { timeout: 4000 })
-          : setTimeout(run, 1500);
-      if (document.readyState === 'complete') idle();
-      else window.addEventListener('load', idle, { once: true });
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        observer.disconnect();
-        // Through the button, so the automatic path and the manual one are the
-        // same code: including the busy state and every failure route.
-        whenIdle(() => button.click());
-      },
-      { rootMargin: '200px' },
-    );
-    observer.observe(root);
   }
 
   /**
@@ -1118,20 +1121,24 @@ const typeNames = Object.fromEntries(
 
           /*
             "Everything that was going to move has moved."
-
+            
             The terrain has risen, the camera has been re-framed, and the last
-            correction found nothing left to correct. MapLibre has no event for
-            that: `idle` fires between the passes, several times over.
-
-            `once('idle')` is the wrong way to wait for it, and cost an
-            afternoon: this is called from inside an idle handler, so with
-            every tile already in there is no next idle and the flag never
-            lands. `loaded()` answers the question directly.
+            correction found nothing left to correct. There is no MapLibre
+            event for that: `idle` fires between the passes, several times.
+            `scripts/map-posters.mjs` waits for this before it captures the
+            still that every visitor now sees in place of the live map, and it
+            is the honest signal for a test as well.
           */
           const ready = () => {
             const mark = () => {
               root.dataset.mapReady = '';
             };
+            /*
+              `once('idle')` only fires on the *next* idle, and this is called
+              from inside an idle handler: with every tile already in, there is
+              no next one and the flag never lands. Cost an afternoon of
+              headless captures that timed out while the map sat there finished.
+            */
             if (map.loaded()) mark();
             else map.once('idle', mark);
           };

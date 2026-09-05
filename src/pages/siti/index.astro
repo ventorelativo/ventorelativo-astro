@@ -59,6 +59,17 @@ const overview = (
 )
   .flat()
   .filter((feature) => !seen.has(feature.id) && seen.add(feature.id));
+
+/*
+  The map stills, by slug. Built by `npm run map:posters` and committed: see
+  the script for why they exist and how they are kept in step.
+*/
+const POSTERS = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/map-posters/*.webp',
+  { eager: true },
+);
+const posterFor = (slug: string) =>
+  POSTERS[`../../assets/map-posters/${slug}.webp`]?.default;
 ---
 
 <PageLayout ogRoute="siti" title={page.data.title} description={page.data.description}>
@@ -67,7 +78,7 @@ const overview = (
   </div>
 
   <FeatureIcons />
-  <SiteMap features={overview} />
+  <SiteMap features={overview} poster={posterFor('overview')} />
 
   <div class="site-grid">
     {sites.map((entry) => <SiteCard entry={entry} />)}
