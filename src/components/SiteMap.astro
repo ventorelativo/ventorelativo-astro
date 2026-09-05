@@ -198,7 +198,13 @@ const typeNames = Object.fromEntries(
     interactive && (
       <>
         <button class="map__open" type="button" data-map-open>
-          <span data-map-label>Apri la mappa</span>
+          <span class="map__chip">
+            {/* The move cursor: what the still cannot do and the map can. */}
+            <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+              <path d="M10 2.5v15M2.5 10h15M10 2.5 8 5m2-2.5L12 5M10 17.5 8 15m2 2.5L12 15M2.5 10 5 8m-2.5 2L5 12m12.5-2L15 8m2.5 2L15 12" />
+            </svg>
+            <span data-map-label>Apri la mappa</span>
+          </span>
         </button>
         <div class="map__canvas" data-map-canvas hidden />
         {/* Data, not modules, is:inline keeps Astro from trying to bundle them. */}
@@ -285,72 +291,77 @@ const typeNames = Object.fromEntries(
     reads as the control. It is a real <button>, so it is focusable, announced,
     and works from the keyboard without anything being added for it.
   */
+  /*
+    The whole still is the button.
+
+    It used to be a chip in the corner, on a frame that was a flat colour and
+    invited nothing. Now the frame is a picture of the map, so the thing a
+    visitor points at *is* the map: anything smaller than the picture is a
+    smaller target than the affordance. The label stays, as a chip inside it,
+    because a picture of a map does not say that tapping makes it live.
+  */
   .map__open {
     position: absolute;
-    inset-block-end: var(--space-md);
-    inset-inline-end: var(--space-xs);
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg-raised);
-    color: var(--color-text-strong);
+    inset: 0;
+    display: flex;
+    /*
+      Top right, not bottom right.
+
+      The frame is 600px tall and on a phone it starts around 600px down the
+      page: at the bottom of it the chip sat below the fold on load, on the one
+      device where the tap matters most. The top of the still is the only part
+      of it a visitor is guaranteed to see.
+
+      It is also where MapLibre puts its own controls, which is the point: the
+      chip is gone by the time they arrive, and the corner keeps meaning "the
+      controls are here".
+    */
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: var(--space-2xs);
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: none;
     font: inherit;
-    font-size: var(--text-sm);
-    font-weight: 500;
     cursor: pointer;
   }
 
-  .map__open:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-  }
-
-  .map__open:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-
-  .map__open[disabled] {
-    cursor: progress;
-    opacity: 0.7;
-  }
-
   /*
-    The canvas replaces the frame in the same box, so nothing on the page moves
-    when the map arrives: the layout shift a facade would otherwise cause is
-    the reason to size it here rather than let MapLibre size itself.
+    A chip, drawn as a button rather than as a caption: over a photograph of a
+    map, text on its own reads as a label naming the picture.
+
+    The icon is inside the chip and the words are a span of their own, because
+    the script rewrites that span's text for "Caricamento…" and for a failure:
+    an icon in the same element would be rewritten away with it.
   */
-  .map__canvas {
-    height: var(--map-height);
-    /* Ignored while the height is fixed; takes over when it goes `auto`. */
-    aspect-ratio: 16 / 9;
-    width: 100%;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
+  .map__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-bg-raised);
+    color: var(--color-text-strong);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .map__chip svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /*
-    Firefox does not clip the WebGL canvas to the rounded corner above:
-    `overflow: hidden` on the box is enough in Chrome and Safari, and there
-    the map sat square in its rounded frame. The radius goes on the canvas
-    itself, and on the container MapLibre puts around it, so the clip is the
-    element's own rather than an ancestor's.
-  */
-  .map :global(.maplibregl-canvas-container),
-  .map :global(.maplibregl-canvas) {
-    border-radius: inherit;
-  }
+    The still fills the same box the canvas will, so the swap moves nothing.
 
-  .map--open .map__ground {
-    display: none;
-  }
-
-  /*
-    The same box as the ground and the canvas, so opening the map moves
-    nothing. `cover` and a centred position because the capture is one width:
-    a narrower viewport sees the middle of it, exactly as the live map shows
-    the middle when the window shrinks.
+    `cover` and a centred position because the capture is one width: a narrower
+    viewport sees the middle of it, exactly as the live map shows the middle
+    when the window shrinks.
   */
   .map :global(.map__poster) {
     display: block;
