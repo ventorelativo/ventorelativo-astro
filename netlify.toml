@@ -81,10 +81,15 @@
 #
 # Content-Type is set explicitly because `.cup` is not an extension any server
 # recognises, so it would otherwise be served as a binary blob. Drupal sent
-# these as text/plain, and that is what the instruments and the browsers that
-# preview them have always seen.
+# these as text/plain, and that is what the instruments have always seen.
+#
+# text/plain is also why they need Content-Disposition: a browser renders it
+# inline, so the link opened a page of coordinates instead of saving a file.
+# The links carry `download` as well, which covers the click; this covers the
+# URL pasted, bookmarked or shared. An instrument fetching the file ignores it.
 [[headers]]
   for = "/api/navdata/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
     Content-Type = "text/plain; charset=UTF-8"
+    Content-Disposition = "attachment"
