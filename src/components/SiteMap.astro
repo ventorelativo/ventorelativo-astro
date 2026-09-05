@@ -342,8 +342,7 @@ const typeNames = Object.fromEntries(
     border-radius: inherit;
   }
 
-  .map--open .map__ground,
-  .map--open :global(.map__poster) {
+  .map--open .map__ground {
     display: none;
   }
 
@@ -362,6 +361,16 @@ const typeNames = Object.fromEntries(
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background-color: var(--color-map-ground);
+  }
+
+  /*
+    After the rule above, not before it: both are one class plus this file's
+    scope attribute, so they carry the same specificity and source order
+    decides. Written the other way round the still stayed on the page and the
+    live map opened underneath it, twelve hundred pixels of map.
+  */
+  .map--open :global(.map__poster) {
+    display: none;
   }
 
   .map--open .map__open {
