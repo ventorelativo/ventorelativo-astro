@@ -111,10 +111,16 @@ const full = await Promise.all(
               2x screen. quality 70 is indistinguishable at this size and cuts
               the grid's weight by more than half: the full-resolution frame
               is one click away in the lightbox.
+
+              `width` as well as `widths`, or the fallback `src` is the
+              photograph at its own size: a 1920px, 706 kB file sitting in the
+              `src` of a thumbnail whose srcset offers 14 kB and 69 kB. Nothing
+              modern fetches it, but nothing should have to.
             */}
             <Image
               src={img.src}
               alt=""
+              width={640}
               widths={[320, 640]}
               sizes="(width < 48rem) 100vw, 20rem"
               quality={70}
