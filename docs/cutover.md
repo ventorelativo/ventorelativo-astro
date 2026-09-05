@@ -109,7 +109,9 @@ curl -sI https://ventorelativo.it/contact | head -1     # expect 301 → /contat
 
 Then:
 
-- **Google Search Console**, submit `https://ventorelativo.it/sitemap-index.xml`.
+- **Google Search Console**, submit `https://ventorelativo.it/sitemap.xml`.
+  That is the file this site writes, and the one `robots.txt` points at; there
+  is no `sitemap-index.xml`, which is @astrojs/sitemap's name and 404s here.
   Until now the site has been asking not to be crawled at all.
 - **Archive the Drupal repository read-only.** Do not delete it: it is the
   evidence the navdata and URL gates compare against, and both fail without it.
