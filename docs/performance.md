@@ -70,7 +70,7 @@ request anyway, which is exactly what the map's dynamic `import()` is.
 ### What opening a map costs, and why it is not smaller
 
 MapLibre is **239 kB brotli** across three files, fetched only when somebody
-presses "Apri la mappa". The number quoted before this was 970 kB, which was
+presses the map still. The number quoted before this was 970 kB, which was
 the uncompressed main chunk, not a figure any visitor ever pays.
 
 It was 326 kB until the shared module stopped being downloaded twice; see the
