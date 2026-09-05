@@ -53,7 +53,8 @@ The gates `verify` runs, each of which can be run alone: `navdata:check` (the
 flight-computer files still match the archive), `urls:check` (every URL the old site
 served still resolves), `sitemap:check`, `privacy:check` (nothing third-party loads
 before a visitor asks), `headings:check`, `authoring:check` (the writing kit still
-describes the real schemas), and `lint`, which includes the em-dash rule.
+describes the real schemas), `posters:check` (every map still matches the map
+data behind it), and `lint`, which includes the em-dash rule.
 
 ## Layout
 

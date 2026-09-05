@@ -89,6 +89,8 @@ npm run sitemap:check  # every built page is in the sitemap, or excluded on purp
 npm run privacy:check  # no page loads a third party before a visitor asks
 npm run headings:check # every h2 has an id, unique per page, so it can be linked to
 npm run authoring:check # src/authoring/istruzioni.md still matches the schemas
+npm run map:posters    # re-render the map stills (needs Chrome, a GPU and a key)
+npm run posters:check  # every still still matches the map data behind it
 npm run shot      # screenshot + measure a page in a real emulated viewport
 npm run weight    # transferred bytes by resource type (run against the build)
 ```
@@ -201,8 +203,10 @@ down. The other two are not.; `/siti/` 97 kB; a photo-heavy site page
 page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
 the footer's contour texture: the biggest non-photograph item on the site, and
 the first thing to attack if the budget has to come down. `/siti/` and the site
-pages add the map's facade, not MapLibre, which is 239 kB brotli across three
-files and arrives only when a map is opened. Translation is a facade too: nothing from Google loads until a
+pages add the map's still (89 kB on a phone), not MapLibre, which is 239 kB
+brotli across three files and arrives only when a map is opened. The map no
+longer opens itself: it did, and it cost 6.5 MB of terrain tiles and 8.6 s of
+blocked main thread on a mid-range phone. Translation is a facade too: nothing from Google loads until a
 visitor asks for it. Details and the reasoning behind each rule:
 [`docs/performance.md`](docs/performance.md).
 
@@ -330,6 +334,16 @@ visitor asks for it. Details and the reasoning behind each rule:
   in bundled code nobody here wrote. It is in the eslint ignores now; if a gate
   suddenly reports errors in files you have never opened, check what generated
   them before believing them.
+- **`map.once('idle')` does not fire when the map is already idle.** Which is
+  exactly the case inside an idle handler with every tile in: the callback is
+  never called and whatever waits on it waits forever. `map.loaded()` answers
+  the question directly. This is what `data-map-ready` records, and it cost an
+  afternoon of headless captures timing out against a map that had finished.
+- **`Page.captureScreenshot` ignores `clip` when `fromSurface` is false**, and
+  hands back the viewport instead: header, padding and all. The surface path
+  honours it, but only settles once nothing is animating, which is why the
+  capture waits for `data-map-ready` first. `clip` is in page coordinates, not
+  viewport ones.
 - **Two `getStaticPaths` entries can claim the same path.** Astro keeps one,
   warns, and carries on; the card the `/og/` route built for the homepage was
   wrong for weeks because the entry that won was not the one that looked
