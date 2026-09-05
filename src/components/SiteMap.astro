@@ -1116,6 +1116,26 @@ const typeNames = Object.fromEntries(
           */
           const points = coordinatesOf(data);
 
+          /*
+            "Everything that was going to move has moved."
+
+            The terrain has risen, the camera has been re-framed, and the last
+            correction found nothing left to correct. MapLibre has no event for
+            that: `idle` fires between the passes, several times over.
+
+            `once('idle')` is the wrong way to wait for it, and cost an
+            afternoon: this is called from inside an idle handler, so with
+            every tile already in there is no next idle and the flag never
+            lands. `loaded()` answers the question directly.
+          */
+          const ready = () => {
+            const mark = () => {
+              root.dataset.mapReady = '';
+            };
+            if (map.loaded()) mark();
+            else map.once('idle', mark);
+          };
+
           if (points.length > 0) {
             /*
               Room left around the outermost marker, so nothing sits on the
@@ -1172,7 +1192,7 @@ const typeNames = Object.fromEntries(
               no such surprise in it.
             */
             const reframe = () => {
-              if (steps >= MAX_STEPS) return;
+              if (steps >= MAX_STEPS) return ready();
               const box = map.getContainer();
               const { ratio, centre } = overflow();
               const drift = {
@@ -1199,10 +1219,14 @@ const typeNames = Object.fromEntries(
                 steps += 1;
                 map.panBy([drift.x, drift.y], { duration });
                 map.once('idle', reframe);
+                return;
               }
+              ready();
             };
 
             map.once('idle', reframe);
+          } else {
+            ready();
           }
         }
 
