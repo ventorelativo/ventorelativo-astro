@@ -51,7 +51,14 @@
      darker here for contrast; headings get the stronger tone. */
   --color-text: light-dark(#43505f, #d4dae1);
   --color-text-strong: light-dark(#1d2836, #f2f5f8);
-  --color-text-muted: light-dark(#6b7686, #98a3b0);
+  /*
+    Four steps darker than it was, because the light value was measured against
+    white alone: 4.60 there, but 4.30 on `--color-bg-subtle`, the tint the home
+    page's bands and several cards use, and muted text is where a standfirst
+    lives. 4.62 on the tint now, 4.95 on white. The dark value passes on both
+    (6.40 and 6.89) and is untouched.
+  */
+  --color-text-muted: light-dark(#667181, #98a3b0);
 
   /* --------------------------------------------------------------- lines */
   /*
