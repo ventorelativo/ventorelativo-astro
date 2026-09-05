@@ -35,13 +35,6 @@ interface Props {
     end?: Date;
     location: string;
   };
-  /**
-   * A `view-transition-name` for the h1, so the title of the card that was
-   * clicked flies into place instead of cross-fading with the rest of the
-   * page. Unique per document, identical across the two documents, see
-   * global.css.
-   */
-  titleTransition?: string;
   /** Present on a flight site: the SportsActivityLocation node's fields. */
   place?: {
     name: string;
@@ -63,7 +56,6 @@ const {
   article,
   event,
   place,
-  titleTransition,
 } = Astro.props;
 ---
 
@@ -84,9 +76,7 @@ const {
 
     <header class="entry__head">
       <slot name="meta" />
-      <h1 style={titleTransition && `view-transition-name: ${titleTransition}`}>
-        {title}
-      </h1>
+      <h1>{title}</h1>
     </header>
 
     <slot name="media" />
