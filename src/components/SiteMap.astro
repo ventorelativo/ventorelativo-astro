@@ -216,6 +216,12 @@ const typeNames = Object.fromEntries(
             type="image/webp"
           />
         )}
+        {/*
+          Eager, and high priority: this is the largest thing on the page and
+          it sits in the first screen, so it is the LCP element on every page
+          that has a map. Shipped lazy, it was discovered only after layout,
+          and Lighthouse said so: LCP 2.9 s on a site page.
+        */}
         <img
           class="map__poster"
           src={wide.src}
@@ -224,7 +230,8 @@ const typeNames = Object.fromEntries(
           alt=""
           width={2076}
           height={1196}
-          loading="lazy"
+          loading="eager"
+          fetchpriority="high"
           decoding="async"
         />
       </picture>
