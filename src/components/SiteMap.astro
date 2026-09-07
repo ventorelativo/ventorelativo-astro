@@ -259,6 +259,15 @@ const typeNames = Object.fromEntries(
   */
   .map {
     --map-height: 600px;
+    /*
+      A floor under the block, not only under its children.
+
+      Whatever is inside it keeps the frame the same height: the still, the
+      canvas, or neither, when a script never arrives or a rule goes missing.
+      Both have happened. It costs nothing, and it is the difference between a
+      map that failed and a page that collapsed.
+    */
+    min-height: var(--map-height);
   }
 
   /*
