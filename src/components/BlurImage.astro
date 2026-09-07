@@ -1,0 +1,174 @@
+---
+/**
+ * An image that shows a blurred version of itself while it downloads.
+ *
+ * Three things happen here that `<Image>` does not do on its own:
+ *
+ *  - **AVIF where AVIF is smaller**, as a real `<picture>` with a WebP
+ *    fallback. Whether it is smaller is measured, not assumed: see
+ *    `avifWins`. `<Image>` emits one format; `<Picture>` emits several but
+ *    cannot take a per-call crop, which the news cards need, and neither of
+ *    them will drop a format that turned out to cost more than it saved.
+ *  - **A placeholder inlined into the HTML**, twenty pixels of the same image,
+ *    blurred, painted by the wrapper (see `src/lib/images.ts`).
+ *  - **A fade from one to the other**, in CSS, driven by one attribute that a
+ *    listener in BaseLayout sets when the image says it has loaded. Every
+ *    image but one: the LCP image paints straight over its placeholder,
+ *    because an element at `opacity: 0` has not been painted as far as the
+ *    metric is concerned, and fading it in cost 292 ms of LCP when measured.
+ *
+ * The wrapper is what makes the fade possible: the placeholder has to be
+ * behind the image, and an `<img>` cannot sit behind itself. It is a plain
+ * block that hugs the image, so every rule a page already had on the `<img>`
+ * keeps working, `object-fit` included.
+ *
+ * Dimensions are always written out, so the box is reserved from the first
+ * paint and nothing moves when the image arrives. That is not a nicety here:
+ * the site's CLS is 0 and this is what keeps it there.
+ */
+import { getImage } from 'astro:assets';
+
+import { avifWins, lqip } from '../lib/images';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** Candidate widths for the srcset. */
+  widths: number[];
+  sizes: string;
+  quality?: number;
+  /**
+   * The one image counted for Largest Contentful Paint, if this page has one.
+   *
+   * It loads eagerly at high priority, so the preload scanner finds it while
+   * the HTML is still being parsed. Everything else stays lazy and is fetched
+   * as it comes near the viewport.
+   */
+  priority?: boolean;
+  /** A crop, for the callers that want one shape from any photograph. */
+  width?: number;
+  height?: number;
+  fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
+  position?: string;
+  class?: string;
+  style?: string;
+  /**
+   * Where the placeholder is anchored, for a caller whose `object-position` is
+   * not the centre: the blur has to sit under the same crop or the two slide
+   * against each other while one fades into the other.
+   */
+  blurPosition?: string;
+  /** Passed through: the view transitions name a couple of these. */
+  [key: string]: unknown;
+}
+
+const {
+  src,
+  alt,
+  widths,
+  sizes,
+  quality = 70,
+  priority = false,
+  width,
+  height,
+  fit,
+  position,
+  class: className,
+  style,
+  blurPosition,
+  ...rest
+} = Astro.props;
+
+const crop = width && height ? { width, height, fit, position } : {};
+
+/*
+  Two calls, one per format, and the same crop in both: `getImage` is what
+  `<Image>` uses underneath, so these go through the build-time pipeline like
+  everything else, hashed and cached.
+*/
+const [useAvif, webp, placeholder] = await Promise.all([
+  avifWins(src, quality),
+  getImage({ src, widths, quality, format: 'webp', ...crop }),
+  lqip(src, { width, height, position }),
+]);
+const avif = useAvif
+  ? await getImage({ src, widths, quality, format: 'avif', ...crop })
+  : undefined;
+
+/*
+  The intrinsic box. From the crop where there is one, and from the file where
+  there is not: either way the attributes are present and the aspect ratio is
+  known before a byte of image arrives.
+*/
+const box = {
+  width: width ?? src.width,
+  height: height ?? src.height,
+};
+---
+
+<picture
+  class:list={['blur', placeholder && 'blur--pending']}
+  style={[
+    /*
+      A custom property, not `background-image` itself: an inline style beats
+      every rule in a stylesheet, so setting the image here left the rule that
+      drops it once the picture has loaded with nothing to say.
+    */
+    placeholder && `--lqip:url(${placeholder})`,
+    blurPosition && `background-position:${blurPosition}`,
+  ]
+    .filter(Boolean)
+    .join(';')}
+>
+  {
+    /*
+    One source, not two: the AVIF for browsers that take it, and the `<img>`
+    below carries the WebP for everyone else. A second `<source type=webp>`
+    would repeat that srcset in the HTML for nothing, which on a page with six
+    images is most of a kilobyte.
+  */
+  }
+  {avif && <source type="image/avif" srcset={avif.srcSet.attribute} sizes={sizes} />}
+  <img
+    src={webp.src}
+    srcset={webp.srcSet.attribute}
+    sizes={sizes}
+    alt={alt}
+    width={box.width}
+    height={box.height}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    decoding={priority ? 'sync' : 'async'}
+    data-blur={placeholder ? '' : undefined}
+    data-priority={priority ? '' : undefined}
+    class:list={[className]}
+    style={style}
+    {...rest}
+  />
+</picture>
+
+<style>
+  /*
+    A block that hugs the image and paints the placeholder behind it.
+
+    `cover` and a centred position, to match the `object-fit: cover` every
+    caller uses: the blur has to sit under the same crop as the photograph, or
+    the two do not line up while one fades into the other.
+  */
+  .blur {
+    display: block;
+    background-image: var(--lqip);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  /*
+    The frame stops holding a blur once the image is on top of it. Left in
+    place it shows through every transparent pixel of a PNG, and stays in
+    memory for a picture nobody will see again.
+  */
+  .blur:has(img[data-loaded]) {
+    background-image: none;
+  }
+</style>

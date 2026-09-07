@@ -281,6 +281,39 @@ hr {
   gap: var(--space-3xs);
 }
 
+/*
+ * The blur-up: an image fades in over the placeholder painted behind it.
+ *
+ * Gated on `data-js`, which the head script sets, so a browser without
+ * scripting shows the images and never the empty box: the rule that hides one
+ * only exists where something can un-hide it.
+ *
+ * The placeholder itself is inlined by `BlurImage.astro`, and the box is
+ * reserved by the width and height attributes, so nothing moves at any point.
+ */
+img[data-blur] {
+  transition: opacity var(--blur-fade, 300ms) ease;
+}
+
+/*
+  Every image but the one the metric watches.
+
+  An element at `opacity: 0` counts as unpainted, so fading in the Largest
+  Contentful Paint image delays the moment it is credited with arriving:
+  measured on a site page, 2312 ms became 2604 ms. That image paints straight
+  over its placeholder instead, which is the swap rather than the crossfade,
+  and nobody can tell the difference on the image that arrives first anyway.
+*/
+html[data-js] img[data-blur]:not([data-loaded]):not([data-priority]) {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  img[data-blur] {
+    transition: none;
+  }
+}
+
 /* --------------------------------------------------------------- buttons */
 
 /*

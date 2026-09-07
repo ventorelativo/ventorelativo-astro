@@ -165,6 +165,38 @@ const {
       } catch {
         /* Blocked storage: fall through to the OS preference. */
       }
+
+      /*
+        Says that the blur-up can be driven at all.
+
+        Every rule that hides an image until it has loaded is written against
+        this attribute, so without scripting the images simply appear, which is
+        the behaviour to fall back to. It is set here, in the head, because a
+        page that painted first and hid its images afterwards would flash.
+      */
+      document.documentElement.setAttribute('data-js', '');
+
+      /*
+        `load` does not bubble, so this listens in the capture phase: one
+        listener for every image on the page, whenever it arrives, rather than
+        one per element. An image already complete by the time this runs, from
+        the cache or from being parsed first, is swept up on DOMContentLoaded.
+      */
+      document.addEventListener(
+        'load',
+        (event) => {
+          const img = event.target;
+          if (img instanceof HTMLImageElement && img.hasAttribute('data-blur')) {
+            img.setAttribute('data-loaded', '');
+          }
+        },
+        true,
+      );
+      document.addEventListener('DOMContentLoaded', () => {
+        for (const img of document.querySelectorAll('img[data-blur]')) {
+          if (img.complete) img.setAttribute('data-loaded', '');
+        }
+      });
     </script>
   </head>
 

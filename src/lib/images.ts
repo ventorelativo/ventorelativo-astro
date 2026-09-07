@@ -1,0 +1,141 @@
+/**
+ * The two build-time image questions this site asks that Astro does not.
+ *
+ * Twenty pixels wide, blurred, WebP, inlined as a data URI: about 300 to 600
+ * bytes, which is small enough to sit in the HTML and be painted with the
+ * first frame. Nothing here runs in a browser.
+ *
+ * Sharp rather than Astro's own pipeline, because the pipeline returns URLs
+ * and this needs bytes: `getImage()` hands back a path to a file that does not
+ * exist until the build writes it, long after the page has been rendered.
+ * Sharp is already a dependency, for the social cards.
+ */
+import { join } from 'node:path';
+
+import type { ImageMetadata } from 'astro';
+import sharp from 'sharp';
+
+/**
+ * Where each imported image came from.
+ *
+ * `ImageMetadata` carries the *output* URL and no trace of the file behind it,
+ * so the map is built the other way round: glob every asset, keep what each
+ * one's `src` turns out to be, and look the path up by that. The glob is eager
+ * and server-side only. It costs nothing in the output: Astro already emits
+ * the original of every image imported this way.
+ */
+const ASSETS = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true },
+);
+
+const PATH_BY_SRC = new Map<string, string>();
+for (const [path, module] of Object.entries(ASSETS)) {
+  PATH_BY_SRC.set(module.default.src, join(process.cwd(), path));
+}
+
+/** The crop the full-size image will be given, so the blur matches it. */
+export interface Crop {
+  width?: number;
+  height?: number;
+  position?: string;
+}
+
+/*
+  One placeholder per image and crop, not one per render: a news card is drawn
+  three times on the home page and again on /news/, and the site has fifteen
+  maps. Sharp is fast at this size, but not free, and a build should not pay
+  for the same twenty pixels twice.
+*/
+const cache = new Map<string, Promise<string | undefined>>();
+
+/** Twenty pixels of blurred image, as a `data:` URI, or nothing. */
+export function lqip(
+  image: ImageMetadata,
+  crop: Crop = {},
+): Promise<string | undefined> {
+  const key = `${image.src}|${crop.width ?? ''}x${crop.height ?? ''}|${crop.position ?? ''}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const made = make(image, crop);
+  cache.set(key, made);
+  return made;
+}
+
+async function make(image: ImageMetadata, crop: Crop): Promise<string | undefined> {
+  const file = PATH_BY_SRC.get(image.src);
+  /*
+    An image from somewhere the glob does not reach: no placeholder, and no
+    build failure either. The page still gets the picture, it just arrives
+    without a blur under it.
+  */
+  if (!file) return undefined;
+
+  const ratio =
+    crop.width && crop.height ? crop.width / crop.height : image.width / image.height;
+  const width = 20;
+  const height = Math.max(1, Math.round(width / ratio));
+
+  try {
+    const buffer = await sharp(file)
+      .resize(width, height, { fit: 'cover', position: crop.position ?? 'centre' })
+      /*
+        Blurred here rather than with a CSS filter on the element: a filter
+        costs a paint on every scroll and this costs one build. The radius is
+        in pixels of a twenty-pixel image, so it is far heavier than it looks.
+      */
+      .blur(1.5)
+      .webp({ quality: 45, effort: 4 })
+      .toBuffer();
+    return `data:image/webp;base64,${buffer.toString('base64')}`;
+  } catch {
+    /* A format sharp cannot read is not worth failing a build over. */
+    return undefined;
+  }
+}
+
+/*
+  Whether AVIF is worth serving for a given picture.
+
+  Not a foregone conclusion, which is the point. Across this site AVIF is 47%
+  smaller than WebP on photographs: the gallery pictures come out 77% smaller.
+  On the map stills it is 40% *larger* at every width, because those are flat
+  renders of a map, full of lines and labels, and their source is already a
+  lossy WebP: AVIF spends bits preserving another encoder's artefacts. The two
+  news flyers behave the same way for the same reason.
+
+  So the answer is measured rather than assumed: encode a small copy both ways
+  and compare. Small, because the ratio holds and a full-size AVIF encode is
+  seconds, not milliseconds. Cached per image and quality, so a build pays once
+  for a card drawn on four pages.
+*/
+const SAMPLE_WIDTH = 320;
+const verdicts = new Map<string, Promise<boolean>>();
+
+/** True when AVIF is the smaller format for this image, measured. */
+export function avifWins(image: ImageMetadata, quality: number): Promise<boolean> {
+  const key = `${image.src}|${quality}`;
+  const hit = verdicts.get(key);
+  if (hit) return hit;
+  const asked = weigh(image, quality);
+  verdicts.set(key, asked);
+  return asked;
+}
+
+async function weigh(image: ImageMetadata, quality: number): Promise<boolean> {
+  const file = PATH_BY_SRC.get(image.src);
+  /* Unknown source: WebP, which is what the site shipped before AVIF existed. */
+  if (!file) return false;
+  try {
+    const sample = sharp(file).resize(SAMPLE_WIDTH, undefined, {
+      withoutEnlargement: true,
+    });
+    const [avif, webp] = await Promise.all([
+      sample.clone().avif({ quality }).toBuffer(),
+      sample.clone().webp({ quality }).toBuffer(),
+    ]);
+    return avif.length < webp.length;
+  } catch {
+    return false;
+  }
+}
