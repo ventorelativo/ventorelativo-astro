@@ -7,6 +7,22 @@ that day. Many of them are on a phone, on mountain data.
 
 This is a constraint on what gets built, not a pass at the end.
 
+## The map is a picture until it is a map
+
+Each map is rendered once at build time by `npm run map:posters` and shipped as
+an image: `scripts/map-posters.mjs` drives Chrome against `dist/`, opens the map
+the way a tap does, waits for `data-map-ready` and captures the canvas.
+
+Two framings per map, not one. The frame is 600px tall at every width, so a
+phone gets a tall narrow box and a laptop a wide one, and MapLibre fits its
+bounds to the viewport it is given: a single capture shown on both meant a
+phone saw the middle 342px of a 1040px map, with most of the club's sites off
+the sides. A `<picture>` switches at 48rem. On a phone that is 98 kB.
+
+What it replaced: the map opened itself once the page was idle and in view,
+which cost 6.5 MB of terrain tiles and 8.6 s of blocked main thread on a
+mid-range phone, for everyone, whether or not they wanted a map.
+
 ## Where it stands
 
 Measured on the production build (`npm run build && npm run preview`), at

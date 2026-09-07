@@ -1,7 +1,4 @@
 {
-  "montoso": {
-    "hash": "3319a673847e85d3"
-  },
   "overview": {
     "hash": "40fad7831fcc4298"
   },
@@ -22,6 +19,9 @@
   },
   "monte-freidur": {
     "hash": "e292088d3dda3795"
+  },
+  "montoso": {
+    "hash": "3319a673847e85d3"
   },
   "pian-dellalpe": {
     "hash": "3d340aaf9ba4111c"

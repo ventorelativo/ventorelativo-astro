@@ -15,7 +15,7 @@
  * Hover and focus start the fetch even earlier, so by the time the click lands
  * the download is usually already running.
  */
-import { Image } from 'astro:assets';
+import { getImage } from 'astro:assets';
 
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { MAPTILER_KEY } from '../lib/mapConfig';
@@ -72,13 +72,41 @@ interface Props {
    * The map as it looks once it has finished arriving, rendered at build time
    * by `scripts/map-posters.mjs` and captured from this very component.
    *
-   * A page without one falls back to the flat ground below, which is what the
-   * basemap paints before its first tile: correct, and dull.
+   * Two of them: one framed for a laptop and one for a phone, because
+   * MapLibre fits its bounds to the viewport it is given and the wide framing
+   * showed a phone the middle 342px of a 1040px map. A page without either
+   * falls back to the flat ground below, which is what the basemap paints
+   * before its first tile: correct, and dull.
    */
-  poster?: ImageMetadata;
+  poster?: { wide: ImageMetadata; narrow?: ImageMetadata };
 }
 
 const { features, poster } = Astro.props;
+
+/*
+  A hand-written `<picture>`, because this is art direction and not a
+  resolution switch: the two files are different framings of the same map, so
+  `<Image>`, which varies one source by width, cannot express it.
+
+  `getImage` is what `<Image>` uses underneath, so both still go through the
+  build-time pipeline: hashed, re-encoded, and cached like every other asset.
+*/
+const wide =
+  poster &&
+  (await getImage({
+    src: poster.wide,
+    widths: [400, 700, 1040, 2076],
+    format: 'webp',
+    quality: 68,
+  }));
+const narrow =
+  poster?.narrow &&
+  (await getImage({
+    src: poster.narrow,
+    widths: [390, 780, 1170],
+    format: 'webp',
+    quality: 68,
+  }));
 
 /*
   The geometry, as GeoJSON, in a script tag rather than a data attribute: it is
@@ -171,23 +199,35 @@ const typeNames = Object.fromEntries(
   ].join('; ')}
 >
   {
-    poster ? (
+    wide ? (
       /*
         The still, standing in for the map until someone asks for the map.
 
-        Captured at the width the container reaches on a laptop and shown as a
-        centred crop, which is what the live map does when the window narrows:
-        same centre, less of the sides.
+        48rem is where the phone framing stops being the closer answer: below
+        it the container is the viewport and the narrow capture was taken for
+        exactly that, above it the wide one crops less than it gains.
       */
-      <Image
-        class="map__poster"
-        src={poster}
-        alt=""
-        widths={[400, 700, 1040, 2076]}
-        sizes="(width < 68rem) 100vw, 65rem"
-        quality={68}
-        loading="lazy"
-      />
+      <picture>
+        {narrow && (
+          <source
+            media="(width < 48rem)"
+            srcset={narrow.srcSet.attribute}
+            sizes="100vw"
+            type="image/webp"
+          />
+        )}
+        <img
+          class="map__poster"
+          src={wide.src}
+          srcset={wide.srcSet.attribute}
+          sizes="(width < 68rem) 100vw, 65rem"
+          alt=""
+          width={2076}
+          height={1196}
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
     ) : (
       /* No poster for this map: the ground the basemap paints, and nothing. */
       <div class="map__ground" />

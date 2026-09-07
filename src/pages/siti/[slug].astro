@@ -106,8 +106,11 @@ const POSTERS = import.meta.glob<{ default: ImageMetadata }>(
   '../../assets/map-posters/*.webp',
   { eager: true },
 );
-const posterFor = (slug: string) =>
-  POSTERS[`../../assets/map-posters/${slug}.webp`]?.default;
+const at = (name: string) => POSTERS[`../../assets/map-posters/${name}.webp`]?.default;
+const posterFor = (slug: string) => {
+  const wide = at(`${slug}-wide`);
+  return wide ? { wide, narrow: at(`${slug}-narrow`) } : undefined;
+};
 ---
 
 <EntryLayout

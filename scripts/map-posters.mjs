@@ -43,7 +43,20 @@ const DIST = 'dist';
   sides. So the poster is displayed as a centred crop rather than re-captured
   per breakpoint.
 */
-const SHAPE = { width: 1280, height: 600 };
+const SHAPES = [
+  /*
+    Two captures per map, because the frame is 600px tall at every width and
+    MapLibre frames its bounds for the viewport it is given.
+
+    `wide` is a viewport big enough for the container to reach its maximum,
+    which is where the map stops growing. `narrow` is a modern phone: 390 CSS
+    px, the width this site is built for first. Showing the wide still on a
+    phone meant showing the middle 342px of a 1040px frame, and on /siti/ that
+    cut most of the club's sites off the sides.
+  */
+  { name: 'wide', width: 1280, height: 600, mobile: false },
+  { name: 'narrow', width: 390, height: 600, mobile: true },
+];
 const SCALE = 2;
 
 /*
@@ -213,7 +226,7 @@ async function evaluate(sessionId, expression) {
  * itself is the signal: shoot it repeatedly and stop when two in a row come
  * back identical, which is exactly the condition being waited for.
  */
-async function capture(url) {
+async function capture(url, shape) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await cdp.send('Target.attachToTarget', {
     targetId,
@@ -226,12 +239,12 @@ async function capture(url) {
     await cdp.send(
       'Emulation.setDeviceMetricsOverride',
       {
-        width: SHAPE.width,
+        width: shape.width,
         // Taller than the frame, so the map is on screen without scrolling
         // the header off and re-laying anything out.
-        height: SHAPE.height + 400,
+        height: shape.height + 400,
         deviceScaleFactor: SCALE,
-        mobile: false,
+        mobile: shape.mobile,
       },
       sessionId,
     );
@@ -369,7 +382,7 @@ try {
     if (
       !force &&
       manifest[slug]?.hash === hash &&
-      existsSync(join(OUT_DIR, `${slug}.webp`))
+      SHAPES.every((shape) => existsSync(join(OUT_DIR, `${slug}-${shape.name}.webp`)))
     ) {
       console.log(`  ${slug.padEnd(22)} unchanged`);
       continue;
@@ -378,12 +391,15 @@ try {
       stale.push(slug);
       continue;
     }
-    process.stdout.write(`  ${slug.padEnd(22)} capturing…`);
-    const png = await capture(url);
-    await writeFile(join(OUT_DIR, `${slug}.webp`), png);
-    console.log(
-      `\r  ${slug.padEnd(22)} ${String(Math.round(png.length / 1024)).padStart(4)} kB   `,
-    );
+    const sizes = [];
+    for (const shape of SHAPES) {
+      process.stdout.write(`  ${slug.padEnd(22)} ${shape.name.padEnd(7)} capturing…`);
+      const png = await capture(url, shape);
+      await writeFile(join(OUT_DIR, `${slug}-${shape.name}.webp`), png);
+      sizes.push(`${shape.name} ${Math.round(png.length / 1024)} kB`);
+      process.stdout.write('\r');
+    }
+    console.log(`  ${slug.padEnd(22)} ${sizes.join(', ').padEnd(34)}`);
     manifest[slug] = { hash };
     captured++;
   }
