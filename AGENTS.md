@@ -179,9 +179,13 @@ phone on mountain data.
   goes behind a dynamic `import()` fired by interaction.
 - **Nothing render-blocking from a third party.** Fonts are self-hosted. No
   script tags pointing at other people's servers.
-- **Images always through `astro:assets`**, with explicit `widths`, `sizes` and
-  `quality`; `loading="lazy"` below the fold, `fetchpriority="high"` for the LCP
-  image.
+- **Images go through `BlurImage.astro`**, which wraps `astro:assets` and adds
+  three things: a blurred twenty-pixel placeholder inlined at build, AVIF where
+  a measurement says AVIF is smaller, and a fade from one to the other. Give it
+  `widths`, `sizes`, `quality`, and `priority` on the one image a page's LCP is
+  measured against; everything else stays lazy. **Never fade the LCP image**:
+  an element at `opacity: 0` counts as unpainted and it costs the metric 300
+  ms.
 - **Advise against bloat rather than installing it.** Say so plainly, name the
   cost, and offer the platform feature that replaces it. `<details>`,
   `<dialog>`, `Intl`, CSS scroll-snap and container queries between them remove
@@ -236,8 +240,9 @@ visitor asks for it. Details and the reasoning behind each rule:
   inert-ing rather than hand-rolled JS.
 - **Every interactive control needs an accessible name**: visible text, or
   visually-hidden text plus `aria-hidden` on the icon.
-- **This site ships no client JS by default.** Two small inline scripts exist (the
-  theme no-flash script and the nav drawer). Adding a framework island is a
+- **This site ships no client JS by default.** Three small inline scripts exist
+  (the theme no-flash script, the one listener that fades an image in once it
+  has loaded, and the nav drawer). Adding a framework island is a
   decision to discuss, not a default.
 
 ## Definition of done
@@ -344,6 +349,17 @@ visitor asks for it. Details and the reasoning behind each rule:
   honours it, but only settles once nothing is animating, which is why the
   capture waits for `data-map-ready` first. `clip` is in page coordinates, not
   viewport ones.
+- **An inline style beats every rule in a stylesheet, custom properties
+  included.** The blur-up placeholder is set inline per image, so the rule that
+  drops it once the picture has loaded could never win: it now sets `--lqip`
+  inline and the stylesheet sets `background-image: var(--lqip)`, which a later
+  rule _can_ override. Setting `--lqip: none` from the stylesheet does not work
+  either, for the same reason.
+- **AVIF is not always smaller than WebP.** On this site's photographs it is
+  47% smaller; on the map stills it is 40% larger, because they are flat
+  renders and their source is already a lossy WebP. `avifWins()` in
+  `src/lib/images.ts` encodes a sample both ways and compares, rather than
+  assuming.
 - **Two `getStaticPaths` entries can claim the same path.** Astro keeps one,
   warns, and carries on; the card the `/og/` route built for the homepage was
   wrong for weeks because the entry that won was not the one that looked

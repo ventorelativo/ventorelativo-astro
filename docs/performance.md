@@ -7,6 +7,34 @@ that day. Many of them are on a phone, on mountain data.
 
 This is a constraint on what gets built, not a pass at the end.
 
+## Images: a blur, then the picture
+
+Every image is rendered by `BlurImage.astro`, which does three things Astro's
+own component does not.
+
+**A placeholder, made at build.** Twenty pixels of the same image, blurred by
+sharp and inlined as a data URI: 124 to 152 bytes each, 532 bytes for the whole
+home page. It is painted by the wrapper, behind the image, so it costs no
+request and appears with the first frame.
+
+**AVIF where AVIF is smaller, measured.** Across the photographs on this site
+AVIF is 47% smaller than WebP, and 77% smaller for the gallery pictures. On the
+map stills it is 40% _larger_: they are flat renders of lines and labels, and
+their source is already a lossy WebP, so AVIF spends bits preserving another
+encoder's artefacts. `avifWins()` encodes a 320px sample both ways and serves
+whichever is smaller.
+
+**A fade, driven by one listener.** In the head script, capture phase, one for
+the whole document. Gated on `data-js` so images are visible without scripting.
+
+The LCP image is the exception to the fade: it loads eagerly at high priority
+and paints straight over its placeholder. An element at `opacity: 0` has not
+been painted as far as the metric is concerned, and fading it in measured
+2604 ms against 2312 ms on a site page.
+
+The whole thing costs 2 to 3 kB a page, and CLS stays at 0 because every image
+still writes out its width and height.
+
 ## The map is a picture until it is a map
 
 Each map is rendered once at build time by `npm run map:posters` and shipped as
