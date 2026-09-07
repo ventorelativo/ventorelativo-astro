@@ -22,7 +22,9 @@
  * than the multi-megabyte original, and its real dimensions go in the markup so
  * the viewer can size itself before the file arrives.
  */
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
+
+import BlurImage from './BlurImage.astro';
 /*
   The lightbox's stylesheet is imported here, not alongside the dynamic import
   of the library. Astro's `inlineStylesheets: 'auto'` inlines a stylesheet this
@@ -117,14 +119,15 @@ const full = await Promise.all(
               `src` of a thumbnail whose srcset offers 14 kB and 69 kB. Nothing
               modern fetches it, but nothing should have to.
             */}
-            <Image
+            <BlurImage
               src={img.src}
               alt=""
               width={640}
+              height={480}
+              fit="cover"
               widths={[320, 640]}
               sizes="(width < 48rem) 100vw, 20rem"
               quality={70}
-              loading="lazy"
             />
           </a>
           <figcaption>{img.alt}</figcaption>

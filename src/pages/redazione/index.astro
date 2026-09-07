@@ -30,7 +30,7 @@
  * Same reason as /styleguide: a tool for the people who run the site, not a
  * page of it.
  */
-import { Image } from 'astro:assets';
+import BlurImage from '../../components/BlurImage.astro';
 
 import { getCollection } from 'astro:content';
 
@@ -157,7 +157,7 @@ const CHATS = [
     </p>
 
     <figure class="shot">
-      <Image
+      <BlurImage
         src={pasteButton}
         alt="I pulsanti in alto a destra nel gestore dei contenuti: un orologio, due icone a forma di appunti e il pulsante blu Create"
         widths={[310, 620]}

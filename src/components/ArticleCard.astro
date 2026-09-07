@@ -7,8 +7,8 @@
  * instead would make screen readers announce the date, badge and summary as
  * part of the link text, and would nest the card's own links illegally.
  */
-import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import BlurImage from './BlurImage.astro';
 import Badge from './Badge.astro';
 import { formatDate, isoDate } from '../utils/date';
 import PinIcon from './PinIcon.astro';
@@ -86,7 +86,7 @@ const href = `/news/${entry.id}/`;
             <span class="card__month">{when.month}</span>
           </time>
         )}
-        <Image
+        <BlurImage
           class="card__image"
           style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
           src={image.src}
@@ -95,8 +95,7 @@ const href = `/news/${entry.id}/`;
           widths={[400, 700, 900]}
           sizes="(width < 48rem) calc(100vw - 3rem), (width < 64rem) calc(50vw - 3rem), 21rem"
           quality={70}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchpriority={priority ? 'high' : 'auto'}
+          priority={priority}
         />
       </div>
     )

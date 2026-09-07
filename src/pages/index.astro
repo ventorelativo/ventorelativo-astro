@@ -14,7 +14,7 @@
  *    structured data here, which is what §2.4 called for; Phase 2 moves this
  *    array into a Keystatic `home` singleton.
  */
-import { Picture } from 'astro:assets';
+import BlurImage from '../components/BlurImage.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
@@ -111,16 +111,15 @@ const latest = (await getCollection('news', ({ data }) => !data.draft))
         each of its words as an attribute and prints them into the <img>.
       */
     }
-    <Picture
+    <BlurImage
       src={HERO.src}
-      formats={['avif', 'webp']}
       widths={[800, 1200, 1600]}
       sizes="100vw"
       quality={40}
       alt={HERO.alt}
-      loading="eager"
-      fetchpriority="high"
+      priority
       class="hero__bg"
+      blurPosition="center 27%"
     />
 
     <div class="hero__content container">

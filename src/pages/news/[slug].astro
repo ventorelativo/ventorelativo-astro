@@ -11,9 +11,9 @@
  * `slug` as a field, but a field can drift from the filename and this cannot.
  */
 import { getCollection, render } from 'astro:content';
-import { Image } from 'astro:assets';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Badge from '../../components/Badge.astro';
+import BlurImage from '../../components/BlurImage.astro';
 import EventDetails from '../../components/EventDetails.astro';
 import { MDX_COMPONENTS } from '../../components/mdx/components';
 import { formatDate, isoDate } from '../../utils/date';
@@ -66,7 +66,7 @@ const { Content } = await render(entry);
   {
     /* The other half of the morph from the teaser card: see global.css. */
     image && (
-      <Image
+      <BlurImage
         slot="media"
         class="hero"
         style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
@@ -74,8 +74,7 @@ const { Content } = await render(entry);
         alt={image.alt}
         widths={[400, 700, 1400]}
         sizes="(width < 44rem) 100vw, 42rem"
-        loading="eager"
-        fetchpriority="high"
+        priority
       />
     )
   }

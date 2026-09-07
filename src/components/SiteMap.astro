@@ -17,6 +17,8 @@
  */
 import { getImage } from 'astro:assets';
 
+import { avifWins, lqip } from '../lib/images';
+
 import { FEATURE_TYPES, type FeatureType } from '../lib/featureTypes';
 import { MAPTILER_KEY } from '../lib/mapConfig';
 /*
@@ -107,6 +109,38 @@ const narrow =
     format: 'webp',
     quality: 68,
   }));
+
+/*
+  AVIF alongside the WebP, and the blurred placeholder underneath: the same
+  treatment `BlurImage` gives every other picture on the site, written out here
+  because this is the one image with two framings, and that is art direction
+  rather than a resolution switch.
+*/
+/*
+  Only where it pays: on these stills AVIF is 40% *larger* at every width than
+  the WebP beside it, because a map render is lines and labels and the capture
+  is already a lossy WebP. `avifWins` measures rather than assuming.
+*/
+const posterAvif = poster ? await avifWins(poster.wide, 68) : false;
+const wideAvif =
+  poster &&
+  posterAvif &&
+  (await getImage({
+    src: poster.wide,
+    widths: [400, 700, 1040, 2076],
+    format: 'avif',
+    quality: 68,
+  }));
+const narrowAvif =
+  poster?.narrow &&
+  posterAvif &&
+  (await getImage({
+    src: poster.narrow,
+    widths: [390, 780, 1170],
+    format: 'avif',
+    quality: 68,
+  }));
+const blur = poster && (await lqip(poster.wide));
 
 /*
   The geometry, as GeoJSON, in a script tag rather than a data attribute: it is
@@ -207,7 +241,15 @@ const typeNames = Object.fromEntries(
         it the container is the viewport and the narrow capture was taken for
         exactly that, above it the wide one crops less than it gains.
       */
-      <picture>
+      <picture class="blur" style={blur ? `--lqip:url(${blur})` : undefined}>
+        {narrowAvif && (
+          <source
+            media="(width < 48rem)"
+            srcset={narrowAvif.srcSet.attribute}
+            sizes="100vw"
+            type="image/avif"
+          />
+        )}
         {narrow && (
           <source
             media="(width < 48rem)"
@@ -222,6 +264,13 @@ const typeNames = Object.fromEntries(
           that has a map. Shipped lazy, it was discovered only after layout,
           and Lighthouse said so: LCP 2.9 s on a site page.
         */}
+        {wideAvif && (
+          <source
+            srcset={wideAvif.srcSet.attribute}
+            sizes="(width < 68rem) 100vw, 65rem"
+            type="image/avif"
+          />
+        )}
         <img
           class="map__poster"
           src={wide.src}
@@ -232,7 +281,9 @@ const typeNames = Object.fromEntries(
           height={1196}
           loading="eager"
           fetchpriority="high"
-          decoding="async"
+          decoding="sync"
+          data-blur={blur ? '' : undefined}
+          data-priority
         />
       </picture>
     ) : (
@@ -419,6 +470,21 @@ const typeNames = Object.fromEntries(
     viewport sees the middle of it, exactly as the live map shows the middle
     when the window shrinks.
   */
+  /*
+    The still's frame paints the blurred placeholder until the picture covers
+    it, with the same crop the image uses.
+  */
+  .map :global(picture.blur) {
+    display: block;
+    background-image: var(--lqip);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .map :global(picture.blur:has(img[data-loaded])) {
+    background-image: none;
+  }
+
   .map :global(.map__poster) {
     display: block;
     width: 100%;
