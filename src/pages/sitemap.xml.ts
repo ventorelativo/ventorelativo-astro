@@ -37,24 +37,41 @@ export const GET: APIRoute = async ({ site }) => {
     getCollection('news', ({ data }) => !data.draft),
   ]);
 
-  const paths = [
-    '/',
-    '/siti/',
-    ...sites.map((entry) => `/siti/${entry.id}/`),
-    '/news/',
-    ...news.map((entry) => `/news/${entry.id}/`),
-    '/voli/',
-    '/iscrizioni/',
-    '/contatti/',
-    '/privacy/',
-    '/stampa/',
+  /*
+    `lastmod` where there is a real date behind it, and nowhere else.
+
+    The news posts have one: their own publication date, which for a post
+    nobody has edited is also the day the page last changed. Nothing else on
+    the site carries a date, and the tempting substitutes are both worse than
+    saying nothing. The build time would stamp every URL as modified on every
+    deploy, which is what Google means by an inaccurate `lastmod` and the
+    reason it ignores the field on sites that do it; the file's git timestamp
+    would be honest but is not reliably there, Netlify does not promise the
+    history a `git log` needs. A partial `lastmod` is explicitly fine: the
+    URLs without one are simply read without the hint.
+  */
+  const paths: { path: string; lastmod?: Date }[] = [
+    { path: '/' },
+    { path: '/siti/' },
+    ...sites.map((entry) => ({ path: `/siti/${entry.id}/` })),
+    { path: '/news/' },
+    ...news.map((entry) => ({ path: `/news/${entry.id}/`, lastmod: entry.data.date })),
+    { path: '/voli/' },
+    { path: '/iscrizioni/' },
+    { path: '/contatti/' },
+    { path: '/privacy/' },
+    { path: '/stampa/' },
   ];
 
   const urls = paths
-    .map((path) => {
+    .map(({ path, lastmod }) => {
       const loc = new URL(path, origin).href;
       const priority = path === '/' ? '1.0' : '0.5';
-      return `  <url>\n    <loc>${loc}</loc>\n    <priority>${priority}</priority>\n  </url>`;
+      /* W3C Datetime, which is what the sitemap protocol asks for. */
+      const modified = lastmod
+        ? `\n    <lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>`
+        : '';
+      return `  <url>\n    <loc>${loc}</loc>${modified}\n    <priority>${priority}</priority>\n  </url>`;
     })
     .join('\n');
 
