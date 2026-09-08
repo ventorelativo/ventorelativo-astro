@@ -66,14 +66,15 @@ preview should not be publishing to Google. There is nothing to switch.
   notice, the gate's allowlist, and what the pages actually do.
 - `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it,
   the maps inline their data.
-- Membership payments (Phase 6), **on the `soci-e-quote` branch, not on
-  `main`**. D10 was reversed on 2026-09-08: **Satispay only, no Stripe**, and
-  the committee has yet to ratify it. Everything that is code is written: the
-  form on `/iscrizioni` that asks who is paying before `/iscrizioni/grazie`
-  sends them to Satispay, and `tools/soci/Codice.js`, an Apps Script that
-  matches payments to members and issues the card. **None of it has ever run**:
-  it is waiting on a club-owned Google account. Status and what is left:
-  [`docs/soci.md`](docs/soci.md); the money side is
+- Membership payments (Phase 6). D10 was reversed on 2026-09-08: **Satispay
+  only, no Stripe**, and the committee has yet to ratify it. The automation is
+  here on `main` and inert, `tools/soci/Codice.js`, an Apps Script that runs
+  inside the club's Google account: nothing on the site calls it and no build
+  sees it. **The site's half is on the `soci-e-quote` branch and deliberately
+  not merged**: a form on `/iscrizioni` asking who is paying, and
+  `/iscrizioni/grazie` as the payment step. It stays there until the
+  spreadsheet behind it exists, because a form nobody is reading is worse than
+  no form. Status: [`docs/soci.md`](docs/soci.md); the money side is
   [`docs/payments.md`](docs/payments.md).
 
 Do not write code that imports from, or assumes the shape of, anything in that

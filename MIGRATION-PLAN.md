@@ -1356,8 +1356,10 @@ allows 100 automation runs a month against the 720 an hourly check needs, its sc
 cannot sign a Satispay request, it makes no PDF, and its emails come from Airtable rather
 than from the club. Reasoning in [`docs/soci.md`](docs/soci.md).
 
-**Where it actually stands, 2026-09-08.** Everything that is code is written and pushed to
-the `soci-e-quote` branch, and **none of it has ever run**. The club's 2026 workbook has
+**Where it actually stands, 2026-09-08.** Everything that is code is written, and **none of
+it has ever run**. The Apps Script and the runbooks are on `main`, where they are inert; the
+site's half, the form and the payment step, is on the `soci-e-quote` branch and stays there
+until the spreadsheet exists. The club's 2026 workbook has
 been converted (97 paying members, 52 lapsed, no email addresses in it at all), the
 membership numbers have been assigned with Luca Odetto as VR-0001, and the whole thing is
 waiting on one thing: **a club-owned Google account**, deliberately not a personal one.

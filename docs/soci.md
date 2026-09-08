@@ -8,13 +8,18 @@ are in [payments.md](payments.md); this is what happens around them.
 
 ## Dove siamo, 2026-09-08
 
-**Nothing here has ever run.** Everything is written and pushed to the
-`soci-e-quote` branch; none of it is merged to `main` and no spreadsheet exists
-yet.
+**Nothing here has ever run**, and no spreadsheet exists yet.
+
+The script and these documents are on `main` and inert: nothing on the site
+calls them and no build sees them. **The site's half is on the `soci-e-quote`
+branch, unmerged on purpose**, because a form that writes to a spreadsheet
+nobody has made yet is worse than no form. It merges when the setup below is
+done.
 
 Done:
 
-- the form on `/iscrizioni` and the payment step on `/iscrizioni/grazie`;
+- the form on `/iscrizioni` and the payment step on `/iscrizioni/grazie`, on
+  the branch;
 - `tools/soci/Codice.js`, the whole automation, unrun and untested against a
   live Sheet or the Satispay API;
 - the 2026 workbook converted (`tools/soci/importa-excel.py`): **97 paying
