@@ -672,7 +672,7 @@ export default config({
         content: fields.mdx({ label: 'Testo introduttivo' }),
         /*
           The quote fields §2.4 asked for. When the committee settles D10, the
-          switch from Satispay to Stripe is these URLs and nothing else.
+          switch of payment rail is these URLs and nothing else.
         */
         tiers: fields.array(
           fields.object({

@@ -206,8 +206,9 @@ Ecosia at once. Nobody has asked for it; it is here so the option is known.
 - Phase 6 (payments) is documented in [payments.md](payments.md) and not
   executed. Nothing about it blocks the cutover: `/iscrizioni` works today with
   the existing Satispay links and the bank transfer.
-- If payments do go live first, the Stripe Payment Links' redirect URL has to be
-  changed from the `*.netlify.app` address to `https://ventorelativo.it/iscrizioni/grazie`.
+- Payments (Phase 6) no longer have a redirect URL to change: D10 was reversed on
+  2026-09-08 and Satispay's link cannot redirect anywhere, which is why the site asks
+  who is paying first. See [payments.md](payments.md).
 
 ## Closed since
 

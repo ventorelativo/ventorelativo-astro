@@ -341,13 +341,13 @@ longer ships Bootstrap.
 
 These must be lifted out of prose into structured fields:
 
-| Current raw HTML                                                                | Becomes                                                                                                                                              |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Homepage 3 CTA buttons (removed later: the hero is the logo alone)              | `ctas: array(object({label, href, style: select(primary\|outline)}))`                                                                                |
-| Iscrizioni pricing cards (€10 Sostenitore, €30 Socio, benefit lists, pay links) | `tiers: array(object({name, price, benefits: array(text), payUrl, highlight: checkbox}))`, this is also exactly the shape the Stripe work needs (§5) |
-| Phone / WhatsApp button rows (×3 near-identical blocks)                         | `contacts: array(object({kind: select(phone\|whatsapp\|email), label, href}))`                                                                       |
-| Social media block                                                              | `social: array(object({network, url}))`                                                                                                              |
-| Bank transfer details (IBAN, association name)                                  | `bankTransfer: object({holder, iban})`                                                                                                               |
+| Current raw HTML                                                                | Becomes                                                                                                                                        |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage 3 CTA buttons (removed later: the hero is the logo alone)              | `ctas: array(object({label, href, style: select(primary\|outline)}))`                                                                          |
+| Iscrizioni pricing cards (€10 Sostenitore, €30 Socio, benefit lists, pay links) | `tiers: array(object({name, price, benefits: array(text), payUrl, highlight: checkbox}))`, which is also the shape the payment work needs (§5) |
+| Phone / WhatsApp button rows (×3 near-identical blocks)                         | `contacts: array(object({kind: select(phone\|whatsapp\|email), label, href}))`                                                                 |
+| Social media block                                                              | `social: array(object({network, url}))`                                                                                                        |
+| Bank transfer details (IBAN, association name)                                  | `bankTransfer: object({holder, iban})`                                                                                                         |
 
 Everything else (news bodies, site descriptions) is ordinary prose and converts to MDX
 cleanly.
@@ -674,10 +674,11 @@ content.
 
 ## 5. Membership / payments
 
-> **✅ Approved by the committee, 2026-09-03.** The fee is accepted and is borne by the
-> payer. **D10 resolved: Stripe Payment Links, with Satispay enabled inside them**, see
-> "The decision" below. The Astro site already ships without it (§7, Phase 5); nothing
-> here blocks the cutover.
+> **⚠️ D10 was reversed on 2026-09-08: Satispay only, no Stripe.** The committee approved
+> the Stripe version on 2026-09-03, so this reversal is theirs to ratify, not a technical
+> detail: **tell them.** What changed is not the fee but what the club is willing to run.
+> See "The decision, and its reversal" below. The site is live and complete without any of
+> this (§7, Phase 5).
 
 ### Current state
 
@@ -694,10 +695,16 @@ reconciled by hand.
 ### Planned flow
 
 ```
-Member → Stripe Payment Link (card + Satispay) → Stripe webhook
-       → Make.com scenario → Google Sheet row updated
+Member → form on /iscrizioni → Netlify Forms → outgoing webhook
+       → Make.com scenario → Google Sheet row, "in attesa"
+       → /iscrizioni/grazie → Satispay link → money
+Treasurer → Satispay report → ticks the row to "pagato"
 Wire transfer → (manual) → Google Sheet
 ```
+
+**The site asks who is paying before it takes the payment**, because a Satispay
+consumer link cannot say afterwards. That inversion is the whole design, and it is
+built: `src/components/MembershipForm.astro` and `/iscrizioni/grazie`.
 
 **Why a Google Sheet and not Airtable** _(revised, the plan previously said Airtable):_
 
@@ -722,7 +729,43 @@ public. See the note at the end of §5.
 processing fee and chose not to move the quotas to absorb it. Nothing on the page shows a
 surcharge: see the note on Art. 62 below, which this decision keeps comfortably clear of.
 
-### The decision (D10, resolved 2026-09-03)
+### The decision, and its reversal (D10)
+
+**Resolved 2026-09-08: Satispay only.** No Stripe, no cards, bank transfer stays. This
+replaces the 2026-09-03 resolution recorded below, which is kept in full because the
+reasoning behind it was sound and only one of its premises turned out to be wrong.
+
+**What changed.** Not the fees, which are unchanged and were never decisive. Two things:
+
+1. **The club would rather run one payment provider than two.** Satispay is already
+   there, already reconciled, already understood by the people who will still be doing
+   this in five years. A Stripe account for an ASD is an onboarding: legal entity,
+   representative, identity documents, a payout IBAN, and a dashboard nobody opens
+   between one September and the next. That is a standing cost paid in attention rather
+   than in euro, and the analysis below priced only the euro.
+2. **The reasoning had a blind spot.** It framed the choice as "Stripe's webhook or
+   reconcile by hand", and those were not the only two options. What Stripe was really
+   being bought for was the payer's **name and email**, which is a form's job, not a
+   payment processor's. The site can ask before it sends anyone to pay, and it now does:
+   Netlify Forms is already in the site for `/contatti`, so the marginal cost was one
+   component and no new provider.
+
+**What is genuinely lost, and it is not nothing:**
+
+- **Cards.** A member without Satispay pays by bank transfer or not at all online.
+- **The automatic "paid" tick.** No callback exists for a consumer link, so a person
+  reads the Satispay report and marks the rows. The Sheet fills itself with everything
+  except the one column that says the money arrived.
+
+The saving is about **€30 a year** on eighty members, which remains the least
+interesting number in this section.
+
+**This needs the committee**, which approved the Stripe version on 2026-09-03. Nothing
+technical blocks it, and the site works either way; it is their decision to ratify.
+
+---
+
+_The 2026-09-03 resolution, kept for its reasoning:_
 
 **Stripe Payment Links, with Satispay enabled as a payment method inside them.** Bank
 transfer stays. Satispay Business direct was considered seriously and rejected, but the
@@ -758,6 +801,10 @@ A Stripe Payment Link is a URL. Its webhook is a checkbox. That asymmetry is the
 EUR, in Payment Links, so a member who wants to pay with the app they already have still
 does, at €0.79 on a €30 quota instead of €0.29. That €0.50 is what buys the reconciliation.
 
+_(End of the superseded resolution. The paragraph above is where the reversal bites: the
+€0.50 bought reconciliation because the alternative was assumed to be silence. It was
+not: it was a form.)_
+
 **On "the payer pays the fee": do not render it as a surcharge.** Article 62 of the Codice
 del Consumo, implementing PSD2, forbids charging a consumer a supplement for using a given
 payment instrument, and the AGCM has fined firms for exactly that. Whether a membership
@@ -769,14 +816,21 @@ a figure that already contains it: a decision about the quota, not about the sof
 
 ### What this means for the build
 
-Nothing on the Astro site. The tiers have been structured content since Phase 2
-(`src/content/pages/iscrizioni.mdx`), so switching rails is editing `payUrl` in Keystatic:
-two fields, no deploy, no code. That was the point of modelling them that way.
+**Built on 2026-09-08**, and it is the whole of the site's part: a three-field form on
+`/iscrizioni` (`src/components/MembershipForm.astro`) and `/iscrizioni/grazie`, which
+stopped being a receipt and became the payment step. Both are prerendered; the form posts
+to Netlify Forms, which the site already used for `/contatti`, so nothing new runs and no
+dependency was added.
 
-Everything else lives outside this repository: Stripe, Make.com and a Google Sheet. The
-steps are written down rather than built ([`docs/payments.md`](docs/payments.md)) including
-the trap that a Sheet has no upsert, so the scenario has to branch or a renewing member
-silently gets a second row.
+The tiers have been structured content since Phase 2 (`src/content/pages/iscrizioni.mdx`),
+so the payment URLs are still two Keystatic fields and switching rails again would cost
+nothing here. That was the point of modelling them that way, and D10's reversal is what
+proved it.
+
+Everything else lives outside this repository: Satispay, Netlify's form notifications,
+Make.com and a Google Sheet. The steps are written down rather than built
+([`docs/payments.md`](docs/payments.md)) including the trap that a Sheet has no upsert, so
+the scenario has to branch or a member who submits the form twice silently gets two rows.
 
 - Keep the bank-transfer block visible. It is the zero-fee route, and the one that still
   works when a provider is between contracts.
@@ -786,21 +840,21 @@ silently gets a second row.
 
 ## 6. Open questions / decisions needed before implementation
 
-| #           | Decision                                                                | Why it matters              | My recommendation                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------- | ----------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~**D1**~~  | ~~Netlify or Cloudflare Pages?~~                                        | n/a                         | ✅ **RESOLVED: Netlify.** See §6.1 for the reasoning and the Cloudflare Web Analytics note.                                                                                                                                                                                                                                                                                                                   |
-| ~~**D2**~~  | ~~Do all editors have GitHub accounts?~~                                | n/a                         | ✅ **RESOLVED.** One real editor today; future editors will be asked to create GitHub accounts. Keystatic GitHub mode is a clean fit: this is no longer a risk.                                                                                                                                                                                                                                               |
-| ~~**D3**~~  | ~~Contact form backend~~                                                | n/a                         | ✅ **RESOLVED: Netlify Forms** (follows D1). `data-netlify="true"` + honeypot, no captcha, matching today's `tome_netlify_contact` config. Recipient stays `segreteria@ventorelativo.it`. Free tier is 100 submissions/month.                                                                                                                                                                                 |
-| ~~**D4**~~  | ~~How should landing polygons and the obstacle line be edited?~~        | n/a                         | ✅ **RESOLVED: split fields in Keystatic** (§2.2). Point as lat/lon numbers, polygon/line as pasted GeoJSON. All 34 features stay in Keystatic with their metadata. Accepted trade-off: reshaping the 13 landing polygons means a trip to geojson.io.                                                                                                                                                         |
-| ~~**D5**~~  | ~~`/api/sites/<nid>/geo.json`: preserve or change?~~                    | n/a                         | ✅ **RESOLVED: drop it.** Confirmed dead, it was built to reuse the overview MapTiler setup on site pages, but the site pages ended up on Leaflet and the endpoint never got wired up. Nothing consumes it. See §4.2 for what replaces it. The two `/api/navdata/*` files keep their exact URLs.                                                                                                              |
-| ~~**D6**~~  | ~~XContest flight tables: restore or drop?~~                            | n/a                         | ✅ **RESOLVED: quicklinks only.** The five search links (recent / daily / best month / best year / best overall) are a first-class feature and stay. The scraped tables are dropped, XContest put a Cloudflare bot check in front of the data, and defeating it at build time is not something worth building. See §4.4.                                                                                      |
-| ~~**D7**~~  | ~~Promote `Località / Altitudine / Esposizione` from prose to fields?~~ | n/a                         | ✅ **RESOLVED: no, keep as prose.** Straight port; the triplet stays as bold labels in the MDX body. Consequence: `summary` becomes the only structured short description, so it carries the cards _and_ the meta description, see §2.3.                                                                                                                                                                      |
-| ~~**D8**~~  | ~~Keep MapTiler or move to MapLibre + free tiles?~~                     | n/a                         | ✅ **RESOLVED: stay on MapTiler**, free tier, comfortable quota. But build the map component against the **MapLibre API surface** with MapTiler-specific bits isolated in a thin adapter, so switching later stays cheap. See §4.2.1. Restrict the key by domain, move it to `PUBLIC_MAPTILER_KEY`.                                                                                                           |
-| ~~**D9**~~  | ~~Which URLs must be preserved exactly?~~                               | n/a                         | ✅ **RESOLVED.** No inbound links worth protecting. `/home` → 301 to `/`; `/styleguide`, `/tags/asdasd` and the nid-based geo.json all simply dropped, no redirects needed. All content URLs (`/siti/*`, `/news/*`, `/contatti*`, `/voli`, `/iscrizioni`, `/404`, `/api/navdata/*`) still preserved exactly. Raised **D13** on the tag URLs.                                                                  |
-| ~~**D10**~~ | ~~Stripe vs Satispay Business~~                                         | §5. The committee approved. | ✅ **RESOLVED 2026-09-03: Stripe Payment Links, with Satispay enabled inside them.** The committee accepted the fee, and the payer carries it. Satispay-direct is 3-4x cheaper, but saves ~€30 a year and cannot be automated without a backend, its callback fires only for API-created payments. See §5, and do not render the fee as a surcharge (Art. 62 Cod. Cons.).                                     |
-| ~~**D11**~~ | ~~Design direction~~                                                    | n/a                         | ✅ **RESOLVED: refined minimal**, _amended in Phase 2, see the note under §6.2._ Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards. |
-| ~~**D12**~~ | ~~Content freeze / dual-run~~                                           | n/a                         | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover.                                                                                                                         |
-| ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~                                       | n/a                         | ✅ **RESOLVED: reshape**, _amended in Phase 2._ `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all**, §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links.                                  |
+| #           | Decision                                                                | Why it matters           | My recommendation                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------- | ----------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~**D1**~~  | ~~Netlify or Cloudflare Pages?~~                                        | n/a                      | ✅ **RESOLVED: Netlify.** See §6.1 for the reasoning and the Cloudflare Web Analytics note.                                                                                                                                                                                                                                                                                                                                           |
+| ~~**D2**~~  | ~~Do all editors have GitHub accounts?~~                                | n/a                      | ✅ **RESOLVED.** One real editor today; future editors will be asked to create GitHub accounts. Keystatic GitHub mode is a clean fit: this is no longer a risk.                                                                                                                                                                                                                                                                       |
+| ~~**D3**~~  | ~~Contact form backend~~                                                | n/a                      | ✅ **RESOLVED: Netlify Forms** (follows D1). `data-netlify="true"` + honeypot, no captcha, matching today's `tome_netlify_contact` config. Recipient stays `segreteria@ventorelativo.it`. Free tier is 100 submissions/month.                                                                                                                                                                                                         |
+| ~~**D4**~~  | ~~How should landing polygons and the obstacle line be edited?~~        | n/a                      | ✅ **RESOLVED: split fields in Keystatic** (§2.2). Point as lat/lon numbers, polygon/line as pasted GeoJSON. All 34 features stay in Keystatic with their metadata. Accepted trade-off: reshaping the 13 landing polygons means a trip to geojson.io.                                                                                                                                                                                 |
+| ~~**D5**~~  | ~~`/api/sites/<nid>/geo.json`: preserve or change?~~                    | n/a                      | ✅ **RESOLVED: drop it.** Confirmed dead, it was built to reuse the overview MapTiler setup on site pages, but the site pages ended up on Leaflet and the endpoint never got wired up. Nothing consumes it. See §4.2 for what replaces it. The two `/api/navdata/*` files keep their exact URLs.                                                                                                                                      |
+| ~~**D6**~~  | ~~XContest flight tables: restore or drop?~~                            | n/a                      | ✅ **RESOLVED: quicklinks only.** The five search links (recent / daily / best month / best year / best overall) are a first-class feature and stay. The scraped tables are dropped, XContest put a Cloudflare bot check in front of the data, and defeating it at build time is not something worth building. See §4.4.                                                                                                              |
+| ~~**D7**~~  | ~~Promote `Località / Altitudine / Esposizione` from prose to fields?~~ | n/a                      | ✅ **RESOLVED: no, keep as prose.** Straight port; the triplet stays as bold labels in the MDX body. Consequence: `summary` becomes the only structured short description, so it carries the cards _and_ the meta description, see §2.3.                                                                                                                                                                                              |
+| ~~**D8**~~  | ~~Keep MapTiler or move to MapLibre + free tiles?~~                     | n/a                      | ✅ **RESOLVED: stay on MapTiler**, free tier, comfortable quota. But build the map component against the **MapLibre API surface** with MapTiler-specific bits isolated in a thin adapter, so switching later stays cheap. See §4.2.1. Restrict the key by domain, move it to `PUBLIC_MAPTILER_KEY`.                                                                                                                                   |
+| ~~**D9**~~  | ~~Which URLs must be preserved exactly?~~                               | n/a                      | ✅ **RESOLVED.** No inbound links worth protecting. `/home` → 301 to `/`; `/styleguide`, `/tags/asdasd` and the nid-based geo.json all simply dropped, no redirects needed. All content URLs (`/siti/*`, `/news/*`, `/contatti*`, `/voli`, `/iscrizioni`, `/404`, `/api/navdata/*`) still preserved exactly. Raised **D13** on the tag URLs.                                                                                          |
+| ~~**D10**~~ | ~~Stripe vs Satispay Business~~                                         | §5. Committee to ratify. | ✅ **RESOLVED 2026-09-08: Satispay only, no Stripe**, reversing the 2026-09-03 resolution. Satispay's callback still fires only for API-created payments, so nothing marks a payment received automatically; what changed is that the payer's name never needed a payment processor, only a form, which the site now has. Lost: cards, and the automatic tick. See §5, and do not render the fee as a surcharge (Art. 62 Cod. Cons.). |
+| ~~**D11**~~ | ~~Design direction~~                                                    | n/a                      | ✅ **RESOLVED: refined minimal**, _amended in Phase 2, see the note under §6.2._ Original: **refined minimal.** Information architecture and page composition unchanged. Bootstrap replaced by a small hand-rolled CSS layer (custom properties, `light-dark()`, container queries). Brand blue `#1F52A6` and the Metropolis display face retained. Generous whitespace, restrained type scale, subtle cards.                         |
+| ~~**D12**~~ | ~~Content freeze / dual-run~~                                           | n/a                      | ✅ **RESOLVED: freeze early.** Little editing is happening, so the content export can be treated as final from Phase 2 onward, with occasional double-entry as the fallback if something does need publishing mid-migration. This removes the need for a re-sync step before cutover.                                                                                                                                                 |
+| ~~**D13**~~ | ~~Tags: keep, reshape, or drop?~~                                       | n/a                      | ✅ **RESOLVED: reshape**, _amended in Phase 2._ `tags` collection and `/tags/*` archives dropped; news gets a `category` select rendered as a badge. **Site tagging is kept after all**, §2.5 said only Montoso was tagged, but the export has five sites tagged (see the correction under §2.5). They are a `tags: string[]` on the entry, shown as plain pills, not links.                                                          |
 
 ### 6.1 Hosting: why Netlify, and where Cloudflare still fits
 
@@ -1285,12 +1339,13 @@ touch either, an archived repository still reads and clones.
 ### Phase 6: Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
 
 `/iscrizioni` already shipped in Phase 2 with the **existing Satispay links and bank
-transfer**, so the site is complete and live without this. **D10 is resolved** (§5): Stripe
-Payment Links, with Satispay enabled inside them.
+transfer**, so the site is complete and live without this. **D10 is resolved** (§5), and
+reversed: **Satispay only**, with the site asking who is paying before it sends them.
 
-None of what remains is code. It is account work in Stripe, Make.com and a Google Sheet,
-followed by editing two `payUrl` fields in Keystatic, which is why it is written as a
-runbook rather than built: [`docs/payments.md`](docs/payments.md).
+The site's part was built on 2026-09-08 (the form, and `/iscrizioni/grazie` as the payment
+step). What remains is not code: account work in Netlify's form notifications, Make.com and
+a Google Sheet, which is why the rest is written as a runbook:
+[`docs/payments.md`](docs/payments.md).
 
 **Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
 the same member updates that row rather than adding another.

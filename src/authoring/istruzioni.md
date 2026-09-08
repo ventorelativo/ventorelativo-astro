@@ -282,7 +282,7 @@ posto dove le stesse cose si cambiano.
 | `/siti/`             | Elenco dei quattordici siti e la mappa d'insieme | "Pagina: Siti di volo" per titolo e introduzione. Elenco e mappa da soli.                      |
 | `/siti/<nome>/`      | La scheda di un sito di volo                     | "Siti di volo", una voce per sito.                                                             |
 | `/voli/`             | I voli del club presi da XContest                | "Pagina: I nostri voli" per titolo e introduzione. I voli arrivano da XContest in tempo reale. |
-| `/iscrizioni/`       | Le quote, i pulsanti di pagamento, il bonifico   | "Pagina: Iscrizioni".                                                                          |
+| `/iscrizioni/`       | Le quote, il modulo di iscrizione, il bonifico   | "Pagina: Iscrizioni". Il modulo è fisso.                                                       |
 | `/contatti/`         | Recapiti e modulo di contatto                    | "Pagina: Contatti". Il modulo è fisso.                                                         |
 | `/privacy/`          | L'informativa privacy                            | "Pagina: Privacy". Attenzione: è un testo legale, vedi sotto.                                  |
 | `/stampa/`           | Logo, colori e regole d'uso del marchio          | "Pagina: Media kit".                                                                           |
