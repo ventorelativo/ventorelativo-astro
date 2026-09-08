@@ -106,6 +106,29 @@ const {
 
     {noindex && <meta name="robots" content="noindex, follow" />}
 
+    {
+      /*
+        Google Search Console's proof that we own this site, chosen over the
+        DNS record on 2026-09-08.
+
+        Hardcoded rather than read from an environment variable, which is the
+        opposite of how the map keys are handled and deliberate: this is not a
+        credential. It is a public string whose whole job is to be in the HTML
+        of a page anyone can fetch, and it grants nothing to whoever reads it.
+        Behind a variable it would silently vanish the first time someone
+        cleared it in Netlify, and the site would quietly lose its
+        verification.
+
+        **Do not remove it.** Google re-checks periodically and unverifies the
+        property when the tag goes, taking the club's access to the reports
+        with it.
+      */
+    }
+    <meta
+      name="google-site-verification"
+      content="03wJYmKSNsM8gtqjn2icefpxH6R8SCo-dakfc4rzH4w"
+    />
+
     <SEO
       title={title}
       description={description}

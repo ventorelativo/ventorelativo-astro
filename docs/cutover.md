@@ -128,20 +128,26 @@ recrawl of pages Google already has: nothing here needs to hurry, and nothing
 below buys a ranking. What it buys is the ability to **see** what Google thinks,
 which the club has never had.
 
-### 1. Verify a Domain property, not a URL prefix
+### 1. Verification: the meta tag, in every page's head
 
-Search Console → **Add property** → the **Domain** box, `ventorelativo.it` with
-no scheme and no `www`. It will hand back a `TXT` record; the DNS is at Aruba.
+Done on 2026-09-08 with the **HTML tag** method rather than the DNS record.
+`src/layouts/BaseLayout.astro` carries it, so it is in the `<head>` of all
+thirty built pages, and the comment there says what it is and why it is
+hardcoded rather than read from an environment variable.
 
-A domain property is the right shape here and a URL-prefix one is not: prefix
-properties are per scheme and per host, so `https://ventorelativo.it` and
-`https://www.ventorelativo.it` are two different properties reporting two
-halves of the same site. This site answers on both (`www` 301s to the apex),
-and a domain property covers every combination in one.
+**Do not remove it.** Google re-checks the tag periodically and unverifies the
+property when it disappears, which takes the club's access to the reports with
+it. It costs 96 bytes a page and it is not a credential: it grants nothing to
+whoever reads it.
 
-If DNS turns out to be awkward, the fallback is a `google-site-verification`
-meta tag, which means a code change and a deploy: ask, do not add it on spec.
-Prefer the DNS record, it survives every future change to the site.
+What this method verifies is a **URL-prefix property**: exactly
+`https://ventorelativo.it`, one scheme and one host. `https://www.ventorelativo.it`
+is a separate property in Google's eyes, which costs nothing here because `www`
+301s to the apex and nothing links to it, so there is no traffic to lose sight
+of. If the club ever wants both halves under one roof, or a report that follows
+the domain rather than the URL, the Domain property is the shape to switch to
+and it needs a `TXT` record at Aruba, where the DNS lives. The meta tag can stay
+alongside it.
 
 ### 2. Submit the sitemap
 
