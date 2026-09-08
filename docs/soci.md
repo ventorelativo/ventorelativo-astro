@@ -174,6 +174,22 @@ Either they fill the form on `/iscrizioni`, and the row appears by itself, or a
 committee member types them into `Soci` and adds a `Quote` row. Both end in the
 same two tables.
 
+## I numeri di tessera
+
+**Ventorelativo → Rinumera i soci** hands the numbers out again: `CONFIG.primi`
+first, in that order, then the active members by surname, then everybody who
+has not renewed. `Quote` follows automatically and the rows are reordered to
+match, so the sheet reads the way the numbers run.
+
+**It refuses once the numbers are out.** A membership number is private until
+it is printed on a card, put in the `external_code` of a renewal link, or typed
+into a bank transfer's causale. After that, renumbering does not rename
+anybody: it makes the card, the email and the bank disagree, and there is no
+recalling what is already in an inbox. So the command checks `Tessera`,
+`Pagamento` and `Invito`, and tells you which row stopped it.
+
+Before then, change `CONFIG.primi` and run it as often as you like.
+
 ## Le email, che nel foglio non ci sono
 
 The register imported from the club's spreadsheet has **no email addresses**:

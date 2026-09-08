@@ -1,4 +1,4 @@
-/* exported onOpen, preparaFogli, apriAnno, sincronizza, generaTessere, attivaSatispay, installaControllo, doPost */
+/* exported onOpen, preparaFogli, apriAnno, sincronizza, generaTessere, attivaSatispay, installaControllo, rinumera, doPost */
 /**
  * Ventorelativo: soci, quote e tessere.
  *
@@ -58,6 +58,9 @@ const CONFIG = {
   /* Where the generated cards are filed. A Drive folder id. */
   cartellaTessere: 'INCOLLA_QUI_L_ID_DELLA_CARTELLA_DRIVE',
 
+  /* Members who should hold the first numbers, in this order. See rinumera. */
+  primi: ['Luca Odetto'],
+
   mittente: 'Parapendio Club Ventorelativo',
   rispondiA: 'segreteria@ventorelativo.it',
 
@@ -101,6 +104,7 @@ function onOpen() {
     .addItem('Genera e invia le tessere', 'generaTessere')
     .addSeparator()
     .addItem('Prepara i fogli', 'preparaFogli')
+    .addItem('Rinumera i soci', 'rinumera')
     .addItem('Attiva Satispay', 'attivaSatispay')
     .addItem('Installa il controllo automatico', 'installaControllo')
     .addToUi();
@@ -870,5 +874,102 @@ function installaControllo() {
   riferisci(
     'Controllo automatico',
     'Da adesso i pagamenti vengono controllati ogni ora.',
+  );
+}
+
+/**
+ * Hands out the membership numbers again, in the order the club wants them.
+ *
+ * `CONFIG.primi` first, in that order, then the active members by surname,
+ * then everybody who has not renewed, so a lapsed member never sits above an
+ * active one. `Quote` follows: every row that pointed at an old number points
+ * at the new one, and the rows themselves are reordered so the sheet reads the
+ * way the numbers run.
+ *
+ * ## Why it can refuse
+ *
+ * A membership number is private until the moment it is not. It goes on the
+ * card in somebody's inbox, into the `external_code` of the payment link in a
+ * renewal email, and into the causale a member types into their bank. From
+ * then on, renumbering does not rename a member: it makes a card, an email and
+ * a bank transfer disagree about who somebody is, and there is no undo for
+ * what is already in an inbox.
+ *
+ * So this refuses once any of that has happened, and says which row stopped
+ * it. Before then, change `CONFIG.primi` and run it as often as you like.
+ */
+function rinumera() {
+  const ui = SpreadsheetApp.getUi();
+  const quote = leggi(CONFIG.sheets.quote);
+
+  const emesse = quote.filter((q) => q.Tessera || q.Pagamento || q.Invito);
+  if (emesse.length) {
+    ui.alert(
+      'Non si può più rinumerare',
+      `${emesse.length} quote hanno già una tessera, un pagamento abbinato o un invito ` +
+        `inviato (per esempio ${emesse[0].ID}, anno ${emesse[0].Anno}). ` +
+        'I numeri sono già nelle mani dei soci: cambiarli adesso farebbe litigare ' +
+        'la tessera, la mail di rinnovo e la causale del bonifico.',
+      ui.ButtonSet.OK,
+    );
+    return;
+  }
+
+  const soci = leggi(CONFIG.sheets.soci);
+  if (!soci.length) return;
+
+  const posizione = (socio) => {
+    const primo = CONFIG.primi.findIndex(
+      (n) => normalizza(n) === normalizza(socio.Nome),
+    );
+    return primo === -1 ? CONFIG.primi.length : primo;
+  };
+  /* The surname sorts, though the name is stored the other way round: a list a
+     person reads is alphabetical by surname, and a card wants "Luca Odetto". */
+  const cognome = (socio) => String(socio.Nome).split(' ').slice(-1)[0].toLowerCase();
+
+  const ordinati = soci.slice().sort((a, b) => {
+    const pa = posizione(a);
+    const pb = posizione(b);
+    if (pa !== pb) return pa - pb;
+    const va = a.Stato === 'attivo' ? 0 : 1;
+    const vb = b.Stato === 'attivo' ? 0 : 1;
+    if (va !== vb) return va - vb;
+    return cognome(a).localeCompare(cognome(b), 'it');
+  });
+
+  const nuovo = {};
+  ordinati.forEach((socio, i) => {
+    nuovo[socio.ID] = `VR-${String(i + 1).padStart(4, '0')}`;
+  });
+
+  /* Written as whole blocks rather than cell by cell: a hundred and fifty
+     single writes is a minute of watching a spreadsheet flicker, and a
+     half-finished renumbering is the one state nothing here could recover. */
+  const fSoci = foglio(CONFIG.sheets.soci);
+  const intestazioni = fSoci.getRange(1, 1, 1, fSoci.getLastColumn()).getValues()[0];
+  fSoci
+    .getRange(2, 1, ordinati.length, intestazioni.length)
+    .setValues(
+      ordinati.map((socio) =>
+        intestazioni.map((h) => (h === 'ID' ? nuovo[socio.ID] : (socio[h] ?? ''))),
+      ),
+    );
+
+  if (quote.length) {
+    const fQuote = foglio(CONFIG.sheets.quote);
+    const colonna = fQuote
+      .getRange(1, 1, 1, fQuote.getLastColumn())
+      .getValues()[0]
+      .indexOf('ID');
+    fQuote
+      .getRange(2, colonna + 1, quote.length, 1)
+      .setValues(quote.map((q) => [nuovo[q.ID] || q.ID]));
+  }
+
+  riferisci(
+    'Rinumerati',
+    `${ordinati.length} soci. Il numero 1 è ${ordinati[0].Nome}.\n` +
+      'Da adesso i numeri restano liberi finché non parte la prima tessera.',
   );
 }

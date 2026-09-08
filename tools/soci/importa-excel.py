@@ -57,6 +57,18 @@ REL = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'
 
 QUOTE = {'soci': ('Socio', 30), 'donazioni': ('Sostenitore', 10)}
 
+# Members who should hold the first ids, in this order. Everybody else follows
+# alphabetically by surname, and the people who have not renewed go last, so a
+# lapsed member never sits above an active one.
+#
+# A membership number is only a number until it is printed on somebody's card,
+# so this is worth getting right once rather than arguing about later. After
+# the first card is issued, use "Rinumera i soci" in the spreadsheet, which
+# refuses to run once any of them are out.
+PRIMI = [
+    'Luca Odetto',
+]
+
 
 def fogli(percorso):
     """Every sheet as (name, [row of {column letter: value}])."""
@@ -110,8 +122,30 @@ def data_excel(valore):
 
 
 def nome_proprio(testo):
-    """SIMONE ALLEGRINI reads badly on a membership card. Simone Allegrini."""
+    """ALLEGRINI SIMONE reads badly on a membership card. Allegrini Simone."""
     return ' '.join(p.capitalize() for p in ' '.join(testo.split()).split(' '))
+
+
+def chiave(testo):
+    """A name reduced to its words, in order, for comparing two spellings."""
+    return ' '.join(sorted(' '.join(str(testo).split()).lower().split()))
+
+
+def ordinamento(socio):
+    """
+    First the names in PRIMI, in their order. Then the active members by
+    surname, then the lapsed ones.
+
+    The surname is the sort key even though the name is stored the other way
+    round: a members list read by a person is alphabetical by surname, and the
+    card and the greeting want "Luca Odetto".
+    """
+    try:
+        primo = PRIMI.index(next(p for p in PRIMI if chiave(p) == chiave(socio['Nome'])))
+    except StopIteration:
+        primo = len(PRIMI)
+    return (primo, 0 if socio['Stato'] == 'attivo' else 1,
+            socio['_cognome'].lower(), socio['_nome'].lower())
 
 
 def main():
@@ -125,11 +159,11 @@ def main():
     ordine = 0
 
     for nome_foglio, righe in fogli(origine):
-        chiave = next((k for k in QUOTE if k in nome_foglio.lower()), None)
-        if not chiave:
+        tipo = next((k for k in QUOTE if k in nome_foglio.lower()), None)
+        if not tipo:
             print(f'  saltato il foglio "{nome_foglio}": non è soci né donazioni')
             continue
-        tier, importo = QUOTE[chiave]
+        tier, importo = QUOTE[tipo]
         pagati, scaduti, oltre_totali = 0, 0, False
 
         for celle in righe[1:]:                      # row 1 is the header
@@ -138,19 +172,24 @@ def main():
                 oltre_totali = True                  # the totals row
                 continue
 
-            intero = nome_proprio(f'{cognome} {nome}'.strip())
-            k = ' '.join(sorted(intero.lower().split()))
+            cognome, nome = nome_proprio(cognome), nome_proprio(nome)
+            intero = f'{nome} {cognome}'.strip()
+            k = chiave(intero)
             if k not in soci:
-                ordine += 1
                 soci[k] = {
-                    'ID': f'VR-{ordine:04d}',
+                    'ID': '',
                     'Nome': intero,
+                    '_cognome': cognome,
+                    '_nome': nome,
                     'Email': '',
                     'Stato': 'inattivo' if oltre_totali else 'attivo',
                     'Iscritto dal': '',
                     'Note': '',
                 }
             socio = soci[k]
+            if not socio['ID']:
+                ordine += 1
+                socio['ID'] = f'tmp-{ordine}'
             if not oltre_totali:
                 socio['Stato'] = 'attivo'            # paying beats lapsed
             if celle.get('A', '').upper() == 'FIVL' and 'FIVL' not in socio['Note']:
@@ -180,7 +219,20 @@ def main():
 
         print(f'  "{nome_foglio}": {pagati} paganti, {scaduti} non rinnovati')
 
-    scrivi(uscita / 'Soci.csv', list(soci.values()))
+    ordinati = sorted(soci.values(), key=ordinamento)
+    rinumerazione = {}
+    for posizione, socio in enumerate(ordinati, start=1):
+        nuovo = f'VR-{posizione:04d}'
+        rinumerazione[socio['ID']] = nuovo
+        socio['ID'] = nuovo
+    for q in quote:
+        q['ID'] = rinumerazione[q['ID']]
+
+    for socio in ordinati:
+        del socio['_cognome']
+        del socio['_nome']
+
+    scrivi(uscita / 'Soci.csv', ordinati)
     scrivi(uscita / 'Quote.csv', quote)
 
     senza_email = sum(1 for s in soci.values() if not s['Email'])
