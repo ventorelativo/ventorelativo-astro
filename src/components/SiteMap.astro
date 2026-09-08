@@ -147,7 +147,29 @@ const narrowAvif =
     format: 'avif',
     quality: 68,
   }));
-const blur = poster && (await lqip(poster.wide));
+/*
+  Two placeholders, because there are two stills.
+
+  Forty pixels rather than the site's usual twenty: a map at twenty blurs to
+  one flat beige, because a map is mostly one flat beige with thin lines on it,
+  and the placeholder was doing its job while looking like a grey box.
+
+  **And one per framing.** A phone is shown the narrow still, which is
+  portrait, while the placeholder came from the wide one, which is landscape:
+  `background-size: cover` then blew a 40x23 strip up into a 342x600 box, so
+  what a phone actually got was a vague gradient of the middle of the wrong
+  picture. The CSS picks between them on the same breakpoint the `<source>`
+  elements use.
+
+  A few hundred bytes of inline data URI, no request, and nothing in LCP, which
+  is measured on the still itself.
+*/
+const [blur, blurNarrow] = poster
+  ? await Promise.all([
+      lqip(poster.wide, { pixels: 40 }),
+      poster.narrow ? lqip(poster.narrow, { pixels: 40 }) : undefined,
+    ])
+  : [undefined, undefined];
 
 /*
   The geometry, as GeoJSON, in a script tag rather than a data attribute: it is
@@ -276,7 +298,15 @@ const typeNames = Object.fromEntries(
         it the container is the viewport and the narrow capture was taken for
         exactly that, above it the wide one crops less than it gains.
       */
-      <picture class="blur" style={blur ? `--lqip:url(${blur})` : undefined}>
+      <picture
+        class="blur"
+        style={[
+          blur && `--lqip:url(${blur})`,
+          blurNarrow && `--lqip-narrow:url(${blurNarrow})`,
+        ]
+          .filter(Boolean)
+          .join(';')}
+      >
         {narrowAvif && (
           <source
             media="(width < 48rem)"
@@ -425,7 +455,14 @@ const typeNames = Object.fromEntries(
     width: 100%;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background-color: var(--color-map-ground);
+    /*
+      No background of its own. It used to carry the ground colour, and an
+      `<img>` paints its background inside its own box, over whatever the
+      wrapper is painting: the blurred placeholder was there all along and
+      never visible, hidden behind a flat grey by the very element it was
+      standing in for. The ground colour now lives on the wrapper, under the
+      placeholder, where it is the fallback rather than the cover.
+    */
   }
 
   /*
@@ -514,6 +551,8 @@ const typeNames = Object.fromEntries(
     background-image: var(--lqip);
     background-size: cover;
     background-position: center;
+    /* Under the placeholder, and all there is when a poster has none. */
+    background-color: var(--color-map-ground);
     /*
       The same radius as the image it is standing in for.
 
@@ -525,6 +564,16 @@ const typeNames = Object.fromEntries(
     */
     border-radius: var(--radius-lg);
     overflow: hidden;
+  }
+
+  /*
+    48rem is the breakpoint the `<source media>` above uses, so the blur and
+    the still it stands in for always come from the same framing.
+  */
+  @media (width < 48rem) {
+    .map :global(picture.blur) {
+      background-image: var(--lqip-narrow, var(--lqip));
+    }
   }
 
   .map :global(picture.blur:has(img[data-loaded])) {
@@ -539,7 +588,14 @@ const typeNames = Object.fromEntries(
     object-position: center;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background-color: var(--color-map-ground);
+    /*
+      No background of its own. It used to carry the ground colour, and an
+      `<img>` paints its background inside its own box, over whatever the
+      wrapper is painting: the blurred placeholder was there all along and
+      never visible, hidden behind a flat grey by the very element it was
+      standing in for. The ground colour now lives on the wrapper, under the
+      placeholder, where it is the fallback rather than the cover.
+    */
   }
 
   /*

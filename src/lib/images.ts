@@ -39,6 +39,17 @@ export interface Crop {
   width?: number;
   height?: number;
   position?: string;
+  /**
+   * How many pixels wide the placeholder is. Twenty by default.
+   *
+   * Twenty is right for a photograph, where the eye reads a blurred wash of
+   * the real colours and fills in the rest. It is not right for a map: at
+   * twenty pixels a map still is one flat beige, because a map is mostly one
+   * flat beige with thin lines on it, and the placeholder ends up saying
+   * nothing at all. Those pass a larger number, and pay a few hundred bytes of
+   * inline data URI for a placeholder with the valley in it.
+   */
+  pixels?: number;
 }
 
 /*
@@ -54,7 +65,9 @@ export function lqip(
   image: ImageMetadata,
   crop: Crop = {},
 ): Promise<string | undefined> {
-  const key = `${image.src}|${crop.width ?? ''}x${crop.height ?? ''}|${crop.position ?? ''}`;
+  const key =
+    `${image.src}|${crop.width ?? ''}x${crop.height ?? ''}` +
+    `|${crop.position ?? ''}|${crop.pixels ?? ''}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const made = make(image, crop);
@@ -73,7 +86,7 @@ async function make(image: ImageMetadata, crop: Crop): Promise<string | undefine
 
   const ratio =
     crop.width && crop.height ? crop.width / crop.height : image.width / image.height;
-  const width = 20;
+  const width = crop.pixels ?? 20;
   const height = Math.max(1, Math.round(width / ratio));
 
   try {
@@ -82,9 +95,13 @@ async function make(image: ImageMetadata, crop: Crop): Promise<string | undefine
       /*
         Blurred here rather than with a CSS filter on the element: a filter
         costs a paint on every scroll and this costs one build. The radius is
-        in pixels of a twenty-pixel image, so it is far heavier than it looks.
+        in pixels of the placeholder, and it barely grows with it: scaled
+        proportionally, a forty-pixel image blurred by three is smeared back
+        into the same flat wash a twenty-pixel one was, and compresses to the
+        same 150 bytes. The point of asking for more pixels is to keep some
+        structure, so the radius stays near 1.5.
       */
-      .blur(1.5)
+      .blur(Math.max(1.2, width / 26))
       .webp({ quality: 45, effort: 4 })
       .toBuffer();
     return `data:image/webp;base64,${buffer.toString('base64')}`;
