@@ -79,6 +79,17 @@ const START_ALTITUDE = 0;
 
 const args = process.argv.slice(2);
 const check = args.includes('--check');
+/*
+  Same detection as `--check`, but it never fails.
+
+  This runs from `prebuild`, which means it runs on Netlify, where an editor
+  who renamed a takeoff in Keystatic would otherwise get a green deploy and a
+  quietly missing button. It warns rather than failing on purpose: a content
+  edit must never be able to take the site down, and the worst this can cause
+  is one takeoff without a cone until somebody runs `npm run cones`. Same
+  reasoning as the missing-map-key warning in astro.config.mjs.
+*/
+const warn = args.includes('--warn');
 const force = args.includes('--force');
 const onlyFlag = args.indexOf('--only');
 /* `indexOf` returns -1 when the flag is absent, and args[0] is not a filter. */
@@ -212,10 +223,10 @@ async function main() {
       const current = manifest[key]?.hash === hash && existsSync(file);
 
       if (current && !force) {
-        if (!check) console.log(`  ${key.padEnd(28)} unchanged`);
+        if (!check && !warn) console.log(`  ${key.padEnd(28)} unchanged`);
         continue;
       }
-      if (check) {
+      if (check || warn) {
         stale.push(key);
         continue;
       }
@@ -232,6 +243,18 @@ async function main() {
          somebody's hobby server is not how to be a good guest. */
       await new Promise((resolve) => setTimeout(resolve, 1500));
     }
+  }
+
+  if (warn) {
+    if (stale.length || orphans.length) {
+      const takeoffNames = [...new Set(stale.map((k) => k.replace(/-\d+$/, '')))];
+      console.warn(
+        `\n  ⚠ ${takeoffNames.length} takeoff(s) have no glide cone: ${takeoffNames.join(', ')}.` +
+          '\n    The map simply will not offer one for them.' +
+          '\n    Run `npm run cones` when you have a network.\n',
+      );
+    }
+    return;
   }
 
   if (check) {
