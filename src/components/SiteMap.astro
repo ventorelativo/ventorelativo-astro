@@ -977,7 +977,10 @@ const typeNames = Object.fromEntries(
           the style, which would throw away every layer, source and image we
           have just built and make the switch a reload rather than a toggle.
         */
-        const styleLayerIds = map.getStyle().layers.map((layer) => layer.id);
+        const styleLayers = map
+          .getStyle()
+          .layers.map((layer) => ({ id: layer.id, type: layer.type }));
+        const styleLayerIds = styleLayers.map((layer) => layer.id);
         const firstStyleLayer = styleLayerIds[0];
 
         map.addSource('raster-base', {
@@ -996,6 +999,23 @@ const typeNames = Object.fromEntries(
           },
           // Underneath everything, so turning it on is a matter of hiding what
           // is above it rather than restacking.
+          firstStyleLayer,
+        );
+
+        map.addSource('satellite', {
+          type: 'raster',
+          tiles: [config.SATELLITE_BASE.tiles],
+          tileSize: 256,
+          maxzoom: config.SATELLITE_BASE.maxzoom,
+          attribution: config.SATELLITE_BASE.attribution,
+        });
+        map.addLayer(
+          {
+            id: 'satellite',
+            type: 'raster',
+            source: 'satellite',
+            layout: { visibility: 'none' },
+          },
           firstStyleLayer,
         );
 
@@ -1444,7 +1464,7 @@ const typeNames = Object.fromEntries(
           pitch: map.getPitch(),
         };
         map.addControl(new ResetControl(home, root), 'top-right');
-        map.addControl(new LayersControl(map, styleLayerIds, config), 'top-right');
+        map.addControl(new LayersControl(map, styleLayers, config), 'top-right');
       });
     } catch {
       back('Mappa non disponibile, riprova');
@@ -1605,8 +1625,15 @@ const typeNames = Object.fromEntries(
     getSource(id: string): unknown;
   }
 
+  /** One of the style's own layers: what it is called and what it paints. */
+  interface StyleLayer {
+    id: string;
+    type: string;
+  }
+
   interface ThermalConfig {
     RASTER_BASE: { label: string };
+    SATELLITE_BASE: { label: string };
     THERMAL_LAYERS: readonly { value: string; label: string }[];
     THERMAL_SEASONS: readonly { value: string; label: string }[];
     THERMAL_TIMES: readonly { value: string; label: string }[];
@@ -1629,7 +1656,7 @@ const typeNames = Object.fromEntries(
    */
   class LayersControl {
     #map: LayerMap;
-    #styleLayerIds: string[];
+    #styleLayers: StyleLayer[];
     #config: ThermalConfig;
     #container: HTMLElement | null = null;
 
@@ -1638,9 +1665,9 @@ const typeNames = Object.fromEntries(
     #season: string;
     #time = 'all';
 
-    constructor(map: LayerMap, styleLayerIds: string[], config: ThermalConfig) {
+    constructor(map: LayerMap, styleLayers: StyleLayer[], config: ThermalConfig) {
       this.#map = map;
-      this.#styleLayerIds = styleLayerIds;
+      this.#styleLayers = styleLayers;
       this.#config = config;
       this.#season = config.currentThermalSeason();
     }
@@ -1675,10 +1702,13 @@ const typeNames = Object.fromEntries(
       const group = `base-${Math.random().toString(36).slice(2, 8)}`;
       base.append(
         this.#radio(group, 'Topografica (vettoriale)', true, () =>
-          this.#showRaster(false),
+          this.#base('vector'),
         ),
         this.#radio(group, this.#config.RASTER_BASE.label, false, () =>
-          this.#showRaster(true),
+          this.#base('raster'),
+        ),
+        this.#radio(group, this.#config.SATELLITE_BASE.label, false, () =>
+          this.#base('satellite'),
         ),
       );
 
@@ -1808,9 +1838,40 @@ const typeNames = Object.fromEntries(
       }
     }
 
-    #showRaster(on: boolean) {
-      this.#setVisible('raster-base', on);
-      for (const id of this.#styleLayerIds) this.#setVisible(id, !on);
+    /**
+     * Switch the background, without swapping the style.
+     *
+     * Replacing the style would throw away every source, layer and image built
+     * on `style.load`, which makes a toggle into a reload. So all three bases
+     * are already in the map and this decides what is visible.
+     *
+     * **Satellite is the one that is not simply "hide the others".** Imagery
+     * with nothing on it is pretty and useless: a pilot needs the road they
+     * drive up and the river in the valley. So the style's lines and labels
+     * stay, and only what would paint over the photograph is hidden.
+     *
+     * The rule is the layer's type, not its name: `background`, `fill`,
+     * `fill-extrusion`, `hillshade` and the style's own rasters cover the
+     * ground, while `line` and `symbol` sit on it. Matching on ids would mean
+     * knowing all 132 of this style's, and being wrong the day the club edits
+     * it in MapTiler.
+     *
+     * The exception is contours. They are lines, they are what makes the topo
+     * style worth having, and over imagery they are a net thrown across the
+     * picture. Anything whose id says so goes with the fills.
+     */
+    #base(which: 'vector' | 'raster' | 'satellite') {
+      this.#setVisible('raster-base', which === 'raster');
+      this.#setVisible('satellite', which === 'satellite');
+
+      for (const layer of this.#styleLayers) {
+        const covers =
+          layer.type !== 'line' && layer.type !== 'symbol' && layer.type !== 'circle';
+        const noisy = /contour|isoline|hillshade|shadow|relief/i.test(layer.id);
+        const visible =
+          which === 'vector' || (which === 'satellite' && !covers && !noisy);
+        this.#setVisible(layer.id, visible);
+      }
     }
   }
 

@@ -100,6 +100,38 @@ export const RASTER_BASE = {
 };
 
 /**
+ * Esri's World Imagery, as a satellite basemap under the style's own lines.
+ *
+ * ## The tile URL is not the usual one
+ *
+ * ArcGIS numbers its path `{z}/{y}/{x}`, row before column, where almost
+ * everything else on the web is `{z}/{x}/{y}`. Written the ordinary way it
+ * still returns 200s and still paints imagery, just of somewhere else, which
+ * is a bug that looks like a projection problem. The placeholders below are
+ * deliberately out of the habitual order.
+ *
+ * ## No key, and what that is worth
+ *
+ * This endpoint takes no key and no account, which is why it is the one every
+ * example uses. Esri's terms do expect an ArcGIS account for an application,
+ * and the club is not one: if the tiles start 403ing, that is what happened,
+ * and the fix is either an ArcGIS developer key or MapTiler's own satellite
+ * layer, which the club's account already includes.
+ *
+ * Attribution is not optional and is rendered by MapLibre from the string
+ * below.
+ */
+export const SATELLITE_BASE = {
+  label: 'Satellite',
+  tiles:
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  attribution:
+    'Imagery © <a href="https://www.esri.com">Esri</a>, Maxar, Earthstar Geographics',
+  /* Esri publishes imagery to 19 in most of the world, and this valley has it. */
+  maxzoom: 19,
+};
+
+/**
  * kk7's flight data, as a raster overlay.
  *
  * Two views of the same archive: `thermals` marks where pilots climbed, which
