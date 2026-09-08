@@ -681,7 +681,9 @@ const typeNames = Object.fromEntries(
     user-select: text;
   }
 
-  .map :global(.map-popup__links) {
+  /* `p.` for the same reason as `p.map-popup__cone` below: the `.map-popup p`
+     reset above outscores a bare class, and this margin never applied. */
+  .map :global(p.map-popup__links) {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2xs);
@@ -770,6 +772,12 @@ const typeNames = Object.fromEntries(
     font: inherit;
     font-size: var(--text-xs);
     cursor: pointer;
+  }
+
+  .map :global(.map-popup__coneicon) {
+    /* The glyph sits small and high in its em box next to the word. */
+    font-size: 1.15em;
+    line-height: 1;
   }
 
   .map :global(.map-popup__conebtn:hover) {
@@ -1841,19 +1849,17 @@ const typeNames = Object.fromEntries(
       button.type = 'button';
       button.className = 'map-popup__conebtn';
       /*
-        A glide slope: the hill, and the line away from it. Stroked in
-        `currentColor` and 16px like the controls in the stack above, and
+        The glide slope as a character rather than a drawing. The drawing was a
+        hill with a line off it, which read as nothing at fourteen pixels;
         `aria-hidden` because the word beside it already says what it is.
       */
-      button.insertAdjacentHTML(
-        'afterbegin',
-        '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" ' +
-          'focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" ' +
-          'stroke-linecap="round" stroke-linejoin="round">' +
-          '<path d="M1.5 13.5h13"></path>' +
-          '<path d="M3 11 6.5 4l3.5 7"></path>' +
-          '<path d="M6.5 4.5 14 9.5"></path></svg>',
+      button.append(
+        Object.assign(document.createElement('span'), {
+          className: 'map-popup__coneicon',
+          textContent: '◺',
+        }),
       );
+      button.lastElementChild?.setAttribute('aria-hidden', 'true');
       /*
         The caveat, as the button's own tooltip rather than a paragraph under
         it. The popup is a label on a marker and every line in it competes with
