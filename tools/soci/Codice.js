@@ -62,6 +62,16 @@ const CONFIG = {
   primi: ['Luca Odetto'],
 
   mittente: 'Parapendio Club Ventorelativo',
+
+  /*
+    The address members see, which is not the account the script runs as.
+
+    Add it in Gmail under Impostazioni, Account, "Invia messaggi come", verify
+    it once, and every email goes out as the club rather than as whichever
+    volunteer happened to authorise the script. Without the alias the account's
+    own address is used: that works, but it puts a personal mailbox in front of
+    a hundred members.
+  */
   rispondiA: 'segreteria@ventorelativo.it',
 
   /* Told about anything the matching could not decide. */
@@ -124,6 +134,31 @@ function interattivo() {
   } catch {
     return false;
   }
+}
+
+/**
+ * The sender for every email this script writes.
+ *
+ * Apps Script sends as the account that authorised it, and `from` is accepted
+ * only for an address Gmail lists as a verified alias. So the alias is used
+ * when it is there and skipped when it is not: a club that has not set one up
+ * yet still gets its renewals out, from the account's own address.
+ *
+ * Looked up once per run rather than per message: it is an API call, and a
+ * renewal round sends a hundred of these.
+ */
+let ALIAS = null;
+function mittente() {
+  if (ALIAS === null) {
+    try {
+      ALIAS = GmailApp.getAliases().indexOf(CONFIG.rispondiA) !== -1;
+    } catch {
+      ALIAS = false;
+    }
+  }
+  const opzioni = { name: CONFIG.mittente, replyTo: CONFIG.rispondiA };
+  if (ALIAS) opzioni.from = CONFIG.rispondiA;
+  return opzioni;
 }
 
 function riferisci(titolo, testo) {
@@ -417,10 +452,7 @@ function inviaRinnovi(anno, esiti) {
       socio.Email,
       `Rinnovo quota ${anno}`,
       rinnovoTesto(socio, quota, anno, link),
-      {
-        name: CONFIG.mittente,
-        replyTo: CONFIG.rispondiA,
-      },
+      mittente(),
     );
     /* Stamped at once, so an error on the next member cannot un-send this. */
     scrivi(CONFIG.sheets.quote, quota._riga, 'Invito', new Date());
@@ -787,11 +819,7 @@ function generaTessere() {
       socio.Email,
       `La tua tessera ${quota.Anno}`,
       tesseraTesto(socio, quota),
-      {
-        name: CONFIG.mittente,
-        replyTo: CONFIG.rispondiA,
-        attachments: [pdf.getAs('application/pdf')],
-      },
+      Object.assign(mittente(), { attachments: [pdf.getAs('application/pdf')] }),
     );
 
     scrivi(CONFIG.sheets.quote, quota._riga, 'Tessera', pdf.getUrl());
@@ -859,9 +887,7 @@ function sincronizza() {
   if (interattivo()) {
     riferisci('Sincronizzazione', riga);
   } else if (esiti.dubbi.length || errore) {
-    GmailApp.sendEmail(CONFIG.avvisi, 'Quote: qualcosa da guardare', riga, {
-      name: CONFIG.mittente,
-    });
+    GmailApp.sendEmail(CONFIG.avvisi, 'Quote: qualcosa da guardare', riga, mittente());
   }
 }
 

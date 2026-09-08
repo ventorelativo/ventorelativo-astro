@@ -39,6 +39,31 @@ webhooks, sends email, writes files to Drive and can be run on a schedule, so a
 second service would only move data between two Google products while adding an
 account, a bill and somewhere else to look when it breaks.
 
+## Perché non Airtable
+
+Asked and answered on 2026-09-08, because "one shared login for the committee"
+is a fair thing to want and Google's account model is not obviously that.
+
+It does not survive contact with the three jobs here:
+
+- **Automations: 100 runs a month on the free plan.** Checking Satispay hourly
+  is about 720. That alone means the Team plan, 20 dollars per user per month,
+  against a whole argument about 30 euro a year of fees.
+- **No RSA signing.** Airtable's scripting takes no external libraries and
+  offers no signing primitives, and a Satispay request has to be signed. The
+  automatic matching, the thing the treasurer actually wanted, would need a
+  fourth service to do it somewhere else.
+- **No PDF.** Airtable does not make one. The card would need a paid add-on;
+  here it is a Slides file a committee member can restyle.
+
+And it does not fix what prompted the question: Airtable's own emails come from
+Airtable, not from the club. The address members see is solved by a Gmail alias
+(step 2), which costs five minutes and nothing a month.
+
+A shared login is still available if the committee wants one: the Google account
+that owns all this can be the club's, with its password wherever the club keeps
+its passwords, exactly like one Airtable login.
+
 ## The one design rule
 
 **A person is a row in `Soci`, forever. A year is a row in `Quote`.**
@@ -60,14 +85,30 @@ fogli**. It creates the three tabs with their headers and touches no existing
 data; moving the old columns under the new headings is a hand job, done once.
 
 Fill in the two ids at the top of the script, `templateTessera` and
-`cartellaTessere`, once step 3 exists.
+`cartellaTessere`, once step 4 exists.
 
-### 2. Share it properly
+### 2. The address members see
+
+The script sends as the Google account that authorised it, which would put a
+volunteer's personal mailbox in front of a hundred members and make the club
+look like one person.
+
+Fix it once, in Gmail: **Impostazioni → Account → Invia messaggi come → Aggiungi
+un altro indirizzo email**, `segreteria@ventorelativo.it`, and confirm the
+verification mail. From then on every renewal, card and alert goes out as the
+club. The script checks for the alias and uses it if it is there, so nothing
+breaks while you are setting it up.
+
+**This is why the account matters less than it looks.** It still owns the Sheet,
+the Drive folder and the script, so it should be a club account rather than a
+personal one, but members never see it.
+
+### 3. Share it properly
 
 **Named committee accounts only. Never "anyone with the link".** It holds names
 and email addresses, and a link that leaks is a link that stays leaked.
 
-### 3. The card template
+### 4. The card template
 
 A **Google Slides** file, one slide, sized like a card. Put the four
 placeholders in it exactly as written: `{{nome}}`, `{{quota}}`, `{{anno}}`,
@@ -79,7 +120,7 @@ in the code knows what it looks like.
 
 Make a Drive folder for the generated cards and put both ids into `CONFIG`.
 
-### 4. Satispay, so the matching can be automatic
+### 5. Satispay, so the matching can be automatic
 
 Generate a key pair on your own machine, not in the browser:
 
@@ -100,7 +141,7 @@ Then **Installa il controllo automatico**, which sets the hourly trigger.
 **The private key never goes in this repository**, or in the spreadsheet, or in
 an email. Script Properties, and a copy wherever the club keeps its passwords.
 
-### 5. The website's form
+### 6. The website's form
 
 In Apps Script: **Deploy → New deployment → Web app**, execute as yourself,
 access **Anyone**. Copy the URL it gives you.
