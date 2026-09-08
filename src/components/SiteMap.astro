@@ -15,6 +15,8 @@
  * Hover and focus start the fetch even earlier, so by the time the click lands
  * the download is usually already running.
  */
+import { readFileSync } from 'node:fs';
+
 import { getImage } from 'astro:assets';
 
 import { avifWins, lqip } from '../lib/images';
@@ -155,6 +157,32 @@ const blur = poster && (await lqip(poster.wide));
   Colours are resolved in the browser from the same `--color-map-*` tokens the
   feature table uses, so the two cannot drift and the map follows the theme.
 */
+/*
+  Which takeoffs have a glide cone generated for them.
+
+  A takeoff added through Keystatic has no cone until somebody runs
+  `npm run cones`, which needs the network and is not part of a deploy. Without
+  this the popup would offer a Planata button that fetches a 404 and quietly
+  does nothing, which is worse than not offering it: the reader concludes the
+  map is broken rather than that the data is missing.
+
+  `npm run cones:check` fails the local gate in the meantime, so this is a
+  gap that announces itself rather than one that hides.
+*/
+const coneManifest = (() => {
+  try {
+    const raw = readFileSync('public/api/cones/manifest.json', 'utf8');
+    return new Set(
+      Object.keys(JSON.parse(raw) as Record<string, unknown>).map((key) =>
+        key.replace(/-\d+$/, ''),
+      ),
+    );
+  } catch {
+    /* No manifest at all is a repository that has never generated one. */
+    return new Set<string>();
+  }
+})();
+
 const geojson = {
   type: 'FeatureCollection',
   features: [
@@ -169,7 +197,8 @@ const geojson = {
           // absent key reads as broken data where '' reads as "not set".
           siteTitle: feature.site?.title ?? '',
           siteHref: feature.site?.href ?? '',
-          slug: feature.id ?? '',
+          /* Only where a cone exists to draw: see coneManifest above. */
+          slug: feature.id && coneManifest.has(feature.id) ? feature.id : '',
         },
         geometry: {
           type: 'Point',
@@ -711,11 +740,15 @@ const typeNames = Object.fromEntries(
     display: flex;
     gap: var(--space-3xs);
     align-items: center;
-    margin: var(--space-2xs) 0 0;
+    /* Clear of the links above: those leave the site, this changes the map,
+       and run together they read as one row of four controls. */
+    margin: var(--space-sm) 0 0;
   }
 
   .map :global(.map-popup__conebtn) {
     flex: 1;
+    /* Wide enough that "Cono" and "Nascondi" do not resize the popup. */
+    min-width: 5.5rem;
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
@@ -743,19 +776,6 @@ const typeNames = Object.fromEntries(
     color: var(--color-text);
     font: inherit;
     font-size: var(--text-xs);
-  }
-
-  /*
-    The caveat under the cone. Quiet, and not optional: the model assumes still
-    air on a coarse terrain grid, and a coloured area on a club's map reads as
-    a promise unless something says otherwise.
-  */
-  .map :global(.map-popup__note) {
-    margin: var(--space-3xs) 0 0;
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    line-height: 1.35;
-    text-wrap: pretty;
   }
 
   .map :global(.map-layers__filter) {
@@ -1789,14 +1809,16 @@ const typeNames = Object.fromEntries(
 
       const gz = document.createElement('select');
       gz.className = 'map-popup__gz';
-      gz.setAttribute('aria-label', 'Efficienza');
+      /* The label is the accessible name: the popup has no room for a visible
+         one, and "8" on its own tells a screen reader nothing. */
+      gz.setAttribute('aria-label', 'Efficienza di planata');
       for (const value of ['6', '8', '10']) {
         gz.append(
           Object.assign(document.createElement('option'), {
             value,
             textContent: `1:${value}`,
-            /* 1:8 is the everyday number for a modern A or B, and the one
-               most members can read their own glide off. */
+            /* 1:8 is the everyday number for a modern A or B, and the one most
+               members can read their own glide off. */
             selected: value === '8',
           }),
         );
@@ -1805,8 +1827,18 @@ const typeNames = Object.fromEntries(
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'map-popup__conebtn';
+      /*
+        The caveat, as the button's own tooltip rather than a paragraph under
+        it. The popup is a label on a marker and every line in it competes with
+        the map; the warning still has to exist, because a coloured area on a
+        club's map reads as a promise, but it does not have to be read twice by
+        everybody who has already read it once.
+      */
+      button.title = 'Stima in aria calma, senza vento e senza termiche';
       const drawn = () => coneShown?.() === `${slug}-${gz.value}`;
-      const label = () => (drawn() ? 'Nascondi cono' : 'Cono di planata');
+      /* "Cono" alone means nothing to somebody who has not seen the tool it
+         comes from. "Planata" is the thing a pilot is actually asking about. */
+      const label = () => (drawn() ? 'Nascondi' : 'Planata');
       button.textContent = label();
 
       button.addEventListener('click', async () => {
@@ -1824,14 +1856,7 @@ const typeNames = Object.fromEntries(
       });
 
       row.append(button, gz);
-
-      const note = document.createElement('p');
-      note.className = 'map-popup__note';
-      note.textContent =
-        'Aria calma, senza vento e senza termiche, su un modello del terreno a ' +
-        'maglia larga. Aiuta a pianificare, non garantisce niente.';
-
-      root.append(row, note);
+      root.append(row);
     }
 
     return root;
