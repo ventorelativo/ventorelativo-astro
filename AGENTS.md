@@ -366,6 +366,15 @@ visitor asks for it. Details and the reasoning behind each rule:
   inline and the stylesheet sets `background-image: var(--lqip)`, which a later
   rule _can_ override. Setting `--lqip: none` from the stylesheet does not work
   either, for the same reason.
+- **A blur placeholder has to be painted on the box the photograph will
+  occupy.** `BlurImage` paints it on the `<picture>`, which is a block and
+  fills its column. That matches every caller whose image is `width: 100%`,
+  and does not match the article hero, which keeps its natural shape under a
+  `max-height`: a portrait poster was painted as a full-width landscape band,
+  showing a zoomed crop of the wrong part of the picture, then snapping to the
+  real shape. The image now holds its own placeholder wherever it does not
+  fade; the wrapper keeps it only for fading images, because `opacity: 0`
+  takes an element's own background with it.
 - **AVIF is not always smaller than WebP.** On this site's photographs it is
   47% smaller; on the map stills it is 40% larger, because they are flat
   renders and their source is already a lossy WebP. `avifWins()` in

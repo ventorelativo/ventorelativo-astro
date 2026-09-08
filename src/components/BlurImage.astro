@@ -149,11 +149,28 @@ const box = {
 
 <style>
   /*
-    A block that hugs the image and paints the placeholder behind it.
+    Where the placeholder is painted, and why it is painted in two places.
 
-    `cover` and a centred position, to match the `object-fit: cover` every
-    caller uses: the blur has to sit under the same crop as the photograph, or
-    the two do not line up while one fades into the other.
+    A `<picture>` is a block, so it fills its column. That is right for every
+    caller whose image is `width: 100%`, and wrong for the one that is not: an
+    article hero keeps its natural shape under a `max-height`, so a portrait
+    poster ends up narrower than the wrapper around it. The placeholder then
+    covered a full-width landscape box, showed a zoomed crop of the wrong part
+    of the picture, and collapsed to the real shape when the image arrived.
+
+    So the box that paints the blur is chosen by which one is guaranteed to
+    match:
+
+     - **the image itself**, whenever it does not fade. An `<img>` paints its
+       background inside its own box, which is by definition the box the
+       photograph will occupy, at the aspect ratio it will have. Nothing can
+       drift.
+     - **the wrapper**, when it does. A fading image is at `opacity: 0`, and
+       opacity takes the element's background with it, so its own background
+       would be just as invisible as the picture. The wrapper has to hold it.
+
+    Every fading image on this site is `width: 100%` inside its wrapper, which
+    is why the second case is safe.
   */
   .blur {
     display: block;
@@ -163,12 +180,26 @@ const box = {
     background-repeat: no-repeat;
   }
 
+  /* The LCP image never fades, so it holds its own blur, exactly. */
+  .blur:has(img[data-priority]) {
+    background-image: none;
+  }
+
+  .blur img[data-priority] {
+    /* `--lqip` is declared on the wrapper and inherits down to here. */
+    background-image: var(--lqip);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
   /*
-    The frame stops holding a blur once the image is on top of it. Left in
-    place it shows through every transparent pixel of a PNG, and stays in
-    memory for a picture nobody will see again.
+    Whichever box holds it, it stops holding it once the picture is on top.
+    Left in place it shows through every transparent pixel of a PNG, and stays
+    in memory for a picture nobody will see again.
   */
-  .blur:has(img[data-loaded]) {
+  .blur:has(img[data-loaded]),
+  .blur img[data-loaded] {
     background-image: none;
   }
 </style>
