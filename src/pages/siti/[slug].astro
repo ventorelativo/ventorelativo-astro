@@ -73,9 +73,12 @@ const provider = guideUrl
   than rendering an empty table. `getEntries` resolves them, in the order the
   site lists them, which is the order Drupal's field held.
 */
-const features = (await getEntries(entry.data.mapFeatures)).map(
-  (feature) => feature.data,
-);
+const features = (await getEntries(entry.data.mapFeatures)).map((feature) => ({
+  ...feature.data,
+  /* The entry id, which is also the name of its glide cone under
+     public/api/cones. The overview map already carried it. */
+  id: feature.id,
+}));
 
 // `summary` is deliberately not rendered here, as on news articles: it is the
 // card blurb (D7), and on the page it only repeated

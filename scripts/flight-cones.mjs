@@ -50,7 +50,7 @@
  * expansion is a dozen lines in the map.
  */
 import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -191,6 +191,19 @@ async function main() {
   const stale = [];
   let written = 0;
 
+  /*
+    What should exist, so what should not can be found.
+
+    Moving a takeoff changes its hash and refetches; adding one has no entry
+    and refetches. Renaming or deleting one does neither: the old file simply
+    stays, correct about a takeoff that is gone, and nothing would ever have
+    said so. Orphans are reported by `--check` and removed by a real run.
+  */
+  const wanted = new Set(
+    (await takeoffs()).flatMap((t) => RATIOS.map((r) => `${t.slug}-${r}`)),
+  );
+  const orphans = Object.keys(manifest).filter((key) => !wanted.has(key));
+
   for (const takeoff of sites) {
     for (const ratio of RATIOS) {
       const key = `${takeoff.slug}-${ratio}`;
@@ -222,14 +235,33 @@ async function main() {
   }
 
   if (check) {
-    if (stale.length) {
-      console.error(`\n✗ ${stale.length} glide cones are stale or missing:\n`);
-      for (const key of stale) console.error(`    ${key}`);
-      console.error('\n  Run `npm run cones` (needs network).\n');
+    if (stale.length || orphans.length) {
+      if (stale.length) {
+        console.error(`\n✗ ${stale.length} glide cones are stale or missing:\n`);
+        for (const key of stale) console.error(`    ${key}`);
+      }
+      if (orphans.length) {
+        console.error(`\n✗ ${orphans.length} cones belong to no takeoff:\n`);
+        for (const key of orphans) console.error(`    ${key}`);
+      }
+      console.error(
+        '\n  Run `npm run cones`' + (stale.length ? ' (needs network).' : '.') + '\n',
+      );
       process.exit(1);
     }
     console.log(`✓ glide cones ok  (${Object.keys(manifest).length} up to date)`);
     return;
+  }
+
+  /* Only when the run covered every takeoff: with --only, everything else
+     looks like an orphan and deleting it would be an impressive own goal. */
+  if (!only) {
+    for (const key of orphans) {
+      const file = join(OUT_DIR, `${key}.json`);
+      if (existsSync(file)) await rm(file);
+      delete manifest[key];
+      console.log(`  ${key.padEnd(28)} removed, no such takeoff`);
+    }
   }
 
   await writeFile(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);

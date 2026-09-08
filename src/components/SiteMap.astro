@@ -59,6 +59,11 @@ import type { LatLon } from '../lib/geo';
 interface Feature {
   name: string;
   type: FeatureType;
+  /**
+   * The entry id, which is also what its glide cone is called under
+   * `public/api/cones`. Only takeoffs have one.
+   */
+  id?: string;
   point?: LatLon;
   shape?: { discriminant: 'polygon' | 'line'; value: [number, number][] };
   /**
@@ -164,6 +169,7 @@ const geojson = {
           // absent key reads as broken data where '' reads as "not set".
           siteTitle: feature.site?.title ?? '',
           siteHref: feature.site?.href ?? '',
+          slug: feature.id ?? '',
         },
         geometry: {
           type: 'Point',
@@ -700,6 +706,58 @@ const typeNames = Object.fromEntries(
     margin-block-start: var(--space-3xs);
   }
 
+  /* The cone's controls, on the takeoff's popup. */
+  .map :global(.map-popup__cone) {
+    display: flex;
+    gap: var(--space-3xs);
+    align-items: center;
+    margin: var(--space-2xs) 0 0;
+  }
+
+  .map :global(.map-popup__conebtn) {
+    flex: 1;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+
+  .map :global(.map-popup__conebtn:hover) {
+    border-color: var(--color-accent);
+  }
+
+  .map :global(.map-popup__conebtn:disabled) {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .map :global(.map-popup__gz) {
+    padding: 0.25rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--text-xs);
+  }
+
+  /*
+    The caveat under the cone. Quiet, and not optional: the model assumes still
+    air on a coarse terrain grid, and a coloured area on a club's map reads as
+    a promise unless something says otherwise.
+  */
+  .map :global(.map-popup__note) {
+    margin: var(--space-3xs) 0 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: 1.35;
+    text-wrap: pretty;
+  }
+
   .map :global(.map-layers__filter) {
     display: grid;
     grid-template-columns: 3.2rem 1fr;
@@ -1019,6 +1077,55 @@ const typeNames = Object.fromEntries(
           firstStyleLayer,
         );
 
+        /*
+          The glide cone, empty until somebody asks for one.
+
+          Under the features and over the basemap: a pilot needs to see the
+          takeoff and the landing fields through it, and a translucent fill is
+          the only thing here that would otherwise bury them.
+        */
+        map.addSource('cone', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        });
+        map.addLayer(
+          {
+            id: 'cone',
+            type: 'fill',
+            source: 'cone',
+            layout: { visibility: 'none' },
+            paint: {
+              /*
+                Height above the ground on arrival, which is what the colours
+                mean on hikeandfly.org: how much you have left when you get
+                there. Red is arriving on the deck, blue is arriving high.
+              */
+              'fill-color': [
+                'interpolate',
+                ['linear'],
+                ['get', 'agl'],
+                0,
+                '#d7301f',
+                100,
+                '#fc8d59',
+                200,
+                '#fee08b',
+                400,
+                '#91cf60',
+                800,
+                '#3288bd',
+              ],
+              'fill-opacity': 0.45,
+            },
+          },
+          /*
+            No `beforeId`: this is added before the feature layers are, so it
+            already sits under them. Naming one that does not exist yet throws,
+            and `features-points` was a layer I invented rather than one this
+            style has.
+          */
+        );
+
         map.addSource('thermals', {
           type: 'raster',
           // Opens on the current quarter; the panel can change all three parts.
@@ -1275,6 +1382,9 @@ const typeNames = Object.fromEntries(
                   // The kinds with artwork are exactly the ones with an icon file.
                   hasIcon: Boolean(icons[kind]),
                   name: String(feature.properties?.name ?? ''),
+                  slug: String(feature.properties?.slug ?? ''),
+                  onCone: showCone,
+                  coneShown: () => coneShown,
                   point: { lat, lon },
                   links,
                 }),
@@ -1464,6 +1574,83 @@ const typeNames = Object.fromEntries(
           pitch: map.getPitch(),
         };
         map.addControl(new ResetControl(home, root), 'top-right');
+        /**
+         * Draw the glide cone for one takeoff, or clear it.
+         *
+         * The file holds a regular grid packed as an origin, a step and one
+         * `[row, column, height above ground]` per reachable cell, so the
+         * squares are rebuilt here. Shipping them as GeoJSON polygons would
+         * have cost five coordinate pairs and a properties object per cell: a
+         * couple of hundred kilobytes to say what twenty says.
+         * `scripts/flight-cones.mjs` is the other half of this.
+         *
+         * The offsets are cell centres, so each square runs half a step either
+         * way. Drawing them corner-first shifts the whole cone ninety metres
+         * north-east, which looks like a projection bug and is not one.
+         */
+        let coneShown = '';
+        async function showCone(slug: string, gz: string) {
+          const source = map.getSource('cone') as
+            { setData(data: unknown): void } | undefined;
+          if (!source) return;
+
+          const wanted = slug ? `${slug}-${gz}` : '';
+          coneShown = wanted;
+          if (!slug) {
+            map.setLayoutProperty('cone', 'visibility', 'none');
+            source.setData({ type: 'FeatureCollection', features: [] });
+            return;
+          }
+
+          let grid: {
+            lat0: number;
+            lon0: number;
+            latStep: number;
+            lonStep: number;
+            cells: [number, number, number][];
+          };
+          try {
+            const response = await fetch(`/api/cones/${wanted}.json`);
+            if (!response.ok) throw new Error(String(response.status));
+            grid = await response.json();
+          } catch {
+            /* A cone nobody generated is not a broken map. */
+            map.setLayoutProperty('cone', 'visibility', 'none');
+            return;
+          }
+
+          /* The answer to a request the visitor has since changed their mind
+             about: a slow fetch must not paint over a newer choice. */
+          if (coneShown !== wanted) return;
+
+          const halfLat = grid.latStep / 2;
+          const halfLon = grid.lonStep / 2;
+          source.setData({
+            type: 'FeatureCollection',
+            features: grid.cells.map(([row, col, agl]) => {
+              const lat = grid.lat0 + row * grid.latStep;
+              const lon = grid.lon0 + col * grid.lonStep;
+              return {
+                type: 'Feature',
+                properties: { agl },
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [
+                    [
+                      [lon - halfLon, lat - halfLat],
+                      [lon + halfLon, lat - halfLat],
+                      [lon + halfLon, lat + halfLat],
+                      [lon - halfLon, lat + halfLat],
+                      [lon - halfLon, lat - halfLat],
+                    ],
+                  ],
+                },
+              };
+            }),
+          });
+          map.setLayoutProperty('cone', 'visibility', 'visible');
+        }
+
         map.addControl(new LayersControl(map, styleLayers, config), 'top-right');
       });
     } catch {
@@ -1507,6 +1694,12 @@ const typeNames = Object.fromEntries(
     label: string;
     name: string;
     hasIcon: boolean;
+    /** The takeoff's entry id, which names its glide cone. Takeoffs only. */
+    slug?: string;
+    /** Draw or clear the cone. Absent where there is no map to draw on. */
+    onCone?: (slug: string, gz: string) => Promise<void>;
+    /** Which cone is currently drawn, as `slug-gz`, or an empty string. */
+    coneShown?: () => string;
     point: { lat: number; lon: number };
     links: {
       formatCoordinates(point: { lat: number; lon: number }): string;
@@ -1523,6 +1716,9 @@ const typeNames = Object.fromEntries(
     label,
     name,
     hasIcon,
+    slug,
+    onCone,
+    coneShown,
     point,
     links,
   }: PopupParts): HTMLElement {
@@ -1577,6 +1773,67 @@ const typeNames = Object.fromEntries(
     }
 
     root.append(heading, kindLine, coords, actions);
+
+    /*
+      The glide cone belongs to the takeoff, so it is offered here rather than
+      in the layers panel: the marker already says which takeoff, and a list of
+      them in a panel was asking the same question twice.
+
+      Nothing is fetched until this is pressed. A cone is fifteen to sixty-five
+      kilobytes and it is not a question anybody asked on the way to reading
+      about a flight site.
+    */
+    if (kind === 'takeoff' && slug && onCone) {
+      const row = document.createElement('p');
+      row.className = 'map-popup__cone';
+
+      const gz = document.createElement('select');
+      gz.className = 'map-popup__gz';
+      gz.setAttribute('aria-label', 'Efficienza');
+      for (const value of ['6', '8', '10']) {
+        gz.append(
+          Object.assign(document.createElement('option'), {
+            value,
+            textContent: `1:${value}`,
+            /* 1:8 is the everyday number for a modern A or B, and the one
+               most members can read their own glide off. */
+            selected: value === '8',
+          }),
+        );
+      }
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'map-popup__conebtn';
+      const drawn = () => coneShown?.() === `${slug}-${gz.value}`;
+      const label = () => (drawn() ? 'Nascondi cono' : 'Cono di planata');
+      button.textContent = label();
+
+      button.addEventListener('click', async () => {
+        const off = drawn();
+        button.disabled = true;
+        await onCone(off ? '' : slug, gz.value);
+        button.disabled = false;
+        button.textContent = label();
+      });
+      /* Changing the ratio while the cone is up redraws it; while it is down
+         it is only a preference, and fetching would be presumptuous. */
+      gz.addEventListener('change', async () => {
+        if (coneShown?.().startsWith(`${slug}-`)) await onCone(slug, gz.value);
+        button.textContent = label();
+      });
+
+      row.append(button, gz);
+
+      const note = document.createElement('p');
+      note.className = 'map-popup__note';
+      note.textContent =
+        'Aria calma, senza vento e senza termiche, su un modello del terreno a ' +
+        'maglia larga. Aiuta a pianificare, non garantisce niente.';
+
+      root.append(row, note);
+    }
+
     return root;
   }
 

@@ -102,9 +102,25 @@ async function inputHash(url) {
   const html = await readFile(join(DIST, url.replace(/^\//, ''), 'index.html'), 'utf8');
   const data = html.match(/data-map-data[^>]*>([\s\S]*?)<\/script>/)?.[1];
   if (!data) return null;
+
+  /*
+    Only what the picture depends on.
+
+    Hashing the map data whole was simpler and wrong: the payload carries
+    things the still cannot show, and adding one of them, a takeoff's slug for
+    the glide cones, marked all fifteen posters stale and would have meant an
+    afternoon of GPU renders to produce identical images. Geometry decides the
+    framing and `kind` decides the colour and the icon; a name, a link or a
+    slug decides nothing until somebody opens the live map.
+  */
+  const visible = JSON.parse(data).features.map((feature) => [
+    feature.properties?.kind ?? '',
+    feature.geometry,
+  ]);
+
   return createHash('sha256')
     .update(`v${CAPTURE_VERSION}\n`)
-    .update(data)
+    .update(JSON.stringify(visible))
     .digest('hex')
     .slice(0, 16);
 }
