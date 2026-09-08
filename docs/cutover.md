@@ -111,15 +111,81 @@ curl -sI https://ventorelativo.it/contact | head -1     # expect 301 → /contat
 
 Then:
 
-- **Google Search Console**, submit `https://ventorelativo.it/sitemap.xml`.
-  That is the file this site writes, and the one `robots.txt` points at; there
-  is no `sitemap-index.xml`, which is @astrojs/sitemap's name and 404s here.
-  Until now the site has been asking not to be crawled at all.
+- **Google Search Console.** Its own section below: it is the one step with
+  more than a click in it.
 - **Archive the Drupal repository read-only: done 2026-09-08.**
   `ventorelativo/ventorelativo-drupal` is archived, not deleted, and must stay
   that way: it is the evidence the navdata and URL gates compare against, and
   both fail without it. `../ventorelativo-drupal` is referenced by path from
   `npm run verify`, and an archived repository still reads and clones.
+
+## Search Console
+
+The domain is not new to Google. It has been indexed for years, the old site's
+URLs are all still served or redirected (`scripts/check-urls.mjs` is the gate),
+and the canonical host has not changed. So this is not a launch, it is a
+recrawl of pages Google already has: nothing here needs to hurry, and nothing
+below buys a ranking. What it buys is the ability to **see** what Google thinks,
+which the club has never had.
+
+### 1. Verify a Domain property, not a URL prefix
+
+Search Console → **Add property** → the **Domain** box, `ventorelativo.it` with
+no scheme and no `www`. It will hand back a `TXT` record; the DNS is at Aruba.
+
+A domain property is the right shape here and a URL-prefix one is not: prefix
+properties are per scheme and per host, so `https://ventorelativo.it` and
+`https://www.ventorelativo.it` are two different properties reporting two
+halves of the same site. This site answers on both (`www` 301s to the apex),
+and a domain property covers every combination in one.
+
+If DNS turns out to be awkward, the fallback is a `google-site-verification`
+meta tag, which means a code change and a deploy: ask, do not add it on spec.
+Prefer the DNS record, it survives every future change to the site.
+
+### 2. Submit the sitemap
+
+`https://ventorelativo.it/sitemap.xml`, which is the file this site writes and
+the one `robots.txt` points at. There is **no `sitemap-index.xml`**: that is
+@astrojs/sitemap's name for it and it 404s here, which will be reported as a
+sitemap that could not be read.
+
+`src/pages/sitemap.xml.ts` lists 25 URLs and carries a `lastmod` on the news
+posts alone, deliberately: the file explains why the alternatives are worse
+than an absent one.
+
+### 3. Ask for the home page, and only the home page
+
+URL Inspection → `https://ventorelativo.it/` → **Request indexing**. One page
+is enough to bring a crawler in; it will find the other twenty-four from the
+sitemap and the navigation. Requesting all of them by hand is a way to hit the
+daily quota and learn nothing.
+
+### 4. What to watch, and for how long
+
+Give it two weeks, then read three things:
+
+- **Pages**, for anything under _Crawled, currently not indexed_. On a site
+  this small that usually means a page with nothing much on it: the five
+  thinner flight sites are the honest candidates, and the fix is the
+  committee's aerology text, not markup.
+- **Sitemaps**, for _Discovered URLs: 25_. A lower number means the file was
+  read before a deploy finished, a higher one is impossible and means the wrong
+  property.
+- **`/keystatic` must never appear.** `robots.txt` disallows it and it is
+  behind a login, but a CMS in a search result is worth checking for once.
+
+Two things that will look like problems and are not: the four `noindex` pages
+(`/styleguide`, `/redazione`, and the two post-action pages) reported as
+_Excluded by noindex_, which is exactly what they ask for; and every
+`*.netlify.app` preview reported as _Blocked by robots.txt_, which is
+`src/pages/robots.txt.ts` doing its job.
+
+### 5. Bing, if it is wanted
+
+Bing Webmaster Tools imports a verified Search Console property whole, sitemap
+included, in one step. It costs a few minutes and covers Bing, DuckDuckGo and
+Ecosia at once. Nobody has asked for it; it is here so the option is known.
 
 ## What does not need doing
 
