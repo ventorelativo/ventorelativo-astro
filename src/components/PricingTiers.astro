@@ -4,9 +4,9 @@
  *
  * Was hand-written Bootstrap in the page body: `.card.rounded-3.shadow-sm`,
  * `.text-bg-primary`, a `w-100 btn btn-primary stretched-link`. The data is
- * structured now, so switching payment rail (D10, Satispay → Stripe) is a URL
- * and a label in two fields rather than an edit to markup an editor should not
- * have been holding.
+ * structured now, so switching payment rail is a URL and a label in two fields
+ * rather than an edit to markup an editor should not have been holding. That
+ * is what made D10's reversal in September 2026 cost nothing here.
  *
  * ## Why it shows what a tier does *not* include
  *
@@ -19,7 +19,6 @@
  * what the club had and what every pricing table does, but as the header band
  * only: a whole card of solid blue would fight the page.
  */
-import ExternalIcon from './ExternalIcon.astro';
 interface Tier {
   name: string;
   price: number;
@@ -88,14 +87,20 @@ const MARK = {
             ))}
           </ul>
 
+          {/*
+            An in-page link, not the payment link.
+
+            `payUrl` still holds the Satispay URL and is still what an editor
+            edits, but it is spent one page later, on /iscrizioni/grazie/. A
+            member who pays before telling the club who they are is exactly the
+            payment nobody can reconcile, which is the whole reason the form
+            exists.
+          */}
           <a
             class:list={['button', 'tier__pay', !tier.highlight && 'button--outline']}
-            href={tier.payUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#iscriviti"
           >
-            {tier.payLabel}
-            <ExternalIcon size={14} />
+            Scegli {tier.name}
           </a>
         </div>
       </li>

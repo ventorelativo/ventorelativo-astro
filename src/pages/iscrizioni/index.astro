@@ -8,6 +8,7 @@
 import { getEntry, render } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import PricingTiers from '../../components/PricingTiers.astro';
+import MembershipForm from '../../components/MembershipForm.astro';
 import H2 from '../../components/H2.astro';
 
 const page = await getEntry('pages', 'iscrizioni');
@@ -28,6 +29,25 @@ const { tiers, bankTransfer } = page.data;
   {tiers && <PricingTiers tiers={tiers} />}
 
   {
+    /*
+      The form comes after the cards because the cards are what someone is
+      deciding between; the form is what they do once they have decided. Each
+      card's button jumps here, which is why the heading's id is load-bearing:
+      `PricingTiers` links to #iscriviti by hand.
+    */
+    tiers && (
+      <section class="join">
+        <H2>Iscriviti</H2>
+        <p>
+          Il pagamento avviene su Satispay, che ci dice quanto arriva ma non da chi.
+          Lasciaci il tuo nome qui e la quota finisce nella colonna giusta.
+        </p>
+        <MembershipForm tiers={tiers} />
+      </section>
+    )
+  }
+
+  {
     bankTransfer && (
       <section class="bank">
         <H2>Bonifico bancario</H2>
@@ -44,6 +64,14 @@ const { tiers, bankTransfer } = page.data;
 </PageLayout>
 
 <style>
+  .join {
+    margin-block-start: var(--space-xl);
+  }
+
+  .join p {
+    max-width: var(--prose-width);
+  }
+
   .bank {
     margin-block-start: var(--space-xl);
     max-width: var(--prose-width);

@@ -1,0 +1,177 @@
+---
+/**
+ * The membership form on /iscrizioni, posting to Netlify Forms.
+ *
+ * ## What this is, and what it deliberately is not
+ *
+ * It is **not** the club's membership application. The libro soci lives
+ * elsewhere and always has; duplicating it here would mean holding the same
+ * personal data twice, in a place chosen for convenience rather than for the
+ * purpose. This form answers one question the payment cannot answer on its
+ * own: **who just sent us thirty euro.**
+ *
+ * That is the whole reason it exists. A Satispay payment link takes money and
+ * reports nothing back: no callback, no redirect, no metadata. The club used
+ * to close that gap by hand, reading the payment list and guessing at names.
+ * So the site asks first and pays second, and the three fields below are the
+ * three the treasurer cannot reconstruct.
+ *
+ * Three fields is also the ceiling. Every extra one is another thing to hold,
+ * disclose and delete, for data the club already has on the register.
+ *
+ * ## The flow
+ *
+ * Submit posts to Netlify, which redirects to /iscrizioni/grazie/, where the
+ * Satispay buttons are. Two consequences worth knowing, both inherited from
+ * ContactForm.astro:
+ *
+ *  - The hidden `form-name` must match `name`, or the submission is rejected:
+ *    Netlify handles the POST by name, not by URL.
+ *  - It only works on a real Netlify deploy. Submitting locally 404s, which is
+ *    expected and not a bug to chase.
+ *
+ * The tier radios are built from the same content entry the pricing cards
+ * are, so an editor changing a quota in Keystatic changes both at once and
+ * they cannot drift apart.
+ */
+interface Props {
+  tiers: { name: string; price: number }[];
+}
+
+const { tiers } = Astro.props;
+
+const euro = new Intl.NumberFormat('it-IT', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
+---
+
+<form
+  class="form"
+  name="iscrizioni"
+  method="POST"
+  action="/iscrizioni/grazie/"
+  data-netlify="true"
+  netlify-honeypot="bot-field"
+>
+  <input type="hidden" name="form-name" value="iscrizioni" />
+
+  {/* The honeypot, as on the contact form: hidden from people, tempting to bots. */}
+  <p hidden>
+    <label>Non compilare questo campo: <input name="bot-field" /></label>
+  </p>
+
+  <p class="field">
+    <label for="member-name">Nome e cognome</label>
+    <input id="member-name" name="name" type="text" autocomplete="name" required />
+  </p>
+
+  <p class="field">
+    <label for="member-email">Indirizzo e-mail</label>
+    <input id="member-email" name="email" type="email" autocomplete="email" required />
+  </p>
+
+  {
+    /*
+      Radios rather than a select: two options, both worth reading side by
+      side, and no reason to hide one of them behind a tap.
+    */
+  }
+  <fieldset class="quota">
+    <legend>Quota scelta</legend>
+    {
+      tiers.map((tier, index) => (
+        <label class="quota__option">
+          <input
+            type="radio"
+            name="quota"
+            value={tier.name}
+            required
+            checked={index === 0}
+          />
+          <span>
+            {tier.name} <span class="quota__price">{euro.format(tier.price)}</span>
+          </span>
+        </label>
+      ))
+    }
+  </fieldset>
+
+  {
+    /*
+      The Art. 13 notice, at the point of collection, and one sentence about
+      what this form is not: someone who fills it in has told the club about a
+      payment, not joined the association, and the page should not let them
+      believe otherwise.
+    */
+  }
+  <p class="form__notice">
+    Serve solo a collegare il pagamento al tuo nome: non è la domanda di iscrizione
+    all'associazione, che passa dal direttivo. Vedi{' '}
+    <a href="/privacy">l'informativa privacy</a>.
+  </p>
+
+  <p>
+    <button class="button" type="submit">Continua al pagamento</button>
+  </p>
+</form>
+
+<style>
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-width: var(--prose-width);
+    margin-block-start: var(--space-md);
+  }
+
+  .form__notice {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /* A fieldset carries a border and padding by default, and neither is wanted. */
+  .quota {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-inline-size: 0;
+  }
+
+  .quota legend {
+    color: var(--color-text-strong);
+    font-size: var(--text-sm);
+    padding: 0;
+    /* A legend sits on the border box; without this the first radio crowds it. */
+    margin-block-end: var(--space-3xs);
+  }
+
+  .quota__option {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2xs);
+    /* The whole line is the target, not the eight pixels of the control. */
+    padding: var(--space-3xs) 0;
+    cursor: pointer;
+  }
+
+  .quota__option input {
+    /* Baseline alignment puts a radio a shade high next to its label. */
+    translate: 0 0.1em;
+    accent-color: var(--color-accent);
+  }
+
+  .quota__option input:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .quota__price {
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

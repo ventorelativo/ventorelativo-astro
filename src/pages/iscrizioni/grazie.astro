@@ -1,35 +1,100 @@
 ---
 /**
- * /iscrizioni/grazie, where a completed membership payment lands.
+ * /iscrizioni/grazie, where the membership form lands. The payment happens
+ * from here.
  *
- * Stripe can show its own confirmation, but a member who has just paid should
- * come back to the club's site rather than end on a payment processor's page.
- * Set this URL as the Payment Link's "after payment" redirect: the runbook is
- * docs/payments.md.
+ * This page used to be the receipt: the plan was a Stripe Payment Link that
+ * would take the money and redirect the payer back here afterwards. D10 was
+ * reversed in September 2026 (MIGRATION-PLAN.md §5) and Satispay's consumer
+ * link cannot redirect anywhere, so the order is now the other way round: the
+ * club learns who is paying, and then the payment starts.
  *
- * It says nothing about *which* tier was bought and reads no query string on
- * purpose: `?session_id=` is a Stripe identifier, and nothing here should be
- * built on a value a visitor can edit in the address bar. The receipt is the
- * email Stripe sends; the record is the Sheet.
+ * That inversion is the reason the buttons are here rather than on
+ * /iscrizioni. Once the Satispay app opens, the member does not come back, so
+ * anything the club needs to ask has to be asked first.
+ *
+ * Both tiers are offered, and the page cannot say which one was chosen: the
+ * form's answer went to Netlify, and this is a static page with no query
+ * string to read (deliberately: `?tier=` would be a value a visitor can edit
+ * in the address bar). It does not matter. The **amount Satispay reports is
+ * what the club banks**; the form supplies the name against it. If the two
+ * disagree, the money is right.
  */
+import { getEntry } from 'astro:content';
+
 import PageLayout from '../../layouts/PageLayout.astro';
+import ExternalIcon from '../../components/ExternalIcon.astro';
+
+const page = await getEntry('pages', 'iscrizioni');
+if (!page) throw new Error('Missing src/content/pages/iscrizioni.mdx');
+const { tiers, bankTransfer } = page.data;
+
+const euro = new Intl.NumberFormat('it-IT', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
 ---
 
 <PageLayout
-  title="Grazie!"
-  description="Il pagamento è stato ricevuto dal Parapendio Club Ventorelativo."
+  title="Ora il pagamento"
+  description="Abbiamo ricevuto i tuoi dati. Resta da versare la quota."
   breadcrumbLabels={{ '/iscrizioni': 'Iscrizioni' }}
   noindex
 >
   <div class="prose">
     <p>
-      Il pagamento è stato ricevuto e la ricevuta ti arriverà per email. Il direttivo
-      registra le nuove iscrizioni a mano, quindi possono passare qualche giorno prima
-      della conferma.
+      Grazie, abbiamo ricevuto i tuoi dati. Resta un passaggio: versare la quota che hai
+      scelto.
     </p>
+  </div>
+
+  {
+    tiers && (
+      <ul class="pay">
+        {tiers.map((tier) => (
+          <li>
+            <a
+              class:list={['button', !tier.highlight && 'button--outline']}
+              href={tier.payUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {tier.name} {euro.format(tier.price)}
+              <ExternalIcon size={14} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <div class="prose">
+    {
+      bankTransfer && (
+        <p>
+          Preferisci il bonifico? Intestalo a <strong>{bankTransfer.holder}</strong>,{' '}
+          {/* `notranslate`: an IBAN must survive GTranslate untouched. */}
+          <span class="notranslate">IBAN {bankTransfer.iban}</span>, indicando il tuo
+          nome e la quota nella causale.
+        </p>
+      )
+    }
     <p>
-      Se qualcosa non torna, <a href="/contatti">scrivici</a>.
+      Il direttivo registra le iscrizioni a mano, quindi possono passare qualche giorno
+      prima della conferma. Se qualcosa non torna, <a href="/contatti">scrivici</a>.
     </p>
     <p><a href="/">Torna alla home</a></p>
   </div>
 </PageLayout>
+
+<style>
+  .pay {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    list-style: none;
+    margin: var(--space-md) 0;
+    padding: 0;
+  }
+</style>
