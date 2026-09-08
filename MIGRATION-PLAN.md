@@ -1263,11 +1263,13 @@ ending in a bare `?key=` and got a 403 back: it opened, drew nothing and reporte
 branch deploys count nothing; `/privacy` describes the beacon as fact and the three have to
 stay in step (`docs/cutover.md` step 2).
 
-**The Tracestrack key still has to be rotated, and after the move rather than before**
-(decided 2026-09-03). It was hard-coded and committed, so the old value is in this
-repository's history and in every bundle built from it. Rotating first would 403 the topo
-layer on the live site until the new key's referrer list caught up, and nothing is billable
-on the account. `docs/cutover.md`, "Still open".
+**The Tracestrack key stays as it is** (decided 2026-09-08, closing the
+2026-09-03 question). It was hard-coded and committed, so the old value is in
+this repository's history and in every bundle built from it, and rotating it
+was on the list. It is not being rotated: the key is filtered by referrer, so
+the value on its own buys nobody anything, and there is no money on the
+account. Anyone lifting it would have to serve their tiles from
+`ventorelativo.it`.
 
 **Test content has to come out first:** the `a-test-news` post written to prove Phase 3.
 `/styleguide` **stays** (decided 2026-09-03): it is `noindex` and out of the sitemap, and

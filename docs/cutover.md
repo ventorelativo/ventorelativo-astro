@@ -131,19 +131,21 @@ Then:
 
 ## Still open
 
-- **Rotate the Tracestrack key.** Deliberately not a blocker (decided
-  2026-09-03): rotating before the move would 403 the topographic base layer on
-  the live site until the new key's referrer list caught up, and there is no
-  money on the account. But the old value was hard-coded in
-  `src/lib/mapConfig.ts` and committed, so it is in this repository's history
-  and in every public bundle built from it: moving it to an environment
-  variable stopped the next build leaking it, not the ones already published.
-  After the move: issue a new key at tracestrack.com with `ventorelativo.it` and
-  `https://*--ventorelativo-astro.netlify.app` on its referrer list, put it in
-  `.env` and in Netlify, redeploy, open a map, then revoke the old key.
-
 - Phase 6 (payments) is documented in [payments.md](payments.md) and not
   executed. Nothing about it blocks the cutover: `/iscrizioni` works today with
   the existing Satispay links and the bank transfer.
 - If payments do go live first, the Stripe Payment Links' redirect URL has to be
   changed from the `*.netlify.app` address to `https://ventorelativo.it/iscrizioni/grazie`.
+
+## Closed since
+
+- ~~**Rotate the Tracestrack key.**~~ **Closed 2026-09-08: it stays as it
+  is.** The old value was hard-coded in `src/lib/mapConfig.ts` and committed,
+  so it is in this repository's history and in every public bundle built from
+  it; moving it to an environment variable stopped the next build leaking it,
+  not the ones already published. It is not worth rotating anyway: the key is
+  **filtered by referrer**, so it only works for requests that say they come
+  from `ventorelativo.it`, and there is no money on the account. Someone
+  lifting it out of the bundle gets a key that will not draw them a tile.
+  If the referrer list ever gains a wildcard, this becomes a real exposure
+  again.
