@@ -4,10 +4,12 @@ Phase 6. What a member pays, how it reaches the club's bank account, and how it
 stops being reconciled by guesswork.
 
 **Almost none of this is code.** The site's part is built: a form on
-`/iscrizioni` and the payment step at `/iscrizioni/grazie`. Everything left is
-account setup in Satispay, Netlify, Make.com and a Google Sheet, which is why
-it is written down here rather than built, and why the steps are in the order
-that avoids doing any of them twice.
+`/iscrizioni` and the payment step at `/iscrizioni/grazie`. What is left is
+account work, which is why it is written down rather than built.
+
+This document is the money: the rails, the fees, and what the site does.
+[soci.md](soci.md) is everything around it, the register, the renewals and the
+membership card, which is where a committee member spends their January.
 
 ## What was decided, and what it costs
 
@@ -47,11 +49,11 @@ Hence the order: **ask first, pay second.**
 
 ```
 member → form on /iscrizioni  (name, email, tier)
-       → Netlify Forms → outgoing webhook → Make.com → Sheet row, "in attesa"
+       → Netlify Forms → outgoing webhook → the club's spreadsheet, "in attesa"
        → /iscrizioni/grazie → Satispay link → money lands in the club account
 
-treasurer → Satispay report → ticks the rows that arrived
-bonifico  → (by hand)      → same Sheet
+treasurer → Satispay report → the rows flip to "pagato" → the card goes out
+bonifico  → (by hand)      → same spreadsheet
 ```
 
 The form is a **payment declaration, not a membership application**. The libro
@@ -94,50 +96,18 @@ copy the link. The documented format is
 in Keystatic → **Pagine → Iscrizioni** → each tier's **Link di pagamento**, two
 fields, no deploy beyond the one Keystatic triggers itself.
 
-### 3. A Google Sheet with a fixed header row
+### 3. The register, the renewals and the card
 
-One row per member per year:
+All of that is [soci.md](soci.md): the club's spreadsheet, the Apps Script
+bound to it, the webhook that carries the website's form into it, and the PDF
+card. It is a separate document because it is a separate job, done once, by
+somebody who will then run it every January.
 
-```
-Data | Nome | Email | Quota | Importo | Rail | Stato | Note
-```
+**There is no Make.com in it.** The earlier version of this plan had one;
+Apps Script receives the webhook, sends the mail and makes the PDF by itself,
+so a second service would only have moved data between two Google products.
 
-`Rail` is `satispay` or `bonifico`. **`Stato` is the column this whole design
-turns on**: `in attesa` when the form arrives, `pagato` when the treasurer
-finds the money. Nothing sets it automatically.
-
-Share it with **named committee accounts only**, never "anyone with the link":
-it holds names and email addresses.
-
-### 4. Netlify → Make.com
-
-In Netlify: **Project configuration → Notifications → Emails and webhooks →
-Form submission notifications**. Add an **outgoing webhook** on the `iscrizioni`
-form pointing at a Make.com custom webhook URL. Netlify POSTs a JSON body with
-the submission's fields.
-
-Add an **email notification** too, to the committee address. It costs nothing
-and it is the fallback for the week Make.com is broken and nobody has noticed.
-
-Netlify can sign the request (a JWS secret, sent as `X-Webhook-Signature`).
-Make cannot check that signature without a custom step, so treat the webhook
-URL itself as the secret: it is unguessable, and the worst a leak buys someone
-is junk rows in a Sheet.
-
-### 5. The Make.com scenario
-
-1. **Webhooks → Custom webhook**, the URL from step 4.
-2. **Google Sheets → Search Rows**, filtering `Email` equals the submission's
-   email **and** the year, if the sheet holds more than one.
-3. **Router**:
-   - rows found → **Update a Row**;
-   - nothing found → **Add a Row**, with `Stato` = `in attesa`.
-
-**A Google Sheet has no upsert.** Without that branch a member who fills the
-form twice, which people do when they are not sure it worked, gets two rows
-quietly, and the club finds out at the assembly.
-
-### 6. Test it, with real money
+### 4. Test it, with real money
 
 1. Fill the form on `/iscrizioni` with your own name and the Sostenitore tier.
 2. Check the Sheet grew one row, `Stato` = `in attesa`.
@@ -167,7 +137,9 @@ di commissione" anywhere.
 - **A form submission is not a payment.** It is someone saying they intend to
   pay. The `Stato` column is the difference, and it is the one thing a person
   has to keep honest.
-- **The Sheet has no upsert.** See step 5.
+- **A member who submits the form twice gets one row, not two.** The script
+  in [soci.md](soci.md) is what makes that true, because a Google Sheet has no
+  upsert of its own. If that ever gets rewritten, this is the trap.
 - **Netlify Forms only work on a real deploy.** Submitting locally 404s. That
   is expected, not a bug to chase.
 - **No member PII in this repository.** It is public, and Keystatic writes to

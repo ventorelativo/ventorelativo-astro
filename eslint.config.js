@@ -81,6 +81,32 @@ export default [
     },
   },
 
+  /*
+    Google Apps Script, under tools/. It is not part of the site and never
+    reaches a build: it runs inside the club's spreadsheet, where Google calls
+    its entry points and supplies the globals below.
+
+    Linted as a script rather than a module for one reason: only in a script
+    does eslint honour an `exported` comment, which is how a function whose
+    only caller is Google says so. Left as a module, every entry point reads
+    as dead code.
+  */
+  {
+    files: ['tools/**/*.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        SpreadsheetApp: 'readonly',
+        DriveApp: 'readonly',
+        SlidesApp: 'readonly',
+        GmailApp: 'readonly',
+        MailApp: 'readonly',
+        PropertiesService: 'readonly',
+        ContentService: 'readonly',
+      },
+    },
+  },
+
   // Prettier owns formatting; this turns off every rule that would argue.
   prettier,
 ];

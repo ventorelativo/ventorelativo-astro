@@ -1343,9 +1343,15 @@ transfer**, so the site is complete and live without this. **D10 is resolved** (
 reversed: **Satispay only**, with the site asking who is paying before it sends them.
 
 The site's part was built on 2026-09-08 (the form, and `/iscrizioni/grazie` as the payment
-step). What remains is not code: account work in Netlify's form notifications, Make.com and
-a Google Sheet, which is why the rest is written as a runbook:
-[`docs/payments.md`](docs/payments.md).
+step). What remains is not code: the club's spreadsheet becomes a Google Sheet with an Apps
+Script bound to it, which receives the form, opens each new year, marks the incassi and
+issues a PDF membership card. Two runbooks: [`docs/payments.md`](docs/payments.md) for the
+money, [`docs/soci.md`](docs/soci.md) for the register and the renewals. The script itself
+is `tools/soci/Codice.js`, in this repository because it is the only reviewed copy.
+
+**Make.com is out of the plan** (2026-09-08): Apps Script receives webhooks, sends mail and
+writes Drive files on its own, so the second service would only have moved data between two
+Google products.
 
 **Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
 the same member updates that row rather than adding another.
