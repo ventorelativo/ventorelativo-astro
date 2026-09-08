@@ -12,15 +12,24 @@
  * It holds no personal data and no secrets. The webhook token lives in Script
  * Properties, never here.
  *
- * ## What it does
+ * ## What runs by itself
  *
- * Four things, all from one menu in the spreadsheet:
+ * `sincronizza` is the whole loop, and wants the hourly trigger: it pulls the
+ * shop's payments from Satispay, matches each one to the member who owed it,
+ * marks the quota paid and emails the card. Nobody has to be watching.
  *
- *  - takes a new member straight from the website's form (`doPost`);
- *  - opens a new year, which is the whole point of the exercise: one row per
- *    member and one email each, instead of a committee working through a list;
- *  - marks quotas paid from a Satispay export;
- *  - makes the membership card, a PDF, and emails it.
+ * The menu is for what needs a decision: opening a year, and the setup.
+ *
+ * ## Why it calls the API rather than reading an export
+ *
+ * The payout report gives a payment id, a timestamp and an amount, and no way
+ * to tell whose payment it was. Working that out, one payment at a time, was
+ * the job this replaces. `GET /g_business/v1/payments` returns **`sender.name`**
+ * on every payment, so the same question answers itself.
+ *
+ * The cost is authentication: an RSA key pair and a signed request. That was
+ * once the reason not to do this, when the alternative was standing up a
+ * server. It is not, now that the club already runs this script.
  *
  * ## The one design rule
  *
@@ -69,8 +78,15 @@ const HEADERS = {
     'Data',
     'Stato',
     'Invito',
+    /* The Satispay payment id, once a payment has been matched to this quota:
+       the identifier the treasurer used to be handed on its own. */
+    'Pagamento',
     'Tessera',
   ],
+  /* The club's own copy of what Satispay said, kept rather than consumed: when
+     a match looks wrong in eighteen months this is where the original answer
+     still is. */
+  incassi: ['ID pagamento', 'Data', 'Importo', 'Nome', 'Stato', 'Abbinato a'],
 };
 
 /* The three states a quota can be in. Nothing else is a valid value. */
