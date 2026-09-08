@@ -1239,10 +1239,17 @@ overview map + site grid; per-site maps with inlined GeoJSON; feature tables;
 desktop and mobile.
 **Covers:** M1–M13, A1–A5.
 
-### Phase 5: Cutover _(next; runbook written, not executed)_
+### Phase 5: Cutover ✅ DONE 2026-09-05
 
-Point the domain at this build. The runbook is [`docs/cutover.md`](docs/cutover.md);
-what follows is what changed about this phase since it was written.
+`ventorelativo.it` serves this build. The runbook is
+[`docs/cutover.md`](docs/cutover.md), kept as the record of what was done and
+of the two things that outlived it; what follows is what changed about this
+phase while it was being carried out.
+
+**The club has seen it and approved it** (2026-09-08). The review was
+deliberately held until after the move, so that the committee looked at the
+club's own address rather than at a `netlify.app` one and asked questions about
+the site instead of about the URL.
 
 **URL preservation is now a gate, not a review.** `scripts/check-urls.mjs` runs in
 `npm run verify` and fails unless every URL in the archived Drupal build is built,
@@ -1252,8 +1259,9 @@ now one (`/contact/contatti` had one; the bare path did not).
 
 **The two map keys are set** (2026-09-03): before that the deployed map built a style URL
 ending in a bare `?key=` and got a 403 back: it opened, drew nothing and reported nothing.
-`PUBLIC_CF_BEACON_TOKEN` is still unset, so there are no analytics; that is a decision to
-take rather than an omission (`docs/cutover.md` step 2).
+`PUBLIC_CF_BEACON_TOKEN` was set on 2026-09-04, production context only, so previews and
+branch deploys count nothing; `/privacy` describes the beacon as fact and the three have to
+stay in step (`docs/cutover.md` step 2).
 
 **The Tracestrack key still has to be rotated, and after the move rather than before**
 (decided 2026-09-03). It was hard-coded and committed, so the old value is in this
@@ -1266,8 +1274,11 @@ on the account. `docs/cutover.md`, "Still open".
 the club wants it as a reference for both people and AI agents. Amends §3, which had it
 down to drop.
 
-Archive the Drupal repo read-only: do not delete it. Two gates in `npm run verify` read
-it by path, and it stays the reference for anything found missing later.
+**The Drupal repository is archived read-only** (2026-09-08),
+`ventorelativo/ventorelativo-drupal`. Not deleted, and it must not be: two gates
+in `npm run verify` read the working copy at `../ventorelativo-drupal` by path,
+and it stays the reference for anything found missing later. Archiving does not
+touch either, an archived repository still reads and clones.
 
 ### Phase 6: Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
 

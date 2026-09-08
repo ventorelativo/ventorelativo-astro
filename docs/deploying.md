@@ -24,15 +24,15 @@ GitHub: write access to the repository, and nothing else.
 
 There are two, on purpose.
 
-| Project               | URL                | What it is                                       |
-| --------------------- | ------------------ | ------------------------------------------------ |
-| `ventorelativo`       | `ventorelativo.it` | The **live** Drupal/Tome export. Leave it alone. |
-| `ventorelativo-astro` | `*.netlify.app`    | This build, while it is being finished.          |
+| Project                | URL                                | What it is                                |
+| ---------------------- | ---------------------------------- | ----------------------------------------- |
+| `ventorelativo-astro`  | `ventorelativo.it`                 | This build. **Live** since 2026-09-05.    |
+| `ventorelativo-drupal` | `ventorelativo-drupal.netlify.app` | The old Drupal/Tome export. The rollback. |
 
-The domain moves to the new project at go-live (Phase 5), once the Phase 4
-flight data has been diffed against the archive. Repointing it earlier would
-put an unfinished site in front of the club for no gain, and the old project
-keeps serving from its own deploy until we say otherwise.
+The domain moved on 2026-09-05. The old project was renamed rather than deleted
+and still serves from its own deploy: moving the domain back is the rollback,
+and it is the reason the review could wait until after go-live. Do not delete
+it.
 
 ## Steps only a human can do
 

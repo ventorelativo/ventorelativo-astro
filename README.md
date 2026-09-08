@@ -6,13 +6,14 @@ Val Chisone and Val Pellice. Content is in Italian.
 Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site in
 `../ventorelativo-drupal`.
 
-> **Phases 1 to 4 are done**: the design system, every page and URL the old site had, the
-> SEO layer, Keystatic in GitHub mode deployed with the site, the maps, and the
-> flight-computer files gated byte for byte against the Drupal build.
-> **Phase 5 is the cutover**, the day `ventorelativo.it` stops serving the old export and
-> starts serving this one: [`docs/cutover.md`](docs/cutover.md) is the runbook.
-> [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) remains the source of truth for scope and for
-> the decisions already taken (D1–D13).
+> **It is live.** `ventorelativo.it` has served this build since 2026-09-05, and the club
+> committee has reviewed and approved it. Phases 1 to 5 are done: the design system, every
+> page and URL the old site had, the SEO layer, Keystatic in GitHub mode deployed with the
+> site, the maps, the flight-computer files gated byte for byte against the Drupal build,
+> and the cutover itself ([`docs/cutover.md`](docs/cutover.md) is what was done).
+> **Phase 6, membership payments, is all that is left**, and none of it is code:
+> [`docs/payments.md`](docs/payments.md). [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) remains
+> the source of truth for scope and for the decisions already taken (D1–D13).
 
 ## Documentation
 
@@ -22,7 +23,7 @@ Astro, statically built, deployed to Netlify. Replaces the Drupal 11 + Tome site
 | [`docs/architecture.md`](docs/architecture.md)           | How Astro builds this site, and why it is arranged this way.                                      |
 | [`docs/authoring-with-ai.md`](docs/authoring-with-ai.md) | `/redazione`: how a volunteer writes a post with ChatGPT or Gemini.                               |
 | [`docs/deploying.md`](docs/deploying.md)                 | Editing through Keystatic, branches, previews, what a save actually does.                         |
-| [`docs/cutover.md`](docs/cutover.md)                     | Phase 5: moving the domain, and the checks either side of it.                                     |
+| [`docs/cutover.md`](docs/cutover.md)                     | Phase 5, done: how the domain moved, and the checks either side of it.                            |
 | [`docs/verifying-changes.md`](docs/verifying-changes.md) | Proving a change works, plus the traps that waste an afternoon.                                   |
 | [`docs/performance.md`](docs/performance.md)             | The speed budget: 100/100 PageSpeed, and how dependencies are judged against it.                  |
 | [`AGENTS.md`](AGENTS.md)                                 | Instructions for AI coding agents. `CLAUDE.md` and `.github/copilot-instructions.md` point at it. |

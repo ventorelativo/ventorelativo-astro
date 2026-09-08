@@ -84,7 +84,8 @@ a redirect at nothing, deleting a sitemap entry, dropping a Google Fonts link
 into a page.
 
 `urls:check` and `navdata:check` read `../ventorelativo-drupal`. That archive is
-the evidence, which is why Phase 5 archives it rather than deleting it.
+the evidence, which is why the repository was archived read-only rather than
+deleted. An archived repository still clones, so both gates still run.
 
 ## Lighthouse, for the things a screenshot cannot show
 

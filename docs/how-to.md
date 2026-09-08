@@ -178,10 +178,8 @@ git push
 ```
 
 **Pushing to `main` deploys.** Netlify builds every push and the result is live
-within a couple of minutes: today at `ventorelativo-astro.netlify.app`, and at
-`ventorelativo.it` once the domain moves (Phase 5, see
-[`cutover.md`](cutover.md)). Editing through Keystatic does the same thing; it
-commits on your behalf.
+at `ventorelativo.it` within a couple of minutes. Editing through Keystatic does
+the same thing; it commits on your behalf.
 
 If you are making several related changes, push once at the end rather than per
 commit. Each push is a build.

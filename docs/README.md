@@ -40,13 +40,13 @@ reasons. Ask it to justify against [`AGENTS.md`](../AGENTS.md) before agreeing.
 
 ## Current state
 
-Phases 1 to 4 are complete: the design system, all the content, every URL the old
-site had, the SEO layer, the flight-data files gated against the Drupal archive,
-the maps, and a CMS the club edits from a browser at
-`ventorelativo-astro.netlify.app/keystatic`.
+**The site is live.** Phases 1 to 5 are complete: the design system, all the
+content, every URL the old site had, the SEO layer, the flight-data files gated
+against the Drupal archive, the maps, a CMS the club edits from a browser at
+`ventorelativo.it/keystatic`, and the cutover itself. `ventorelativo.it` has
+served this build since 2026-09-05, and the committee reviewed and approved it
+on 2026-09-08.
 
-What has not happened is the **cutover**: `ventorelativo.it` still serves the old
-Drupal export from a separate Netlify project, and this build asks not to be
-crawled until it does. That is Phase 5. Phase 6 (payments) is unblocked and
-documented in [payments.md](payments.md) but not executed.
+Phase 6 (payments) is unblocked and documented in [payments.md](payments.md) but
+not executed; nothing about it is code.
 [`MIGRATION-PLAN.md`](../MIGRATION-PLAN.md) §7 tracks all of it.

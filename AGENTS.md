@@ -19,8 +19,10 @@ someone who does not read code.
 
 ## Current state: read before planning anything
 
-Phases 1 to 4 are complete. **Phase 5 (the cutover) is next.** As of the
-last update to this file:
+**Phases 1 to 5 are complete and the site is live.** `ventorelativo.it` has
+served this build since 2026-09-05, and the club committee reviewed it after
+the move and approved it. **Phase 6 (payments) is the only phase left**, and
+none of what remains in it is code. As of the last update to this file:
 
 **Built:** every URL the old site had. `/`, `/news/` and its articles, `/siti/`
 and all fourteen flight sites, `/voli`, `/iscrizioni`, `/contatti` with a
@@ -43,12 +45,13 @@ content on the site written or corrected, field by field, including an inventory
 of what is editable and what is not
 ([`docs/authoring-with-ai.md`](docs/authoring-with-ai.md)).
 
+**Only `ventorelativo.it` is crawlable.** The staging deploy and every branch
+preview serve `Disallow: /`, decided by hostname in `src/pages/robots.txt.ts`:
+they are byte-for-byte copies of a site that ranks, and an editor checking a
+preview should not be publishing to Google. There is nothing to switch.
+
 **Not built, and why:**
 
-- **The domain has not moved.** `ventorelativo.it` still serves the old Drupal
-  export from a separate Netlify project; this build lives at
-  `ventorelativo-astro.netlify.app` and disallows crawling until it does. That
-  move is Phase 5.
 - `/styleguide` stays. It renders every token, primitive and component as the
   real element, which makes it the fastest way for a person _or an agent_ to see
   what the site already has before inventing something new. It is `noindex` and
@@ -63,8 +66,12 @@ of what is editable and what is not
   notice, the gate's allowlist, and what the pages actually do.
 - `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it,
   the maps inline their data.
-- Membership payments (Phase 6) wait on the committee (D10). `/iscrizioni`
-  ships today with the existing Satispay links and bank transfer.
+- Membership payments (Phase 6). D10 is resolved: Stripe Payment Links, with
+  Satispay inside them. What is left is account work in Stripe, Make.com and a
+  Google Sheet, then two `payUrl` fields in Keystatic, which is why
+  [`docs/payments.md`](docs/payments.md) is a runbook and not a branch.
+  `/iscrizioni` ships today with the existing Satispay links and bank
+  transfer.
 
 Do not write code that imports from, or assumes the shape of, anything in that
 second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7

@@ -1,7 +1,8 @@
 # Cutover
 
-Phase 5. The day `ventorelativo.it` stops serving the Drupal export and starts
-serving this build.
+Phase 5, **done on 2026-09-05**: the day `ventorelativo.it` stopped serving the
+Drupal export and started serving this build. Kept as the record of what was
+done, in the order it was done, and of what each step was guarding against.
 
 Almost none of it is code. What code could do has been done: `npm run verify`
 now fails if any URL the old site served stops resolving
@@ -55,16 +56,17 @@ checking their own branch.
   have been the first thing a visitor saw on the club's own domain. Deleted from
   Keystatic; `scripts/check-urls.mjs` already knew it was meant to go.
 
-### 5. Check the club is happy with what is there: after go-live, deliberately
+### 5. Check the club is happy with what is there: done 2026-09-08
 
 The site is the club's, not the migration's, so someone who is not a developer
-has to look at it on a phone. That happens **after** the domain moves, decided
+had to look at it on a phone. That happened **after** the domain moved, decided
 2026-09-05: asking the club to review `ventorelativo-astro.netlify.app` means
 explaining why the address is wrong before anyone gets to the site itself, and
-the answers would be about the URL rather than about the pages.
+the answers would have been about the URL rather than about the pages.
 
-The rollback is what makes that safe: the old project keeps its own deploy, so
-anything the club hates is a domain move away from being the old site again.
+**The committee reviewed it and approved it.** The rollback was what made
+waiting safe: the old project kept its own deploy, so anything the club hated
+was a domain move away from being the old site again. It was not needed.
 
 ## Moving the domain
 
@@ -113,9 +115,11 @@ Then:
   That is the file this site writes, and the one `robots.txt` points at; there
   is no `sitemap-index.xml`, which is @astrojs/sitemap's name and 404s here.
   Until now the site has been asking not to be crawled at all.
-- **Archive the Drupal repository read-only.** Do not delete it: it is the
-  evidence the navdata and URL gates compare against, and both fail without it.
-  `../ventorelativo-drupal` is referenced by path from `npm run verify`.
+- **Archive the Drupal repository read-only: done 2026-09-08.**
+  `ventorelativo/ventorelativo-drupal` is archived, not deleted, and must stay
+  that way: it is the evidence the navdata and URL gates compare against, and
+  both fail without it. `../ventorelativo-drupal` is referenced by path from
+  `npm run verify`, and an archived repository still reads and clones.
 
 ## What does not need doing
 
@@ -125,7 +129,7 @@ Then:
 - **Keystatic's preview links** stay on `*.netlify.app` on purpose: a branch
   preview has no other address.
 
-## Still open at the time of writing
+## Still open
 
 - **Rotate the Tracestrack key.** Deliberately not a blocker (decided
   2026-09-03): rotating before the move would 403 the topographic base layer on
