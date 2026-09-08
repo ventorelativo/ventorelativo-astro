@@ -66,13 +66,15 @@ preview should not be publishing to Google. There is nothing to switch.
   notice, the gate's allowlist, and what the pages actually do.
 - `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it,
   the maps inline their data.
-- Membership payments (Phase 6). **D10 was reversed on 2026-09-08: Satispay
-  only, no Stripe**, and the committee has to ratify it. The site's part is
-  built: a form asks who is paying before `/iscrizioni/grazie` sends them to
-  Satispay, because a Satispay consumer link reports nothing back. What is
-  left is account work in Netlify's form notifications, Make.com and a Google
-  Sheet, which is why [`docs/payments.md`](docs/payments.md) is a runbook and
-  not a branch.
+- Membership payments (Phase 6), **on the `soci-e-quote` branch, not on
+  `main`**. D10 was reversed on 2026-09-08: **Satispay only, no Stripe**, and
+  the committee has yet to ratify it. Everything that is code is written: the
+  form on `/iscrizioni` that asks who is paying before `/iscrizioni/grazie`
+  sends them to Satispay, and `tools/soci/Codice.js`, an Apps Script that
+  matches payments to members and issues the card. **None of it has ever run**:
+  it is waiting on a club-owned Google account. Status and what is left:
+  [`docs/soci.md`](docs/soci.md); the money side is
+  [`docs/payments.md`](docs/payments.md).
 
 Do not write code that imports from, or assumes the shape of, anything in that
 second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7

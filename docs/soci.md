@@ -6,6 +6,42 @@ the membership card, with as little of it done by hand as the tools allow.
 Written for a committee member, not a developer. The payment rails themselves
 are in [payments.md](payments.md); this is what happens around them.
 
+## Dove siamo, 2026-09-08
+
+**Nothing here has ever run.** Everything is written and pushed to the
+`soci-e-quote` branch; none of it is merged to `main` and no spreadsheet exists
+yet.
+
+Done:
+
+- the form on `/iscrizioni` and the payment step on `/iscrizioni/grazie`;
+- `tools/soci/Codice.js`, the whole automation, unrun and untested against a
+  live Sheet or the Satispay API;
+- the 2026 workbook converted (`tools/soci/importa-excel.py`): **97 paying
+  members** (64 Soci, 33 Sostenitori) and 52 lapsed, imported as `inattivo`;
+- membership numbers assigned, Luca Odetto VR-0001, active before lapsed.
+
+Waiting on:
+
+1. **A club-owned Google account.** Deliberately not a personal one: it will own
+   the Sheet, the Drive folder and the script, and the club should not lose them
+   when a volunteer leaves the committee. Everything else is blocked on this.
+2. Three members whose surname is missing from the workbook: `Ariel`, `Ervin`,
+   `Roberto`, all from the donations sheet where the surname cell was empty.
+3. The committee ratifying the move to Satispay only (D10, reversed).
+
+Two facts settled on the way, so they are not rediscovered:
+
+- **The register has no email addresses.** None, in either sheet. The form fills
+  them in as members renew: see "Le email" below.
+- **A free `gmail.com` account is enough.** Google for Nonprofits in Italy
+  validates ONLUS, APS, ETS in RUNTS and foundations; an ASD registered only in
+  the sports register is not eligible unless it also joined RUNTS. It does not
+  matter: the alias in step 2 fixes the address members see, and the 100 emails
+  a day a consumer account allows only means January takes two afternoons
+  instead of one. `ventorelativo.it` publishes `p=none`, so nothing is rejected
+  for failing DMARC alignment.
+
 ## The shape of it
 
 **The spreadsheet is not a record of the work. It is the thing that does the

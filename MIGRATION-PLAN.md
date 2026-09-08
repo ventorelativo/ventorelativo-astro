@@ -1336,7 +1336,7 @@ in `npm run verify` read the working copy at `../ventorelativo-drupal` by path,
 and it stays the reference for anything found missing later. Archiving does not
 touch either, an archived repository still reads and clones.
 
-### Phase 6: Membership & payments _(unblocked 2026-09-03; runbook written, not executed)_
+### Phase 6: Membership & payments _(built 2026-09-08, on a branch, never run)_
 
 `/iscrizioni` already shipped in Phase 2 with the **existing Satispay links and bank
 transfer**, so the site is complete and live without this. **D10 is resolved** (§5), and
@@ -1351,7 +1351,17 @@ is `tools/soci/Codice.js`, in this repository because it is the only reviewed co
 
 **Make.com is out of the plan** (2026-09-08): Apps Script receives webhooks, sends mail and
 writes Drive files on its own, so the second service would only have moved data between two
-Google products.
+Google products. **Airtable was reconsidered and rejected the same day**: its free tier
+allows 100 automation runs a month against the 720 an hourly check needs, its scripting
+cannot sign a Satispay request, it makes no PDF, and its emails come from Airtable rather
+than from the club. Reasoning in [`docs/soci.md`](docs/soci.md).
+
+**Where it actually stands, 2026-09-08.** Everything that is code is written and pushed to
+the `soci-e-quote` branch, and **none of it has ever run**. The club's 2026 workbook has
+been converted (97 paying members, 52 lapsed, no email addresses in it at all), the
+membership numbers have been assigned with Luca Odetto as VR-0001, and the whole thing is
+waiting on one thing: **a club-owned Google account**, deliberately not a personal one.
+Nothing is merged to `main`.
 
 **Exit:** a test payment appears correctly as a row in the Sheet, and a second payment from
 the same member updates that row rather than adding another.
