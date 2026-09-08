@@ -479,6 +479,17 @@ const typeNames = Object.fromEntries(
     background-image: var(--lqip);
     background-size: cover;
     background-position: center;
+    /*
+      The same radius as the image it is standing in for.
+
+      The wrapper is what paints the blurred placeholder, and without this it
+      painted it square: for the moment between first paint and the still
+      arriving, the corners were pointed and then snapped round. `overflow`
+      as well as the radius, because the image inside has a radius of its own
+      and a hairline of background otherwise shows past it on the curve.
+    */
+    border-radius: var(--radius-lg);
+    overflow: hidden;
   }
 
   .map :global(picture.blur:has(img[data-loaded])) {
