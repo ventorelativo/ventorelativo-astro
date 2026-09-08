@@ -225,11 +225,40 @@ function doPost(e) {
  * Adds a member if they are new, and a quota row for this year if they have
  * none. Idempotent on both counts: somebody who submits the form twice, which
  * people do when they are not sure it worked, gets one row and one quota.
+ *
+ * ## Why it also matches on the name
+ *
+ * The register imported from the club's spreadsheet has **no email addresses**:
+ * that column never existed. Matching on email alone, every one of those
+ * members filling in the form would be greeted as a stranger and given a second
+ * row, and the register would quietly double.
+ *
+ * So a submission whose email matches nobody is checked against the names that
+ * have no email yet, and when exactly one fits, **that row gets the address**.
+ * The form is not only how a stranger joins, it is how the club collects the
+ * addresses it never had, one member at a time, without anybody transcribing
+ * anything.
+ *
+ * Only rows with an empty Email are considered, and only an exact match on the
+ * words of the name. Two members called Marco Rossi is a collision the script
+ * refuses: it makes a new row and the committee merges them, which is a
+ * nuisance, where guessing would be a stranger reading somebody else's card.
  */
 function registra({ nome, email, quota }) {
   const anno = new Date().getFullYear();
   const soci = leggi(CONFIG.sheets.soci);
   let socio = soci.find((s) => String(s.Email).toLowerCase() === email);
+
+  if (!socio) {
+    const senzaEmail = soci.filter(
+      (s) => !s.Email && normalizza(s.Nome) === normalizza(nome),
+    );
+    if (senzaEmail.length === 1) {
+      socio = senzaEmail[0];
+      scrivi(CONFIG.sheets.soci, socio._riga, 'Email', email);
+      socio.Email = email;
+    }
+  }
 
   if (!socio) {
     const id = nuovoId(soci);
@@ -315,7 +344,8 @@ function apriAnno() {
     creati += 1;
   }
 
-  const inviate = inviaRinnovi(anno);
+  const esiti = { senzaEmail: 0 };
+  const inviate = inviaRinnovi(anno, esiti);
   const restano = leggi(CONFIG.sheets.quote).filter(
     (q) => Number(q.Anno) === anno && q.Stato === STATO.rinnovo && !q.Invito,
   ).length;
@@ -323,6 +353,10 @@ function apriAnno() {
   riferisci(
     `Anno ${anno} aperto`,
     `Righe create: ${creati}\nEmail inviate: ${inviate}` +
+      (esiti.senzaEmail
+        ? `\n\nSenza indirizzo email: ${esiti.senzaEmail}. Non ricevono il rinnovo ` +
+          'né la tessera finché la colonna Email resta vuota.'
+        : '') +
       (restano
         ? `\n\nDa scrivere ancora: ${restano}. È finita la quota giornaliera di Gmail: ` +
           'rilancia "Apri il nuovo anno" domani, scriverà solo a chi manca.'
@@ -351,7 +385,7 @@ function apriAnno() {
  * also what makes stopping early safe, which it does when the quota runs out
  * rather than throwing in the middle of a loop.
  */
-function inviaRinnovi(anno) {
+function inviaRinnovi(anno, esiti) {
   const soci = leggi(CONFIG.sheets.soci);
   let inviate = 0;
   let rimaste = MailApp.getRemainingDailyQuota();
@@ -360,7 +394,14 @@ function inviaRinnovi(anno) {
     if (Number(quota.Anno) !== anno || quota.Stato !== STATO.rinnovo) continue;
     if (quota.Invito) continue;
     const socio = soci.find((s) => s.ID === quota.ID);
-    if (!socio || !socio.Email) continue;
+    if (!socio) continue;
+    /* Counted, not skipped in silence: a member with no address is the one
+       thing here a person has to go and fix, and the register arrived from
+       the club's spreadsheet without a single email in it. */
+    if (!socio.Email) {
+      esiti.senzaEmail += 1;
+      continue;
+    }
     if (rimaste < 1) break;
 
     const importo = (CONFIG.quote[quota.Quota] || {}).centesimi;
@@ -709,11 +750,18 @@ function generaTessere() {
   const cartella = DriveApp.getFolderById(CONFIG.cartellaTessere);
   const template = DriveApp.getFileById(CONFIG.templateTessera);
   let fatte = 0;
+  let senzaEmail = 0;
 
   for (const quota of leggi(CONFIG.sheets.quote)) {
     if (quota.Stato !== STATO.pagato || quota.Tessera) continue;
     const socio = soci.find((s) => s.ID === quota.ID);
-    if (!socio || !socio.Email) continue;
+    if (!socio) continue;
+    /* Same as the renewal: a paid-up member with no address is somebody owed a
+       card that cannot be sent, and that has to be said out loud. */
+    if (!socio.Email) {
+      senzaEmail += 1;
+      continue;
+    }
     if (MailApp.getRemainingDailyQuota() < 1) break;
 
     const nome = `Tessera ${quota.Anno} ${socio.Nome} (${socio.ID})`;
@@ -746,8 +794,14 @@ function generaTessere() {
     fatte += 1;
   }
 
-  if (interattivo()) riferisci('Tessere', `Generate e inviate: ${fatte}`);
-  return fatte;
+  if (interattivo()) {
+    riferisci(
+      'Tessere',
+      `Generate e inviate: ${fatte}` +
+        (senzaEmail ? `\nIn attesa di un indirizzo email: ${senzaEmail}` : ''),
+    );
+  }
+  return { fatte, senzaEmail };
 }
 
 function tesseraTesto(socio, quota) {
@@ -792,7 +846,9 @@ function sincronizza() {
   const tessere = generaTessere();
 
   const riga =
-    `Incassi nuovi: ${nuovi}\nQuote abbinate: ${esiti.abbinati}\nTessere inviate: ${tessere}` +
+    `Incassi nuovi: ${nuovi}\nQuote abbinate: ${esiti.abbinati}\n` +
+    `Tessere inviate: ${tessere.fatte}` +
+    (tessere.senzaEmail ? `\nTessere ferme senza email: ${tessere.senzaEmail}` : '') +
     (esiti.dubbi.length ? `\n\nDa sistemare a mano:\n${esiti.dubbi.join('\n')}` : '') +
     (errore ? `\n\nSatispay non ha risposto: ${errore}` : '');
 

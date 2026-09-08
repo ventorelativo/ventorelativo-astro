@@ -174,6 +174,30 @@ Either they fill the form on `/iscrizioni`, and the row appears by itself, or a
 committee member types them into `Soci` and adds a `Quote` row. Both end in the
 same two tables.
 
+## Le email, che nel foglio non ci sono
+
+The register imported from the club's spreadsheet has **no email addresses**:
+that column never existed. Everything works without them except the two things
+that need one, sending a renewal request and sending a card, and both count
+what they had to skip rather than skipping it quietly.
+
+**The form collects them, without anybody transcribing anything.** A submission
+whose email matches nobody is checked against the members who have no email
+yet, and when exactly one name fits, that row gets the address. So an existing
+member filling the form is recognised as themselves and their record is
+completed, rather than being greeted as a stranger and given a second row.
+
+Which makes the first renewal round the collection round: put the link to
+`/iscrizioni` wherever the club already talks to its members, and the register
+fills itself in as people renew.
+
+Two members with the same name is the one case it will not resolve. It refuses
+to guess, makes a new row, and the committee merges the two: a nuisance, where
+guessing would mean somebody receiving another member's card.
+
+Import the workbook with `tools/soci/importa-excel.py`, which writes `Soci.csv`
+and `Quote.csv` ready to paste in. Keep its output outside this repository.
+
 ## Cosa può ancora andare storto
 
 **The payer's Satispay name is not always the name on the register.** Somebody
