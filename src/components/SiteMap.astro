@@ -1128,6 +1128,7 @@ const typeNames = Object.fromEntries(
         map.addSource('cone', {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] },
+          attribution: config.CONE_ATTRIBUTION,
         });
         map.addLayer(
           {
@@ -1949,6 +1950,7 @@ const typeNames = Object.fromEntries(
   }
 
   interface ThermalConfig {
+    CONE_ATTRIBUTION: string;
     RASTER_BASE: { label: string };
     SATELLITE_BASE: { label: string };
     THERMAL_LAYERS: readonly { value: string; label: string }[];

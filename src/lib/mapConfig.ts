@@ -132,6 +132,21 @@ export const SATELLITE_BASE = {
 };
 
 /**
+ * Whose model the glide cones are, shown whenever one is on the map.
+ *
+ * MapLibre renders a source's `attribution` in the control at the corner, and
+ * a GeoJSON source takes one exactly like a raster source does. That is the
+ * right place for it: it appears when a cone is drawn and goes away when it is
+ * not, rather than crediting a service the visitor never used.
+ *
+ * The data is fetched at build (`scripts/flight-cones.mjs`) and served from
+ * this origin, so nobody's browser talks to hikeandfly.org. The credit is
+ * owed all the same.
+ */
+export const CONE_ATTRIBUTION =
+  'Planate © <a href="https://www.hikeandfly.org/">hikeandfly.org</a>';
+
+/**
  * kk7's flight data, as a raster overlay.
  *
  * Two views of the same archive: `thermals` marks where pilots climbed, which
