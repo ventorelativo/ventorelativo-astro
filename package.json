@@ -11,7 +11,7 @@
     "lint": "eslint . && node scripts/check-content.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "astro check && npm run lint && npm run authoring:check && prettier --check . && npm run build && npm run posters:check && npm run navdata:check && npm run urls:check && npm run sitemap:check && npm run privacy:check && npm run headings:check",
+    "verify": "astro check && npm run lint && npm run authoring:check && prettier --check . && npm run build && npm run posters:check && npm run cones:check && npm run navdata:check && npm run urls:check && npm run sitemap:check && npm run privacy:check && npm run headings:check",
     "shot": "node scripts/shot.mjs",
     "weight": "node scripts/shot.mjs --no-shot --weight",
     "navdata:check": "node scripts/check-navdata.mjs",
@@ -25,7 +25,9 @@
     "headings:check": "node scripts/check-heading-ids.mjs",
     "authoring:check": "node scripts/check-authoring.mjs",
     "map:posters": "node scripts/map-posters.mjs",
-    "posters:check": "node scripts/map-posters.mjs --check"
+    "cones": "node scripts/flight-cones.mjs",
+    "posters:check": "node scripts/map-posters.mjs --check",
+    "cones:check": "node scripts/flight-cones.mjs --check"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.0",

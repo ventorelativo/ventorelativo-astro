@@ -1,0 +1,194 @@
+{
+  "bergerie-ciardonnet-6": {
+    "hash": "9d5d4518ad1edcb0",
+    "cells": 1734
+  },
+  "bergerie-ciardonnet-8": {
+    "hash": "dc470a448d2a2ded",
+    "cells": 2988
+  },
+  "bergerie-ciardonnet-10": {
+    "hash": "06e532f7889b01ca",
+    "cells": 4575
+  },
+  "bourcet-6": {
+    "hash": "26f8238cae71409f",
+    "cells": 983
+  },
+  "bourcet-8": {
+    "hash": "282c4d503711834d",
+    "cells": 1568
+  },
+  "bourcet-10": {
+    "hash": "6eb8f2d7436b9f44",
+    "cells": 2328
+  },
+  "bric-rond-casermette-6": {
+    "hash": "bcced9d25902600a",
+    "cells": 654
+  },
+  "bric-rond-casermette-8": {
+    "hash": "5aac58acc4a3fb4c",
+    "cells": 1240
+  },
+  "bric-rond-casermette-10": {
+    "hash": "0cb4482e1b66f93c",
+    "cells": 2589
+  },
+  "colle-lazzara-6": {
+    "hash": "ff60ff5a74578e44",
+    "cells": 894
+  },
+  "colle-lazzara-8": {
+    "hash": "83e753d34b678d02",
+    "cells": 1731
+  },
+  "colle-lazzara-10": {
+    "hash": "5100bb981e26555e",
+    "cells": 2577
+  },
+  "decollo-pigi-6": {
+    "hash": "407601c0b38fe3f4",
+    "cells": 283
+  },
+  "decollo-pigi-8": {
+    "hash": "0f33b22c72310e8c",
+    "cells": 561
+  },
+  "decollo-pigi-10": {
+    "hash": "77bfda8426bfbab4",
+    "cells": 892
+  },
+  "freidur-6": {
+    "hash": "c56044f56e3c9d41",
+    "cells": 1122
+  },
+  "freidur-8": {
+    "hash": "5a83798734747bcd",
+    "cells": 2921
+  },
+  "freidur-10": {
+    "hash": "b7ba244c45da2b4e",
+    "cells": 5185
+  },
+  "giuic-6": {
+    "hash": "53aecdee6ce9ab29",
+    "cells": 498
+  },
+  "giuic-8": {
+    "hash": "4235d4454485c823",
+    "cells": 890
+  },
+  "giuic-10": {
+    "hash": "d0eb3e1413820d9f",
+    "cells": 1506
+  },
+  "il-podio-6": {
+    "hash": "d2f49e165db2e8cf",
+    "cells": 80
+  },
+  "il-podio-8": {
+    "hash": "fcd9c31cefc5f37f",
+    "cells": 148
+  },
+  "il-podio-10": {
+    "hash": "5920bfc8fc7fe142",
+    "cells": 208
+  },
+  "montoso-monumento-6": {
+    "hash": "9131b3abef39a240",
+    "cells": 1021
+  },
+  "montoso-monumento-8": {
+    "hash": "3aeb76ada401a913",
+    "cells": 2095
+  },
+  "montoso-monumento-10": {
+    "hash": "b886c9769c6b9ea9",
+    "cells": 3576
+  },
+  "pian-dell-alpe-6": {
+    "hash": "eaca55f026675bfe",
+    "cells": 293
+  },
+  "pian-dell-alpe-8": {
+    "hash": "952334a681e2286a",
+    "cells": 469
+  },
+  "pian-dell-alpe-10": {
+    "hash": "526b978e993ccb83",
+    "cells": 685
+  },
+  "pralamar-fontana-6": {
+    "hash": "a64bbb73bd81492b",
+    "cells": 1031
+  },
+  "pralamar-fontana-8": {
+    "hash": "78ae2e15fe876c90",
+    "cells": 1561
+  },
+  "pralamar-fontana-10": {
+    "hash": "a6efad6d39592943",
+    "cells": 3613
+  },
+  "prato-delle-grange-6": {
+    "hash": "de2db51cd1cde747",
+    "cells": 886
+  },
+  "prato-delle-grange-8": {
+    "hash": "6b9c7727a4aa916f",
+    "cells": 1412
+  },
+  "prato-delle-grange-10": {
+    "hash": "67614d26f15dc37f",
+    "cells": 2380
+  },
+  "punta-ceresa-6": {
+    "hash": "c4c56dd2e00c99eb",
+    "cells": 458
+  },
+  "punta-ceresa-8": {
+    "hash": "8f8ed40017b6dad1",
+    "cells": 647
+  },
+  "punta-ceresa-10": {
+    "hash": "1332c24de120fd73",
+    "cells": 863
+  },
+  "rucas-6": {
+    "hash": "b660c393fbf4dea1",
+    "cells": 1349
+  },
+  "rucas-8": {
+    "hash": "2033bbc9642a046a",
+    "cells": 3321
+  },
+  "rucas-10": {
+    "hash": "2cba9f28075b1086",
+    "cells": 5699
+  },
+  "sarsena-6": {
+    "hash": "75b9058e28842d50",
+    "cells": 369
+  },
+  "sarsena-8": {
+    "hash": "0ea770638df76d3b",
+    "cells": 564
+  },
+  "sarsena-10": {
+    "hash": "033de7176f971793",
+    "cells": 774
+  },
+  "tabellone-6": {
+    "hash": "15903ca02f9850ca",
+    "cells": 1204
+  },
+  "tabellone-8": {
+    "hash": "678e6fd8ab68fd6d",
+    "cells": 2158
+  },
+  "tabellone-10": {
+    "hash": "80d73a320d667080",
+    "cells": 4366
+  }
+}
