@@ -66,12 +66,16 @@ preview should not be publishing to Google. There is nothing to switch.
   notice, the gate's allowlist, and what the pages actually do.
 - `/api/sites/<nid>/geo.json`: dropped (D5), and the `all` variant with it,
   the maps inline their data.
-- Membership payments (Phase 6). D10 is resolved: Stripe Payment Links, with
-  Satispay inside them. What is left is account work in Stripe, Make.com and a
-  Google Sheet, then two `payUrl` fields in Keystatic, which is why
-  [`docs/payments.md`](docs/payments.md) is a runbook and not a branch.
-  `/iscrizioni` ships today with the existing Satispay links and bank
-  transfer.
+- Membership payments (Phase 6). D10 was reversed on 2026-09-08: **Satispay
+  only, no Stripe**, and the committee has yet to ratify it. The automation is
+  here on `main` and inert, `tools/soci/Codice.js`, an Apps Script that runs
+  inside the club's Google account: nothing on the site calls it and no build
+  sees it. **The site's half is on the `soci-e-quote` branch and deliberately
+  not merged**: a form on `/iscrizioni` asking who is paying, and
+  `/iscrizioni/grazie` as the payment step. It stays there until the
+  spreadsheet behind it exists, because a form nobody is reading is worse than
+  no form. Status: [`docs/soci.md`](docs/soci.md); the money side is
+  [`docs/payments.md`](docs/payments.md).
 
 Do not write code that imports from, or assumes the shape of, anything in that
 second list. If a task needs it, read [`MIGRATION-PLAN.md`](MIGRATION-PLAN.md) §7

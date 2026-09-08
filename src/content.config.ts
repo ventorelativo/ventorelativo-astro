@@ -282,7 +282,7 @@ const pages = defineCollection({
         .array(
           z.object({
             name: z.string(),
-            /** Euros. A number so a future Stripe integration can use it. */
+            /** Euros. A number so the form's radios can format it themselves. */
             price: z.number(),
             /**
              * What the price is per, if anything: "all'anno". Left empty by
@@ -301,7 +301,7 @@ const pages = defineCollection({
             limits: z.array(z.string()).default([]),
             /** A word on the highlighted card, "Consigliata". */
             badge: z.string().optional(),
-            /** Satispay today, a Stripe Payment Link if D10 goes that way. */
+            /** The Satispay link, spent on /iscrizioni/grazie (D10, reversed). */
             payUrl: z.url(), // z.string().url() is deprecated in Zod 4
             /**
              * The button's words. A field, not a constant, because the rail

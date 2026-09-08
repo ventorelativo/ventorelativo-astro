@@ -10,7 +10,8 @@ For club members, developers, and AI agents working on the Ventorelativo site.
 | [authoring-with-ai.md](authoring-with-ai.md) | A volunteer wants to draft a post with ChatGPT or Gemini, or you are changing the rules they are given.                |
 | [performance.md](performance.md)             | Before adding any library, and whenever a page gets heavier. The site targets 100/100 in PageSpeed Insights.           |
 | [deploying.md](deploying.md)                 | You are setting up hosting or the CMS, or something about a deploy or a preview branch is not behaving.                |
-| [payments.md](payments.md)                   | You are wiring up membership payments: Stripe, the Make.com scenario, and the Google Sheet behind them.                |
+| [payments.md](payments.md)                   | You are wiring up membership payments: the rails, the fees, and what the site does.                                    |
+| [soci.md](soci.md)                           | The member register: the spreadsheet, the yearly renewal, and the membership card.                                     |
 | [cutover.md](cutover.md)                     | You are about to move ventorelativo.it to this build, or want to know what is left before that can happen.             |
 | [../AGENTS.md](../AGENTS.md)                 | You are an AI agent, or you want to see the rules one is given.                                                        |
 | [../MIGRATION-PLAN.md](../MIGRATION-PLAN.md) | You want the full scope of the Drupal → Astro migration, the decisions behind it, and what each phase covers.          |
@@ -47,6 +48,7 @@ against the Drupal archive, the maps, a CMS the club edits from a browser at
 served this build since 2026-09-05, and the committee reviewed and approved it
 on 2026-09-08.
 
-Phase 6 (payments) is unblocked and documented in [payments.md](payments.md) but
-not executed; nothing about it is code.
+Phase 6 (payments) is documented in [payments.md](payments.md) and
+[soci.md](soci.md). The site's part is built; the rest is account work in
+Satispay, Netlify and a Google Sheet.
 [`MIGRATION-PLAN.md`](../MIGRATION-PLAN.md) §7 tracks all of it.
