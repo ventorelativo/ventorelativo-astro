@@ -33,8 +33,11 @@ real:
 
 - **Cards.** Someone without Satispay pays by bank transfer or does not pay
   online. Keep the IBAN visible everywhere it is visible today.
-- **The automatic "paid" tick.** Stripe's webhook would have written it.
-  Nothing else in this design can, and the reason is in the next section.
+- ~~The automatic "paid" tick.~~ **Recovered on 2026-09-08.** Satispay has no
+  callback for a consumer link, but its Business API will list the shop's
+  payments with the payer's name on each, and the club's Apps Script polls it
+  hourly. See [soci.md](soci.md). What Stripe was being bought for is now done
+  without it.
 
 ## Why the site asks before it pays
 
@@ -52,8 +55,8 @@ member → form on /iscrizioni  (name, email, tier)
        → Netlify Forms → outgoing webhook → the club's spreadsheet, "in attesa"
        → /iscrizioni/grazie → Satispay link → money lands in the club account
 
-treasurer → Satispay report → the rows flip to "pagato" → the card goes out
-bonifico  → (by hand)      → same spreadsheet
+API Satispay → ogni ora → la riga diventa "pagato" → la tessera parte da sola
+bonifico  → (by hand)      → same spreadsheet, same card
 ```
 
 The form is a **payment declaration, not a membership application**. The libro
@@ -67,22 +70,16 @@ the club banked; the form only says whose name to put beside it.
 
 ## Steps only a human can do
 
-### 1. Check what the Satispay report actually contains
+### 1. Stop reading the payout report
 
-**Do this first: it decides how much work step 5 saves.** In
-[dashboard.satispay.com](https://dashboard.satispay.com) → Transactions →
-Request report (.csv/.xls), pull a month that has real payments in it and look
-at the columns.
+The report the treasurer has been working from gives a payment id, a timestamp
+and an amount, and no way to tell whose payment it was. That is why
+reconciliation was a chore, and it is not a problem to be solved with a better
+spreadsheet: the information is not in the file.
 
-The question is whether a row carries the **payer's name** and the
-**`external_code`** already on the club's links (`Sostenitore`, `Socio`, see
-`payUrl` in `src/content/pages/iscrizioni.mdx`). If it does, matching a
-payment to a form submission is reading two columns. If it carries only
-amounts and timestamps, the match is by amount and date, and duplicate €30
-payments on the same day have to be told apart by hand.
-
-Nothing else in this runbook changes either way. It is worth knowing before
-promising the committee how automatic this is.
+`GET /g_business/v1/payments` returns **`sender.name`** on every payment. The
+club's Apps Script reads it hourly and does the matching, so this step is now
+"set up the API key", and it is [soci.md](soci.md) step 4.
 
 ### 2. The two payment links already exist
 

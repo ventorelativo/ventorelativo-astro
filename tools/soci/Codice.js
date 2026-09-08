@@ -1,4 +1,4 @@
-/* exported onOpen, preparaFogli, apriAnno, importaIncassi, generaTessere, doPost */
+/* exported onOpen, preparaFogli, apriAnno, sincronizza, generaTessere, attivaSatispay, installaControllo, doPost */
 /**
  * Ventorelativo: soci, quote e tessere.
  *
@@ -51,7 +51,12 @@ const CONFIG = {
 
   mittente: 'Parapendio Club Ventorelativo',
   rispondiA: 'segreteria@ventorelativo.it',
+
+  /* Told about anything the matching could not decide. */
+  avvisi: 'segreteria@ventorelativo.it',
 };
+
+const SATISPAY_HOST = 'authservices.satispay.com';
 
 const HEADERS = {
   soci: ['ID', 'Nome', 'Email', 'Stato', 'Iscritto dal', 'Note'],
@@ -74,12 +79,39 @@ const STATO = { attesa: 'in attesa', rinnovo: 'da rinnovare', pagato: 'pagato' }
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Ventorelativo')
-    .addItem('Prepara i fogli', 'preparaFogli')
+    .addItem('Sincronizza adesso', 'sincronizza')
     .addSeparator()
     .addItem('Apri il nuovo anno', 'apriAnno')
-    .addItem('Importa incassi Satispay', 'importaIncassi')
     .addItem('Genera e invia le tessere', 'generaTessere')
+    .addSeparator()
+    .addItem('Prepara i fogli', 'preparaFogli')
+    .addItem('Attiva Satispay', 'attivaSatispay')
+    .addItem('Installa il controllo automatico', 'installaControllo')
     .addToUi();
+}
+
+/**
+ * True when a person is watching, false inside a trigger.
+ *
+ * `getUi()` throws when the script runs on a timer, which is how a working
+ * script becomes a broken one the moment it is automated. Everything that
+ * reports goes through here.
+ */
+function interattivo() {
+  try {
+    SpreadsheetApp.getUi();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function riferisci(titolo, testo) {
+  if (interattivo()) {
+    SpreadsheetApp.getUi().alert(`${titolo}\n\n${testo}`);
+  } else {
+    Logger.log(`${titolo}: ${testo}`);
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -106,7 +138,7 @@ function preparaFogli() {
       sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
     }
   }
-  SpreadsheetApp.getUi().alert('Fogli pronti.');
+  riferisci('Fogli pronti', 'Le tre schede ci sono.');
 }
 
 function foglio(name) {
@@ -168,7 +200,6 @@ function doPost(e) {
       .trim()
       .toLowerCase(),
     quota: String(dati.quota || '').trim(),
-    rail: 'satispay',
   });
 
   return ContentService.createTextOutput('ok');
@@ -179,7 +210,7 @@ function doPost(e) {
  * none. Idempotent on both counts: somebody who submits the form twice, which
  * people do when they are not sure it worked, gets one row and one quota.
  */
-function registra({ nome, email, quota, rail }) {
+function registra({ nome, email, quota }) {
   const anno = new Date().getFullYear();
   const soci = leggi(CONFIG.sheets.soci);
   let socio = soci.find((s) => String(s.Email).toLowerCase() === email);
@@ -200,9 +231,10 @@ function registra({ nome, email, quota, rail }) {
     anno,
     quota,
     (CONFIG.quote[quota] || {}).euro || '',
-    rail,
+    '',
     '',
     STATO.attesa,
+    '',
     '',
     '',
   ]);
@@ -262,6 +294,7 @@ function apriAnno() {
       STATO.rinnovo,
       '',
       '',
+      '',
     ]);
     creati += 1;
   }
@@ -271,11 +304,12 @@ function apriAnno() {
     (q) => Number(q.Anno) === anno && q.Stato === STATO.rinnovo && !q.Invito,
   ).length;
 
-  ui.alert(
-    `Anno ${anno} aperto.\n\nRighe create: ${creati}\nEmail inviate: ${inviate}` +
+  riferisci(
+    `Anno ${anno} aperto`,
+    `Righe create: ${creati}\nEmail inviate: ${inviate}` +
       (restano
         ? `\n\nDa scrivere ancora: ${restano}. È finita la quota giornaliera di Gmail: ` +
-          `rilancia "Apri il nuovo anno" domani, scriverà solo a chi manca.`
+          'rilancia "Apri il nuovo anno" domani, scriverà solo a chi manca.'
         : ''),
   );
 }
@@ -355,72 +389,284 @@ function rinnovoTesto(socio, quota, anno, link) {
 }
 
 /* -------------------------------------------------------------------------
-   Gli incassi
+   Satispay
    ------------------------------------------------------------------------- */
 
 /**
- * Marks quotas paid from the Satispay export.
+ * Exchanges a one-time activation code for a KeyId, once, ever.
  *
- * Paste the report into the `Incassi` tab, headers and all, and run this. It
- * looks for a column whose name contains "external" first, because that is an
- * exact match to a member; failing that it matches on the amount within the
- * current year and refuses to guess when two people owe the same amount and
- * neither has paid. Whatever it cannot decide it leaves alone and reports, and
- * a person settles it in ten seconds.
+ * Before running it, generate the key pair on a computer and paste both halves
+ * into Script Properties as `SATISPAY_PRIVATE_KEY` and `SATISPAY_PUBLIC_KEY`:
  *
- * Wire transfers are not here on purpose. The treasurer sees them in the bank,
- * types `pagato` in the row, and that is less work than any import would be.
+ *   openssl genrsa -out satispay.key 4096
+ *   openssl rsa -in satispay.key -pubout -out satispay.pub
+ *
+ * Apps Script cannot generate an RSA pair, and would be the wrong place to do
+ * it anyway: the private key should exist somewhere the club controls before
+ * it is pasted anywhere.
+ *
+ * The activation code comes from the Satispay Business account and is burned
+ * on use, so a failed run needs a fresh one.
  */
-function importaIncassi() {
-  const incassi = leggi(CONFIG.sheets.incassi);
-  if (!incassi.length) {
-    SpreadsheetApp.getUi().alert(`Incolla il report Satispay nel foglio "Incassi".`);
+function attivaSatispay() {
+  const ui = SpreadsheetApp.getUi();
+  const props = PropertiesService.getScriptProperties();
+  const pubblica = props.getProperty('SATISPAY_PUBLIC_KEY');
+  if (!pubblica) {
+    ui.alert('Manca SATISPAY_PUBLIC_KEY nelle proprietà dello script.');
     return;
   }
 
-  const colonne = Object.keys(incassi[0]);
-  const colCodice = colonne.find((c) => /external|codice|riferimento/i.test(c));
-  const colImporto = colonne.find((c) => /importo|amount|netto/i.test(c));
-  const colData = colonne.find((c) => /data|date/i.test(c));
+  const risposta = ui.prompt(
+    'Attivazione Satispay',
+    'Incolla il codice di attivazione preso dal profilo Satispay Business:',
+    ui.ButtonSet.OK_CANCEL,
+  );
+  if (risposta.getSelectedButton() !== ui.Button.OK) return;
 
+  const esito = UrlFetchApp.fetch(
+    `https://${SATISPAY_HOST}/g_business/v1/authentication_keys`,
+    {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({
+        public_key: pubblica,
+        token: risposta.getResponseText().trim(),
+      }),
+      muteHttpExceptions: true,
+    },
+  );
+
+  if (esito.getResponseCode() !== 200) {
+    ui.alert(
+      `Attivazione fallita (${esito.getResponseCode()}).\n\n${esito.getContentText()}`,
+    );
+    return;
+  }
+
+  props.setProperty('SATISPAY_KEY_ID', JSON.parse(esito.getContentText()).key_id);
+  ui.alert('Satispay attivato. Il KeyId è salvato nelle proprietà dello script.');
+}
+
+/**
+ * The RFC 2822 date the signature is built on, in English, always.
+ *
+ * Not `Utilities.formatDate`: it renders day and month names in the script's
+ * locale, so on an Italian account the header reads "lun, 08 set 2026" and
+ * every request comes back rejected. The failure looks like a key problem and
+ * is not one, which is worth the fifteen lines.
+ */
+function dataRfc(d) {
+  const GIORNI = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const MESI = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const due = (n) => String(n).padStart(2, '0');
+  return (
+    `${GIORNI[d.getUTCDay()]}, ${due(d.getUTCDate())} ${MESI[d.getUTCMonth()]} ` +
+    `${d.getUTCFullYear()} ${due(d.getUTCHours())}:${due(d.getUTCMinutes())}:` +
+    `${due(d.getUTCSeconds())} +0000`
+  );
+}
+
+/**
+ * A signed GET against the Business API.
+ *
+ * The signature covers four lines in a fixed order, `(request-target)`, host,
+ * date and digest. The digest of an empty body is still a digest: leaving it
+ * out because there is nothing to hash fails.
+ *
+ * `Host` is deliberately not sent as a header. UrlFetchApp sets it itself and
+ * will not be told otherwise; what matters is that the value signed here is
+ * the one it is going to send.
+ */
+function satispayGet(percorso) {
+  const props = PropertiesService.getScriptProperties();
+  const keyId = props.getProperty('SATISPAY_KEY_ID');
+  const chiave = props.getProperty('SATISPAY_PRIVATE_KEY');
+  if (!keyId || !chiave)
+    throw new Error('Satispay non è attivato. Usa "Attiva Satispay".');
+
+  const data = dataRfc(new Date());
+  const digest =
+    'SHA-256=' +
+    Utilities.base64Encode(
+      Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, ''),
+    );
+
+  const messaggio = [
+    `(request-target): get ${percorso}`,
+    `host: ${SATISPAY_HOST}`,
+    `date: ${data}`,
+    `digest: ${digest}`,
+  ].join('\n');
+
+  const firma = Utilities.base64Encode(
+    Utilities.computeRsaSha256Signature(messaggio, chiave),
+  );
+
+  const esito = UrlFetchApp.fetch(`https://${SATISPAY_HOST}${percorso}`, {
+    method: 'get',
+    headers: {
+      Date: data,
+      Digest: digest,
+      Authorization:
+        `Signature keyId="${keyId}", algorithm="rsa-sha256", ` +
+        `headers="(request-target) host date digest", signature="${firma}"`,
+    },
+    muteHttpExceptions: true,
+  });
+
+  if (esito.getResponseCode() !== 200) {
+    throw new Error(`Satispay ${esito.getResponseCode()}: ${esito.getContentText()}`);
+  }
+  return JSON.parse(esito.getContentText());
+}
+
+/**
+ * Pulls the shop's payments and writes the unseen ones into `Incassi`.
+ *
+ * Accepted payments only, and only newer than the high-water mark kept in
+ * Script Properties, so a quiet day costs one request. The mark moves only
+ * after the rows are written: a run that dies halfway repeats itself next time
+ * rather than losing a payment, and the id column stops anything being counted
+ * twice.
+ *
+ * `Incassi` is not working state, it is the club's own copy of what Satispay
+ * said. Keep it: when a match looks wrong in eighteen months, this is the only
+ * place the original answer survives.
+ */
+function scaricaIncassi() {
+  const props = PropertiesService.getScriptProperties();
+  const da = Number(props.getProperty('SATISPAY_ULTIMO') || 0);
+  const visti = new Set(
+    leggi(CONFIG.sheets.incassi).map((r) => String(r['ID pagamento'])),
+  );
+
+  let percorso = '/g_business/v1/payments?status=ACCEPTED&limit=100';
+  if (da) percorso += `&starting_after_timestamp=${da}`;
+
+  const pagamenti = satispayGet(percorso).data || [];
+  let massimo = da;
+  let nuovi = 0;
+
+  for (const p of pagamenti) {
+    const quando = new Date(p.insert_date);
+    massimo = Math.max(massimo, quando.getTime());
+    if (visti.has(String(p.id))) continue;
+
+    foglio(CONFIG.sheets.incassi).appendRow([
+      p.id,
+      quando,
+      (p.amount_unit || 0) / 100,
+      (p.sender && p.sender.name) || '',
+      p.status,
+      '',
+    ]);
+    nuovi += 1;
+  }
+
+  if (massimo > da) props.setProperty('SATISPAY_ULTIMO', String(massimo));
+  return nuovi;
+}
+
+/* -------------------------------------------------------------------------
+   L'abbinamento
+   ------------------------------------------------------------------------- */
+
+/**
+ * Two names are the same person if their words are, in any order.
+ *
+ * Satispay reports whatever the payer called their own account, so "Mario
+ * Rossi" and "Rossi Mario" are one person, and accents are noise.
+ */
+function normalizza(nome) {
+  return String(nome || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .sort()
+    .join(' ');
+}
+
+/**
+ * Matches payments to the quotas they paid, and marks those quotas paid.
+ *
+ * **It marks nothing it had to guess at.** A payment matches when exactly one
+ * unpaid quota fits: by the payer's name where the name is a member's,
+ * otherwise by an amount only one person still owes. Two people owing thirty
+ * euro and neither having paid is not a match, it is a question, and it goes
+ * into the report for a person rather than being settled by coin flip.
+ *
+ * Every match writes the Satispay payment id into the quota row. That id is
+ * what the treasurer used to be handed on its own, with the work of finding
+ * out whose it was left as an exercise. Now it arrives already attached to
+ * somebody.
+ */
+function abbina() {
+  const soci = leggi(CONFIG.sheets.soci);
   const quote = leggi(CONFIG.sheets.quote).filter((q) => q.Stato !== STATO.pagato);
-  let segnate = 0;
-  const irrisolti = [];
+  const esiti = { abbinati: 0, dubbi: [] };
 
-  for (const incasso of incassi) {
-    const euro = Math.abs(Number(String(incasso[colImporto]).replace(',', '.')));
+  for (const incasso of leggi(CONFIG.sheets.incassi)) {
+    if (incasso['Abbinato a']) continue;
+    const euro = Number(incasso.Importo);
     if (!euro) continue;
 
+    const perImporto = quote.filter(
+      (q) => q.Stato !== STATO.pagato && Math.abs(Number(q.Importo) - euro) < 0.01,
+    );
+
+    /* The name first: it is the field the payout report never carried. */
     let candidate = [];
-    if (colCodice && incasso[colCodice]) {
-      const codice = String(incasso[colCodice]).trim();
-      candidate = quote.filter((q) => q.ID === codice && q.Stato !== STATO.pagato);
+    const nome = normalizza(incasso.Nome);
+    if (nome) {
+      const suoi = soci.filter((s) => normalizza(s.Nome) === nome).map((s) => s.ID);
+      candidate = perImporto.filter((q) => suoi.indexOf(q.ID) !== -1);
+      /* A known member paying an odd amount is still that member. */
+      if (!candidate.length) {
+        candidate = quote.filter(
+          (q) => q.Stato !== STATO.pagato && suoi.indexOf(q.ID) !== -1,
+        );
+      }
     }
-    if (!candidate.length) {
-      candidate = quote.filter(
-        (q) => Math.abs(Number(q.Importo) - euro) < 0.01 && q.Stato !== STATO.pagato,
-      );
-    }
+    if (!candidate.length) candidate = perImporto;
 
     if (candidate.length !== 1) {
-      irrisolti.push(`${euro} euro del ${incasso[colData] || '?'}`);
+      esiti.dubbi.push(
+        `${euro} euro il ${incasso.Data} da "${incasso.Nome || 'sconosciuto'}": ` +
+          (candidate.length
+            ? 'più di una quota possibile'
+            : 'nessuna quota corrispondente'),
+      );
       continue;
     }
 
     const quota = candidate[0];
     scrivi(CONFIG.sheets.quote, quota._riga, 'Stato', STATO.pagato);
     scrivi(CONFIG.sheets.quote, quota._riga, 'Rail', 'satispay');
-    scrivi(CONFIG.sheets.quote, quota._riga, 'Data', incasso[colData] || new Date());
+    scrivi(CONFIG.sheets.quote, quota._riga, 'Data', incasso.Data);
+    scrivi(CONFIG.sheets.quote, quota._riga, 'Pagamento', incasso['ID pagamento']);
+    scrivi(CONFIG.sheets.incassi, incasso._riga, 'Abbinato a', quota.ID);
     quota.Stato = STATO.pagato;
-    segnate += 1;
+    esiti.abbinati += 1;
   }
 
-  SpreadsheetApp.getUi().alert(
-    `Incassi importati.\n\nQuote segnate come pagate: ${segnate}\n` +
-      (irrisolti.length
-        ? `Da sistemare a mano (${irrisolti.length}):\n${irrisolti.join('\n')}`
-        : 'Nessun pagamento ambiguo.'),
-  );
+  return esiti;
 }
 
 /* -------------------------------------------------------------------------
@@ -452,6 +698,7 @@ function generaTessere() {
     if (quota.Stato !== STATO.pagato || quota.Tessera) continue;
     const socio = soci.find((s) => s.ID === quota.ID);
     if (!socio || !socio.Email) continue;
+    if (MailApp.getRemainingDailyQuota() < 1) break;
 
     const nome = `Tessera ${quota.Anno} ${socio.Nome} (${socio.ID})`;
     const copia = template.makeCopy(nome, cartella);
@@ -483,7 +730,8 @@ function generaTessere() {
     fatte += 1;
   }
 
-  SpreadsheetApp.getUi().alert(`Tessere generate e inviate: ${fatte}`);
+  if (interattivo()) riferisci('Tessere', `Generate e inviate: ${fatte}`);
+  return fatte;
 }
 
 function tesseraTesto(socio, quota) {
@@ -497,4 +745,58 @@ function tesseraTesto(socio, quota) {
     `Buoni voli,`,
     `il direttivo`,
   ].join('\n');
+}
+
+/* -------------------------------------------------------------------------
+   Il giro completo
+   ------------------------------------------------------------------------- */
+
+/**
+ * Payments in, quotas marked, cards out. The whole job, every hour.
+ *
+ * Runs from the menu and from a trigger, and knows which: on a timer it says
+ * nothing unless something actually needs a person. An automation that emails
+ * somebody hourly to report that it found nothing is an automation somebody
+ * turns off.
+ *
+ * A dead API does not stop the rest. Bank transfers typed in by hand are
+ * waiting for their cards too, and they should not be held up by Satispay
+ * having a bad afternoon.
+ */
+function sincronizza() {
+  let nuovi = 0;
+  let errore = null;
+  try {
+    nuovi = scaricaIncassi();
+  } catch (e) {
+    errore = e.message;
+  }
+
+  const esiti = abbina();
+  const tessere = generaTessere();
+
+  const riga =
+    `Incassi nuovi: ${nuovi}\nQuote abbinate: ${esiti.abbinati}\nTessere inviate: ${tessere}` +
+    (esiti.dubbi.length ? `\n\nDa sistemare a mano:\n${esiti.dubbi.join('\n')}` : '') +
+    (errore ? `\n\nSatispay non ha risposto: ${errore}` : '');
+
+  if (interattivo()) {
+    riferisci('Sincronizzazione', riga);
+  } else if (esiti.dubbi.length || errore) {
+    GmailApp.sendEmail(CONFIG.avvisi, 'Quote: qualcosa da guardare', riga, {
+      name: CONFIG.mittente,
+    });
+  }
+}
+
+/** An hourly trigger for `sincronizza`, installed once and idempotently. */
+function installaControllo() {
+  for (const t of ScriptApp.getProjectTriggers()) {
+    if (t.getHandlerFunction() === 'sincronizza') ScriptApp.deleteTrigger(t);
+  }
+  ScriptApp.newTrigger('sincronizza').timeBased().everyHours(1).create();
+  riferisci(
+    'Controllo automatico',
+    'Da adesso i pagamenti vengono controllati ogni ora.',
+  );
 }

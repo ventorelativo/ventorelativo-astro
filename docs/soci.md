@@ -14,14 +14,18 @@ work.**
 ```
 Excel esistente ──una volta──▶ Google Sheet
                                  Soci    ID | Nome | Email | Stato | Iscritto dal | Note
-                                 Quote   ID | Anno | Quota | Importo | Rail | Data | Stato | Invito | Tessera
-                                 Incassi  (il report Satispay, incollato)
+                                 Quote   ID | Anno | Quota | Importo | Rail | Data | Stato | Invito | Pagamento | Tessera
+                                 Incassi ID pagamento | Data | Importo | Nome | Stato | Abbinato a
 
-Apps Script legato al foglio, un menu "Ventorelativo":
-  ▸ Prepara i fogli
+Apps Script legato al foglio. Ogni ora, da solo:
+
+  API Satispay ──▶ Incassi ──▶ abbina al socio ──▶ Quote: pagato ──▶ tessera PDF
+
+E un menu "Ventorelativo" per le cose che richiedono una decisione:
+  ▸ Sincronizza adesso            lo stesso giro, subito
   ▸ Apri il nuovo anno            crea le righe e manda le email di rinnovo
-  ▸ Importa incassi Satispay      segna pagato quello che è arrivato
-  ▸ Genera e invia le tessere     PDF a chi ha pagato
+  ▸ Genera e invia le tessere
+  ▸ Prepara i fogli / Attiva Satispay / Installa il controllo automatico
 
 E, senza menu, il modulo del sito che scrive da solo un socio nuovo.
 ```
@@ -75,7 +79,28 @@ in the code knows what it looks like.
 
 Make a Drive folder for the generated cards and put both ids into `CONFIG`.
 
-### 4. The website's form
+### 4. Satispay, so the matching can be automatic
+
+Generate a key pair on your own machine, not in the browser:
+
+```
+openssl genrsa -out satispay.key 4096
+openssl rsa -in satispay.key -pubout -out satispay.pub
+```
+
+Paste both into Apps Script under **Project Settings → Script Properties**, as
+`SATISPAY_PRIVATE_KEY` and `SATISPAY_PUBLIC_KEY`. Then get a one-time
+activation code from the Satispay Business account and run **Ventorelativo →
+Attiva Satispay**. It exchanges the code for a KeyId and stores it.
+
+The activation code is burned on use: a failed attempt needs a fresh one.
+
+Then **Installa il controllo automatico**, which sets the hourly trigger.
+
+**The private key never goes in this repository**, or in the spreadsheet, or in
+an email. Script Properties, and a copy wherever the club keeps its passwords.
+
+### 5. The website's form
 
 In Apps Script: **Deploy → New deployment → Web app**, execute as yourself,
 access **Anyone**. Copy the URL it gives you.
@@ -105,19 +130,29 @@ of them a renewal request with their own payment link.
 That link has the member's id in `external_code`. Which matters more than it
 looks: see below.
 
-### Durante l'anno: segna gli incassi
+### Durante l'anno: niente
 
-Download the Satispay report (dashboard → Transactions → Request report), paste
-it into the **Incassi** tab, headers and all, then **Importa incassi Satispay**.
+This is the part that used to be the job. Every hour the script asks Satispay
+what has been paid, writes it into **Incassi**, works out whose payment each
+one was, marks the quota `pagato` and sends the card. Nobody clicks anything.
 
-It matches on the member id where the report has one, on the amount where it
-does not, refuses to guess when two people owe the same amount and neither has
-paid, and tells you exactly which payments it left alone. Those are settled by
-hand in seconds.
+**Why it can do that, when the payout report never could.** The report the
+treasurer was reading gives a payment id, a timestamp and an amount, and no
+way to tell whose payment it was: working that out, one payment at a time, was
+the whole tedious business. The API returns **`sender.name`** on every payment,
+so the question answers itself.
 
-**Wire transfers are not imported and should not be.** The treasurer sees them
-in the bank, types `pagato` in the row, and any import would be more work than
-that.
+It matches by name against the register, falling back to an amount only one
+member still owes. **It marks nothing it had to guess at**: two members owing
+€30 and neither having paid is a question, not a match, and it goes in an
+email to the committee instead of being settled by coin flip. That email only
+ever arrives when something genuinely needs a person.
+
+**Wire transfers stay manual**, and should. The treasurer sees them in the
+bank and types `pagato` in the row; the renewal email asks members to put
+their member id in the causale, which makes finding the row a search rather
+than a hunt. The card goes out on the next hourly run, exactly as it does for
+a Satispay payment.
 
 ### Poi: manda le tessere
 
@@ -139,17 +174,18 @@ Either they fill the form on `/iscrizioni`, and the row appears by itself, or a
 committee member types them into `Soci` and adds a `Quote` row. Both end in the
 same two tables.
 
-## The thing worth checking first
+## Cosa può ancora andare storto
 
-**Does the Satispay report include the `external_code` column?**
+**The payer's Satispay name is not always the name on the register.** Somebody
+pays from a spouse's account, or their account says "Mimmo" where the register
+says "Domenico". The script will not guess: the payment lands in the committee
+email as unmatched, and a person spends fifteen seconds on it. Fixing the
+member's `Nome` to match makes it automatic for every year after.
 
-If it does, every renewal payment matches its member exactly and the import is
-one click with nothing to arbitrate. If it does not, matching falls back to the
-amount, and two €30 payments in the same week have to be told apart by a person.
-
-Everything above works either way. It is the difference between the January job
-taking ten minutes and taking an afternoon, so it is worth five minutes in the
-dashboard before promising the committee anything.
+**The API returns `sender.name` once the payment is matched to a consumer**, so
+a very fresh payment can arrive with an empty name. The next hourly run picks
+it up: nothing is lost, because `Incassi` keeps the payment id and only unmatched
+rows are ever reconsidered.
 
 ## Why a PDF and not a wallet pass
 
