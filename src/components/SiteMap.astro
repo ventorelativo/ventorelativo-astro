@@ -736,16 +736,29 @@ const typeNames = Object.fromEntries(
   }
 
   /* The cone's controls, on the takeoff's popup. */
-  .map :global(.map-popup__cone) {
+  /*
+    `p.` is load-bearing, not decoration.
+
+    `.map-popup p { margin: 0 }` above carries one element more than a bare
+    class does, so it outscores `.map-popup__cone` no matter which is written
+    later, and the margin was dropped on the floor. Naming the element ties the
+    specificity and lets source order decide, which is what it looked like was
+    happening all along.
+  */
+  .map :global(p.map-popup__cone) {
     display: flex;
     gap: var(--space-3xs);
     align-items: center;
     /* Clear of the links above: those leave the site, this changes the map,
        and run together they read as one row of four controls. */
-    margin: var(--space-sm) 0 0;
+    margin-block-start: var(--space-xs);
   }
 
   .map :global(.map-popup__conebtn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3xs);
     flex: 1;
     /* Wide enough that "Cono" and "Nascondi" do not resize the popup. */
     min-width: 5.5rem;
@@ -1828,6 +1841,20 @@ const typeNames = Object.fromEntries(
       button.type = 'button';
       button.className = 'map-popup__conebtn';
       /*
+        A glide slope: the hill, and the line away from it. Stroked in
+        `currentColor` and 16px like the controls in the stack above, and
+        `aria-hidden` because the word beside it already says what it is.
+      */
+      button.insertAdjacentHTML(
+        'afterbegin',
+        '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" ' +
+          'focusable="false" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+          'stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M1.5 13.5h13"></path>' +
+          '<path d="M3 11 6.5 4l3.5 7"></path>' +
+          '<path d="M6.5 4.5 14 9.5"></path></svg>',
+      );
+      /*
         The caveat, as the button's own tooltip rather than a paragraph under
         it. The popup is a label on a marker and every line in it competes with
         the map; the warning still has to exist, because a coloured area on a
@@ -1839,20 +1866,22 @@ const typeNames = Object.fromEntries(
       /* "Cono" alone means nothing to somebody who has not seen the tool it
          comes from. "Planata" is the thing a pilot is actually asking about. */
       const label = () => (drawn() ? 'Nascondi' : 'Planata');
-      button.textContent = label();
+      /* A text node of its own: `textContent` would take the icon with it. */
+      const words = document.createTextNode(label());
+      button.append(words);
 
       button.addEventListener('click', async () => {
         const off = drawn();
         button.disabled = true;
         await onCone(off ? '' : slug, gz.value);
         button.disabled = false;
-        button.textContent = label();
+        words.nodeValue = label();
       });
       /* Changing the ratio while the cone is up redraws it; while it is down
          it is only a preference, and fetching would be presumptuous. */
       gz.addEventListener('change', async () => {
         if (coneShown?.().startsWith(`${slug}-`)) await onCone(slug, gz.value);
-        button.textContent = label();
+        words.nodeValue = label();
       });
 
       row.append(button, gz);
