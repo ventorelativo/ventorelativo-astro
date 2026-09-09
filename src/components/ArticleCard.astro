@@ -50,7 +50,12 @@ const { entry, priority = false, headingLevel = 2 } = Astro.props;
   a phone at 390 CSS px needs 684 device px, so a 680 candidate is one pixel
   short and the browser silently steps up to the next one. That mistake cost
   45 kB a page until it was measured.
+
+  600 is the same sum for a DPR 1.75 phone, the density Lighthouse tests at:
+  its 342 px column needs 599, and with nothing between 400 and 700 it took
+  700. Measured on the three posters as cropped: 4, 19 and 7 kB less each.
 */
+const CARD_WIDTHS = [400, 600, 700, 900];
 const CARD_IMAGE = {
   width: 340,
   /* 12rem, the height `.card__image` is pinned to below. */
@@ -92,7 +97,7 @@ const href = `/news/${entry.id}/`;
           src={image.src}
           alt={image.alt}
           {...CARD_IMAGE}
-          widths={[400, 700, 900]}
+          widths={CARD_WIDTHS}
           sizes="(width < 48rem) calc(100vw - 3rem), (width < 64rem) calc(50vw - 3rem), 21rem"
           quality={70}
           priority={priority}
