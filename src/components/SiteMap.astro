@@ -431,6 +431,8 @@ const typeNames = Object.fromEntries(
       map that failed and a page that collapsed.
     */
     min-height: var(--map-height);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-map-ground);
   }
 
   /*
@@ -455,14 +457,8 @@ const typeNames = Object.fromEntries(
     width: 100%;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    /*
-      No background of its own. It used to carry the ground colour, and an
-      `<img>` paints its background inside its own box, over whatever the
-      wrapper is painting: the blurred placeholder was there all along and
-      never visible, hidden behind a flat grey by the very element it was
-      standing in for. The ground colour now lives on the wrapper, under the
-      placeholder, where it is the fallback rather than the cover.
-    */
+    /* This element is nothing but the ground colour: it is the whole point. */
+    background-color: var(--color-map-ground);
   }
 
   /*
@@ -641,6 +637,16 @@ const typeNames = Object.fromEntries(
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    /*
+      The ground colour, for the gap between the two pictures.
+
+      Pressing the still hides it and reveals this box, and MapLibre has not
+      painted a frame yet: for a moment there was nothing here at all and the
+      page showed through, which in the dark scheme is a black flash between
+      two beige maps. The canvas is transparent until the first tile, so the
+      colour has to be under it.
+    */
+    background-color: var(--color-map-ground);
   }
 
   /*
