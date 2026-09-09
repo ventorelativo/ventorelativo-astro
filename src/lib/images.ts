@@ -114,17 +114,37 @@ async function make(image: ImageMetadata, crop: Crop): Promise<string | undefine
 /*
   Whether AVIF is worth serving for a given picture.
 
-  Not a foregone conclusion, which is the point. Across this site AVIF is 47%
-  smaller than WebP on photographs: the gallery pictures come out 77% smaller.
-  On the map stills it is 40% *larger* at every width, because those are flat
-  renders of a map, full of lines and labels, and their source is already a
-  lossy WebP: AVIF spends bits preserving another encoder's artefacts. The two
-  news flyers behave the same way for the same reason.
+  Not a foregone conclusion, which is the point. On the map stills AVIF is 40%
+  *larger* at every width, because those are flat renders of a map, full of
+  lines and labels, and their source is already a lossy WebP: AVIF spends bits
+  preserving another encoder's artefacts. The news flyers behave the same way
+  for the same reason.
 
   So the answer is measured rather than assumed: encode a small copy both ways
-  and compare. Small, because the ratio holds and a full-size AVIF encode is
-  seconds, not milliseconds. Cached per image and quality, so a build pays once
-  for a card drawn on four pages.
+  and compare. Small, because the ratio holds (320 px and 640 px agree in
+  direction on every image here) and a full-size AVIF encode is seconds, not
+  milliseconds. Cached per image and quality, so a build pays once for a card
+  drawn on four pages.
+
+  ## What this comparison is, and is not
+
+  It compares the two formats at the same *number*, and AVIF's quality scale
+  is not WebP's: the same number buys a better picture and a bigger file. So
+  at equal number AVIF loses on every photograph on this site (measured
+  2026-09-09 over all eleven: 15% to 93% larger), and the build ships three
+  AVIF files, all on the home page. That is not the bug it looks like. The
+  fair comparison was run too, matching AVIF to WebP q70 by SSIM at 640 px:
+  the median saving is 4%, AVIF is *larger* on five of the eleven including
+  the four heaviest, and the crossover quality wanders from 47 to 67. Every
+  photograph here is a lossy JPEG already, and AVIF pays for the JPEG's
+  artefacts the way it pays for the map's. A consistent win needs 4:2:0
+  chroma and encoder effort 6 on top, neither reachable through `getImage`,
+  for about 14%. Ten fewer WebP quality points save more and cost one number.
+
+  So the comparison stays as it is, knowingly unfair to AVIF: what it catches
+  is an image where AVIF wins outright, and on this site that is the one
+  drawn on the home page. If the photographs are ever replaced with clean
+  sources, run the fair comparison again before believing this paragraph.
 */
 const SAMPLE_WIDTH = 320;
 const verdicts = new Map<string, Promise<boolean>>();

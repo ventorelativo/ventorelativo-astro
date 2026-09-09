@@ -17,12 +17,17 @@ sharp and inlined as a data URI: 124 to 152 bytes each, 532 bytes for the whole
 home page. It is painted by the wrapper, behind the image, so it costs no
 request and appears with the first frame.
 
-**AVIF where AVIF is smaller, measured.** Across the photographs on this site
-AVIF is 47% smaller than WebP, and 77% smaller for the gallery pictures. On the
-map stills it is 40% _larger_: they are flat renders of lines and labels, and
-their source is already a lossy WebP, so AVIF spends bits preserving another
-encoder's artefacts. `avifWins()` encodes a 320px sample both ways and serves
-whichever is smaller.
+**AVIF where AVIF is smaller, measured.** On the map stills it is 40%
+_larger_: they are flat renders of lines and labels, and their source is
+already a lossy WebP, so AVIF spends bits preserving another encoder's
+artefacts. `avifWins()` encodes a 320px sample both ways at the same quality
+number and serves whichever is smaller, and on this site that is AVIF for one
+image, on the home page. That is not a bug in the comparison, though the
+comparison is unfair to AVIF (its quality scale is not WebP's): measured
+fairly, matching AVIF to WebP q70 by SSIM over all eleven photographs on
+2026-09-09, AVIF's median saving is 4% and it is larger on five of them,
+including the four heaviest. Every photograph here is a lossy JPEG already.
+The reasoning is written out above `avifWins()` in `src/lib/images.ts`.
 
 **A fade, driven by one listener.** In the head script, capture phase, one for
 the whole document. Gated on `data-js` so images are visible without scripting.

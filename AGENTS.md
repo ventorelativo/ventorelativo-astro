@@ -384,11 +384,13 @@ visitor asks for it. Details and the reasoning behind each rule:
   real shape. The image now holds its own placeholder wherever it does not
   fade; the wrapper keeps it only for fading images, because `opacity: 0`
   takes an element's own background with it.
-- **AVIF is not always smaller than WebP.** On this site's photographs it is
-  47% smaller; on the map stills it is 40% larger, because they are flat
-  renders and their source is already a lossy WebP. `avifWins()` in
-  `src/lib/images.ts` encodes a sample both ways and compares, rather than
-  assuming.
+- **AVIF is not always smaller than WebP.** On this site it almost never is:
+  on the map stills it is 40% larger, because they are flat renders and their
+  source is already a lossy WebP, and on the photographs, which are lossy
+  JPEGs, a fair SSIM-matched comparison over all eleven found a 4% median
+  saving and a larger file on five. `avifWins()` in `src/lib/images.ts`
+  encodes a sample both ways and compares, rather than assuming; the comment
+  above it records the measurement and why the comparison stays as it is.
 - **Two `getStaticPaths` entries can claim the same path.** Astro keeps one,
   warns, and carries on; the card the `/og/` route built for the homepage was
   wrong for weeks because the entry that won was not the one that looked
