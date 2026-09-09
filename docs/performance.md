@@ -84,6 +84,17 @@ Astro's prefetch. On top of that every page inlines its component scripts
 drawer and the language switcher, small enough that Astro puts them in the
 document rather than spending a request on them.
 
+**Every stylesheet is in the document too**, `inlineStylesheets: 'always'`
+in `astro.config.mjs`. The default links any stylesheet over 4 kB, which on
+this site meant three of four: 4.3, 2.3 and 1.2 kB brotli, each a
+render-blocking request before the first paint, and Chrome measured 1.7 s of
+first paint on the three of them cold on a throttled phone. Inlined, the
+document grows by 6.3 kB brotli, the three requests go away, and the total is
+smaller: a site page went from 185.7 kB over 16 requests to 183.3 over 13.
+The price is that `BaseLayout.css` is no longer a cached file shared between
+pages, and with the whole site's CSS at 8.9 kB brotli and the next page
+prefetched on hover, that cache was worth less than one round trip.
+
 Two of these numbers are worse than the ones this table held before, and both
 for the same reason: `topo.svg`, the contour texture behind the footer, is
 15 kB on the wire and loads on **every page**. It is the largest non-font,

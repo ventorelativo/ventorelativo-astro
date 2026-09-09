@@ -185,9 +185,28 @@ export default defineConfig({
     },
   }),
 
-  // `directory` emits /siti/montoso/index.html, matching the Tome export's URL
-  // shape exactly. Do not change this: it is what preserves the live URLs.
-  build: { format: 'directory' },
+  build: {
+    // `directory` emits /siti/montoso/index.html, matching the Tome export's
+    // URL shape exactly. Do not change this: it is what preserves the live
+    // URLs.
+    format: 'directory',
+
+    /*
+      Every stylesheet goes into the page, none is linked.
+
+      The default, `auto`, links any stylesheet over 4 kB, and three of this
+      site's four are: 4.3, 2.3 and 1.2 kB brotli, each a render-blocking
+      request before the first paint. Measured cold on a throttled phone,
+      Chrome put 1.7 s of first paint on those three. Inlined, the document
+      grows by 6.3 kB brotli and the three requests are gone: fewer bytes in
+      total, and nothing between the HTML and the first paint but the HTML.
+
+      What it gives up is a cached BaseLayout.css shared across pages. On a
+      site whose entire CSS is 8.9 kB brotli, and whose next page is already
+      prefetched on hover, that cache was worth less than one round trip.
+    */
+    inlineStylesheets: 'always',
+  },
 
   /*
     Replaces the Drupal `quicklink` module (S12).

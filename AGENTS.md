@@ -215,7 +215,9 @@ only the hero: the home page is five sections now, and one news thumbnail sits
 inside Chrome's lazy-loading threshold and is fetched even though it is 1700px
 down. The other two are not.; `/siti/` 97 kB; a photo-heavy site page
 99 kB above the fold and ~350 kB scrolled, almost all of it photographs. Every
-page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
+page inlines its component scripts (1.5 kB on the wire) and every stylesheet
+(`inlineStylesheets: 'always'`: nothing render-blocking between the HTML and
+the first paint), plus 15 kB of `topo.svg`,
 the footer's contour texture: the biggest non-photograph item on the site, and
 the first thing to attack if the budget has to come down. `/siti/` and the site
 pages add the map's still (69 to 91 kB on a phone by pixel density, framed for one), not MapLibre, which is 239 kB
