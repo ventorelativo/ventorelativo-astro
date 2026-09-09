@@ -43,7 +43,7 @@ Geometry shapes actually stored in `field_location` (WKT):
 
 - takeoff / poi → `POINT`
 - landing → `GEOMETRYCOLLECTION` (a `POINT` marker **plus** a `POLYGON` zone)
-- obstacle → `LINESTRING` (one item: the Villar Chisone power line)
+- obstacle → `LINESTRING` (one item: the Villar Perosa power line)
 
 ### Custom modules
 
