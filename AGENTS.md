@@ -366,6 +366,13 @@ visitor asks for it. Details and the reasoning behind each rule:
   inline and the stylesheet sets `background-image: var(--lqip)`, which a later
   rule _can_ override. Setting `--lqip: none` from the stylesheet does not work
   either, for the same reason.
+- **A Sätteri hast plugin writes through `ctx`, not through the node.** Astro
+  7's markdown processor hands the visitor a node to read, and
+  `node.properties.target = '_blank'` is dropped without a word: the page
+  renders exactly as it did before, so it reads as the plugin never running.
+  `ctx.setProperty(node, 'target', '_blank')` is how its own plugins do it.
+  The older `markdown.rehypePlugins` still exists but now wants
+  `@astrojs/markdown-remark` installed beside it.
 - **A blur placeholder has to be painted on the box the photograph will
   occupy.** `BlurImage` paints it on the `<picture>`, which is a block and
   fills its column. That matches every caller whose image is `width: 100%`,

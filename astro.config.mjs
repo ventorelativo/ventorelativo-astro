@@ -5,6 +5,7 @@ import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 
+import { satteri } from '@astrojs/markdown-satteri';
 import { loadEnv } from 'vite';
 
 import netlify from '@astrojs/netlify';
@@ -54,8 +55,82 @@ for (const [name, effect] of [
   }
 }
 
+/**
+ * Send every link an editor wrote to another site to a new tab.
+ *
+ * Markdown has no syntax for `target`, and a body is written by volunteers in
+ * a CMS, so this is the only place it can be decided. It runs at build over
+ * the rendered tree: no client JavaScript, and nothing for an editor to
+ * remember.
+ *
+ * `rel="noopener noreferrer"` is not decoration. Without `noopener` the page
+ * that opens can reach back through `window.opener` and navigate this one.
+ *
+ * ## What counts as external
+ *
+ * An absolute `http(s)` link to a host that is not this one. That is the same
+ * test the outward-arrow icon uses in `global.css`
+ * (`.prose a[href^='http']`), and the two are meant to stay in step: the icon
+ * is what warns the reader that the tab is about to change, which is the
+ * courtesy that makes opening one acceptable at all.
+ *
+ * Left alone deliberately: relative links, `mailto:`, `tel:` and in-page
+ * anchors. A new tab for a fragment of the page you are already reading is a
+ * bug, and a mail client does not want one either.
+ *
+ * Written out rather than installing `rehype-external-links`: it is a dozen
+ * lines, and a dependency in the build is a dependency to keep (rule 6).
+ */
+function externalLinksInNewTab() {
+  const ownHost = new URL(site).hostname.replace(/^www\./, '');
+
+  return {
+    name: 'external-links-in-new-tab',
+    element: {
+      filter: ['a'],
+      visit(node, ctx) {
+        const href = node.properties?.href;
+        if (typeof href !== 'string' || !/^https?:\/\//i.test(href)) return;
+
+        let host;
+        try {
+          host = new URL(href).hostname.replace(/^www\./, '');
+        } catch {
+          /* Not a URL this build can parse: leave the link exactly as the
+             editor wrote it rather than guessing at it. */
+          return;
+        }
+        if (!host || host === ownHost) return;
+
+        /*
+          Through the context, not by assigning to `node.properties`. The
+          visitor is handed the node to read; a direct mutation is dropped on
+          the floor without complaint, and the page renders exactly as it did
+          before. This is how the processor's own plugins write.
+        */
+        ctx.setProperty(node, 'target', '_blank');
+        ctx.setProperty(node, 'rel', 'noopener noreferrer');
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site,
+
+  /*
+    Applies to MDX too: `mdx()` extends the markdown config by default, and
+    every body on this site is MDX.
+
+    `satteri()` is Astro 7's own processor and already a dependency here; its
+    `hastPlugins` are where a transform over the rendered tree belongs now.
+    The older `markdown.rehypePlugins` still works but wants
+    `@astrojs/markdown-remark` installed alongside it, which is a package to
+    carry for one function.
+  */
+  markdown: {
+    processor: satteri({ hastPlugins: [externalLinksInNewTab()] }),
+  },
 
   /*
     Still `static`: with an adapter present this means "prerender everything
