@@ -384,6 +384,16 @@ visitor asks for it. Details and the reasoning behind each rule:
   real shape. The image now holds its own placeholder wherever it does not
   fade; the wrapper keeps it only for fading images, because `opacity: 0`
   takes an element's own background with it.
+- **An image with `width: auto` reserves nothing until it loads.** The
+  `width` and `height` attributes give the browser a ratio, not a box, and a
+  ratio needs one definite side to produce the other. The article hero was
+  `width: auto; height: auto; max-height: 30rem`: a zero-height line until the
+  file arrived, then 30rem, and the whole article jumped. CLS 0.31 on a page
+  of text. A box that must exist before load is written as a `width` of
+  lengths that resolve without the file (`min(100%, ...)`) plus an explicit
+  `aspect-ratio`, both computable at build from the source's own dimensions:
+  `src/pages/news/[slug].astro`. The same numbers give `sizes` its true
+  value, which `100vw` was not.
 - **AVIF is not always smaller than WebP.** On this site it almost never is:
   on the map stills it is 40% larger, because they are flat renders and their
   source is already a lossy WebP, and on the photographs, which are lossy

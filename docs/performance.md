@@ -278,6 +278,11 @@ the site itself serves is WebP or AVIF.
 ## Traps
 
 - **Dev numbers are not real numbers.** Always measure the build.
+- **`width: auto` on an image is no box until the file arrives.** The
+  attributes only supply a ratio. The article hero, which keeps its natural
+  shape under a height cap, reserved nothing and then 30rem: CLS 0.31. Its
+  width is now a `min()` of lengths the browser knows before load and its
+  ratio is explicit, both from the source image at build (`news/[slug].astro`).
 - **A dynamic import can pull CSS with it.** Astro inlines small stylesheets
   into the HTML, and Vite will still emit a preload for a file it then did not
   write: the fetch 404s and rejects the import. Import third-party CSS in the

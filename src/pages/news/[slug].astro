@@ -33,6 +33,32 @@ const cardUrl = new URL(`/og/news/${entry.id}.jpg`, Astro.site).href;
 
 // `render()` compiles the MDX body; <Content /> is the rendered result.
 const { Content } = await render(entry);
+
+/*
+  The hero's box, known before a byte of the picture arrives.
+
+  Article images are a mix of wide banners and portrait posters, so the hero
+  keeps its natural shape and only its height is capped (see the style
+  block). That used to be `width: auto; height: auto; max-height: 30rem`,
+  which is the natural shape *once the file has arrived*: until then an
+  `<img>` with `width: auto` has no definite dimension for its
+  `width`/`height` attributes to give a ratio to, the box was nothing, and
+  the whole article jumped 30rem when the picture landed. CLS 0.31 on a page
+  whose body is text.
+
+  Both numbers below come from the source image, so the box is settled in
+  the HTML: the ratio for `aspect-ratio`, and the width a `max-height` of
+  30rem implies at that ratio, which is what a portrait poster is actually
+  as wide as. `sizes` says the same thing in the browser's own terms: the
+  column is the viewport minus the container's padding, then the prose
+  width, then that cap. A portrait poster capped at 30rem is 312 CSS px
+  wide, and `100vw` had the browser fetching 832 px for it.
+*/
+const HERO_MAX_HEIGHT_REM = 30;
+const PROSE_WIDTH_REM = 42; /* --prose-width, which `sizes` cannot read. */
+const ratio = image ? image.src.width / image.src.height : 1;
+const heroCapRem = (HERO_MAX_HEIGHT_REM * ratio).toFixed(2);
+const heroSizes = `min(calc(100vw - 3rem), ${PROSE_WIDTH_REM}rem, ${heroCapRem}rem)`;
 ---
 
 <EntryLayout
@@ -69,11 +95,11 @@ const { Content } = await render(entry);
       <BlurImage
         slot="media"
         class="hero"
-        style={`view-transition-name: post-${entry.id}; view-transition-class: post`}
+        style={`view-transition-name: post-${entry.id}; view-transition-class: post; --hero-ratio: ${image.src.width} / ${image.src.height}`}
         src={image.src}
         alt={image.alt}
         widths={[400, 700, 1400]}
-        sizes="(width < 44rem) 100vw, 42rem"
+        sizes={heroSizes}
         priority
       />
     )
@@ -108,15 +134,26 @@ const { Content } = await render(entry);
     natural aspect ratio is kept and only the height is capped: wide images fill
     the column, tall ones stay whole.
 
+    Written as a definite width and an explicit ratio rather than `max-height`
+    on an `auto` box, because an auto box is only known once the file is: see
+    the frontmatter. `--hero-ratio` is set inline on the image, `w / h` from
+    the source, and the width is the column, the prose width, or the width
+    the height cap implies at that ratio, whichever is least. Same result once
+    loaded, and the same box before.
+
     Matched to the prose width and left-aligned with it: a centred image beside
     left-aligned text reads as a mistake, whatever its proportions.
   */
   .hero {
+    --hero-max-height: 30rem;
     display: block;
-    width: auto;
+    width: min(
+      100%,
+      var(--prose-width),
+      calc(var(--hero-max-height) * var(--hero-ratio))
+    );
     height: auto;
-    max-width: min(100%, var(--prose-width));
-    max-height: 30rem;
+    aspect-ratio: var(--hero-ratio);
     border-radius: var(--radius-lg);
   }
 </style>
