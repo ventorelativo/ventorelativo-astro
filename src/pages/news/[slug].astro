@@ -55,6 +55,13 @@ const { Content } = await render(entry);
   wide, and `100vw` had the browser fetching 832 px for it.
 */
 const HERO_MAX_HEIGHT_REM = 30;
+/*
+  600 beside 700: a DPR 1.75 phone needs 546 device pixels for a portrait
+  poster and 599 for a landscape banner, and without a rung there it took 700
+  for both, 13 and 20 kB more than 600 costs. 700 is what a DPR 2 phone
+  needs, 1400 the prose column on a laptop at 2x.
+*/
+const HERO_WIDTHS = [400, 600, 700, 1400];
 const PROSE_WIDTH_REM = 42; /* --prose-width, which `sizes` cannot read. */
 const ratio = image ? image.src.width / image.src.height : 1;
 const heroCapRem = (HERO_MAX_HEIGHT_REM * ratio).toFixed(2);
@@ -98,7 +105,7 @@ const heroSizes = `min(calc(100vw - 3rem), ${PROSE_WIDTH_REM}rem, ${heroCapRem}r
         style={`view-transition-name: post-${entry.id}; view-transition-class: post; --hero-ratio: ${image.src.width} / ${image.src.height}`}
         src={image.src}
         alt={image.alt}
-        widths={[400, 700, 1400]}
+        widths={HERO_WIDTHS}
         sizes={heroSizes}
         priority
       />
