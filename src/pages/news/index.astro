@@ -29,9 +29,18 @@ const articles = (await getCollection('news', ({ data }) => !data.draft)).sort(
       <p>Non ci sono ancora notizie pubblicate.</p>
     ) : (
       <div class="news-grid">
-        {articles.map((entry) => (
-          <ArticleCard entry={entry} />
-        ))}
+        {
+          /*
+            The newest card is the first screen on a phone, so its picture is
+            what LCP is measured on. Without `priority` it was lazy and faded
+            in, which is the one thing AGENTS.md says an LCP image must never
+            do. The rest stay lazy: on a laptop the first row is three cards
+            and the metric only needs one of them.
+          */
+          articles.map((entry, i) => (
+            <ArticleCard entry={entry} priority={i === 0} />
+          ))
+        }
       </div>
     )
   }
