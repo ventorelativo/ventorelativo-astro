@@ -218,7 +218,7 @@ down. The other two are not.; `/siti/` 97 kB; a photo-heavy site page
 page inlines its component scripts (1.5 kB on the wire) and 15 kB of `topo.svg`,
 the footer's contour texture: the biggest non-photograph item on the site, and
 the first thing to attack if the budget has to come down. `/siti/` and the site
-pages add the map's still (98 kB on a phone, framed for one), not MapLibre, which is 239 kB
+pages add the map's still (69 to 91 kB on a phone by pixel density, framed for one), not MapLibre, which is 239 kB
 brotli across three files and arrives only when a map is opened. The map no
 longer opens itself: it did, and it cost 6.5 MB of terrain tiles and 8.6 s of
 blocked main thread on a mid-range phone. Translation is a facade too: nothing from Google loads until a

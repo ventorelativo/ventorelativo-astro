@@ -45,7 +45,15 @@ Two framings per map, not one. The frame is 600px tall at every width, so a
 phone gets a tall narrow box and a laptop a wide one, and MapLibre fits its
 bounds to the viewport it is given: a single capture shown on both meant a
 phone saw the middle 342px of a 1040px map, with most of the club's sites off
-the sides. A `<picture>` switches at 48rem. On a phone that is 98 kB.
+the sides. A `<picture>` switches at 48rem. On a phone that is 69 to 91 kB,
+by pixel density.
+
+The narrow still is 680 px wide and the pipeline never enlarges, so its ladder
+is `[390, 640, 680]` and nothing taller: `[390, 780, 1170]` collapsed to two
+files with nothing between 37 kB and 91 kB, and a DPR 1.75 phone, needing 637
+device pixels for a 364 px box, was handed the 91 kB one. The `sizes` say
+`calc(100vw - 3rem)`, the container minus its padding, because `100vw`
+overstated the box by 48 px and that alone can move a phone a rung up.
 
 What it replaced: the map opened itself once the page was idle and in view,
 which cost 6.5 MB of terrain tiles and 8.6 s of blocked main thread on a

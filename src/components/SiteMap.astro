@@ -108,11 +108,31 @@ const wide =
     format: 'webp',
     quality: 68,
   }));
+/*
+  Every narrow still is 680 px wide (the 342 px map box of a 390 px phone,
+  captured at 2x), and the pipeline never enlarges, so a ladder is only as
+  tall as the file: `[390, 780, 1170]` collapsed to 390 and 680 and nothing
+  between them, 37 kB or 91 kB. On a 412 px phone the box is 364 CSS px, at
+  DPR 1.75 that is 637 device px, and the browser had to take 680 to cover
+  it. 640 covers it too and weighs 71 kB: a fifth off the LCP image, measured.
+*/
+const NARROW_WIDTHS = [390, 640, 680];
+
+/*
+  What the poster is actually as wide as: the container minus its
+  `padding-inline` of 1.5rem a side. `100vw` overstated it by 48 px, which is
+  enough to push a phone one rung up the ladder for pixels it never showed.
+  Above 68rem the container stops growing and the box is its 65rem width.
+*/
+const POSTER_SIZES = {
+  narrow: 'calc(100vw - 3rem)',
+  wide: '(width < 68rem) calc(100vw - 3rem), 65rem',
+};
 const narrow =
   poster?.narrow &&
   (await getImage({
     src: poster.narrow,
-    widths: [390, 780, 1170],
+    widths: NARROW_WIDTHS,
     format: 'webp',
     quality: 68,
   }));
@@ -143,7 +163,7 @@ const narrowAvif =
   posterAvif &&
   (await getImage({
     src: poster.narrow,
-    widths: [390, 780, 1170],
+    widths: NARROW_WIDTHS,
     format: 'avif',
     quality: 68,
   }));
@@ -311,7 +331,7 @@ const typeNames = Object.fromEntries(
           <source
             media="(width < 48rem)"
             srcset={narrowAvif.srcSet.attribute}
-            sizes="100vw"
+            sizes={POSTER_SIZES.narrow}
             type="image/avif"
           />
         )}
@@ -319,7 +339,7 @@ const typeNames = Object.fromEntries(
           <source
             media="(width < 48rem)"
             srcset={narrow.srcSet.attribute}
-            sizes="100vw"
+            sizes={POSTER_SIZES.narrow}
             type="image/webp"
           />
         )}
@@ -332,7 +352,7 @@ const typeNames = Object.fromEntries(
         {wideAvif && (
           <source
             srcset={wideAvif.srcSet.attribute}
-            sizes="(width < 68rem) 100vw, 65rem"
+            sizes={POSTER_SIZES.wide}
             type="image/avif"
           />
         )}
@@ -340,7 +360,7 @@ const typeNames = Object.fromEntries(
           class="map__poster"
           src={wide.src}
           srcset={wide.srcSet.attribute}
-          sizes="(width < 68rem) 100vw, 65rem"
+          sizes={POSTER_SIZES.wide}
           alt=""
           width={2076}
           height={1196}
