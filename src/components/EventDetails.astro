@@ -35,6 +35,7 @@ import { getEntry } from 'astro:content';
 
 import ExternalIcon from './ExternalIcon.astro';
 import PinIcon from './PinIcon.astro';
+import { navigationUrl } from '../lib/coordinateLinks';
 import { FEATURE_SYMBOLS } from '../lib/featureIcons';
 import { googleCalendarUrl, outlookCalendarUrl } from '../lib/ics';
 import { formatDate, isoDate } from '../utils/date';
@@ -45,6 +46,7 @@ interface Props {
     end?: Date;
     location: string;
     site?: { collection: 'sites'; id: string };
+    meetingPoint?: { collection: 'mapFeatures'; id: string };
   };
   entry: CollectionEntry<'news'>;
 }
@@ -68,7 +70,20 @@ const site = event.site ? await getEntry(event.site) : undefined;
   is fetched from Google to build it: it is a link, and it stays a link until
   somebody taps it.
 */
-const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
+const searchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
+
+/*
+  When the gathering place is a feature on the club's own map, the row names
+  it and links to its coordinates: "Atterraggio Chambons", to the metre, where
+  the typed string could only say which comune. The same directions link the
+  site pages give for that feature. The calendars below still get the typed
+  string, which is the one a geocoder can find.
+*/
+const meetingPoint = event.meetingPoint
+  ? (await getEntry(event.meetingPoint))?.data
+  : undefined;
+const where = meetingPoint?.point ? meetingPoint.name : event.location;
+const mapUrl = meetingPoint?.point ? navigationUrl(meetingPoint.point) : searchUrl;
 
 const calendarEvent = {
   uid: url,
@@ -132,10 +147,12 @@ const CALENDAR = `<rect x="3" y="4.5" width="14" height="13" rx="2" />
   <path d="M3 8.5h14M7 2.5v4M13 2.5v4" />`;
 
 /*
-  U+2060 WORD JOINER, spelled out because an escape in an Astro expression
-  reaches the page as the six characters `\u2060`, checked in the built HTML.
+  The place name, cut before its last word: that word and the outward glyph
+  travel together, see the markup.
 */
-const JOINER = String.fromCharCode(0x2060);
+const cut = where.lastIndexOf(' ') + 1;
+const whereHead = where.slice(0, cut);
+const whereTail = where.slice(cut);
 ---
 
 <section class="event">
@@ -163,14 +180,20 @@ const JOINER = String.fromCharCode(0x2060);
           <a href={mapUrl} target="_blank" rel="noopener noreferrer">
             {
               /*
-              A word joiner, not `white-space: nowrap`: a line break is allowed
-              after a closing bracket, so "Bagnolo Piemonte (CN)" dropped the
-              glyph onto a line of its own. `nowrap` on the whole anchor would
-              have fixed it and let a long place name overflow the panel
-              instead. This glues one seam and leaves the rest wrapping.
+              The last word and the glyph share a `nowrap` span, so the glyph
+              never lands on a line of its own. `nowrap` on the whole anchor
+              would let a long place name overflow the panel instead.
+
+              This was a word joiner between the text and the glyph, and that
+              only looked like it worked: Chrome still breaks before the
+              inline-block. "Bagnolo Piemonte (CN)" hid it, "Atterraggio
+              Chambons" fills a phone's column to within 10px and dropped the
+              glyph alone onto a second line, measured at 390px.
             */
             }
-            {event.location + JOINER}<ExternalIcon size={13} />
+            {whereHead}<span class="event__tail"
+              >{whereTail}<ExternalIcon size={13} /></span
+            >
           </a>
         </dd>
       </div>
@@ -390,11 +413,15 @@ const JOINER = String.fromCharCode(0x2060);
     The reset in global.css makes every `svg` a block, which is right nearly
     everywhere and wrong inside a sentence: it put the outward glyph on a line
     of its own under the place name. Inline-block puts it back in the text, and
-    the word joiner beside it then keeps the two together.
+    `.event__tail` keeps it on the line of the last word.
   */
   .event__row a :global(.external) {
     display: inline-block;
     vertical-align: -0.08em;
+  }
+
+  .event__tail {
+    white-space: nowrap;
   }
 
   /*

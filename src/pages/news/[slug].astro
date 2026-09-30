@@ -10,7 +10,7 @@
  * content files are named after their live URLs: MIGRATION-PLAN.md §2.1 listed
  * `slug` as a field, but a field can drift from the filename and this cannot.
  */
-import { getCollection, render } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 import Badge from '../../components/Badge.astro';
 import BlurImage from '../../components/BlurImage.astro';
@@ -26,6 +26,12 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { title, date, summary, image, category, event } = entry.data;
 const cardUrl = new URL(`/og/news/${entry.id}.jpg`, Astro.site).href;
+
+/* For the Event node's `geo`. EventDetails resolves the same reference for the
+   visible row; the structured data is built in the layout and needs it here. */
+const meetingPoint = event?.meetingPoint
+  ? (await getEntry(event.meetingPoint))?.data.point
+  : undefined;
 
 // `summary` is deliberately not rendered here. It feeds the card blurb and the
 // meta description (D7); on the page it sat directly above a first paragraph
@@ -89,6 +95,7 @@ const heroSizes = `min(calc(100vw - 3rem), ${PROSE_WIDTH_REM}rem, ${heroCapRem}r
     start: event.start,
     end: event.end,
     location: event.location,
+    geo: meetingPoint,
   }}
 >
   <p class="meta" slot="meta">

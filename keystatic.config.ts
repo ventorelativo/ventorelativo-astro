@@ -28,6 +28,7 @@ import { createElement } from 'react';
 
 import { config, collection, singleton, fields } from '@keystatic/core';
 
+import { MEETING_POINT_OPTIONS } from './src/lib/meetingPointOptions';
 import { SITE_OPTIONS } from './src/lib/siteOptions';
 import logoQuadrato from './src/assets/press/logo-quadrato.svg?raw';
 import { block, wrapper } from '@keystatic/core/content-components';
@@ -425,6 +426,19 @@ export default config({
                   { label: '(nessuno)', value: '' },
                   ...SITE_OPTIONS,
                 ],
+              }),
+              /*
+                The precise spot, picked from the map's own features, because
+                "Luogo del ritrovo" above can only be as precise as a geocoder:
+                a landing field has no address. Same generated-select trick as
+                the site, and the same empty value.
+              */
+              meetingPoint: fields.select({
+                label: 'Punto di ritrovo sulla mappa',
+                description:
+                  'Se ci si trova in un atterraggio o in un punto già segnato sulle nostre mappe, scegli quale: la news ne mostra il nome e porta a quel punto esatto. "Luogo del ritrovo" va compilato lo stesso, serve ai calendari.',
+                defaultValue: '',
+                options: [{ label: '(nessuno)', value: '' }, ...MEETING_POINT_OPTIONS],
               }),
             }),
           },

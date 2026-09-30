@@ -158,6 +158,8 @@ export interface EventInput {
   start: Date;
   end?: Date;
   location: string;
+  /** The gathering place's own position, when it is a feature on our map. */
+  geo?: { lat: number; lon: number };
 }
 
 /**
@@ -171,12 +173,18 @@ export interface EventInput {
  * A label that does not match that shape keeps its name and gets no address.
  * The alternative is inventing a country for a line nobody checked.
  */
-function eventPlace(label: string): Node {
+function eventPlace(label: string, position?: EventInput['geo']): Node {
   const parts = label.match(/^(.+?)\s*\(([A-Za-z]{2})\)$/);
-  if (!parts) return { '@type': 'Place', name: label };
+  const geo = position && {
+    '@type': 'GeoCoordinates',
+    latitude: position.lat,
+    longitude: position.lon,
+  };
+  if (!parts) return { '@type': 'Place', name: label, geo };
   return {
     '@type': 'Place',
     name: label,
+    geo,
     address: {
       '@type': 'PostalAddress',
       addressLocality: parts[1],
@@ -204,7 +212,7 @@ export function eventNode(site: URL, event: EventInput): Node {
     endDate: day(event.end ?? event.start),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    location: eventPlace(event.location),
+    location: eventPlace(event.location, event.geo),
     organizer: { '@id': ids.club(site) },
     url: event.url.href,
   };

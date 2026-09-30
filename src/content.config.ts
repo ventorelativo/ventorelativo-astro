@@ -124,6 +124,24 @@ const news = defineCollection({
               (value) => (value === '' || value === null ? undefined : value),
               reference('sites').optional(),
             ),
+            /**
+             * The exact spot people gather at, when it is a feature the map
+             * already has: a landing, a car park.
+             *
+             * Beside `location`, not instead of it. `location` is a string a
+             * geocoder can find and the comune is the best it can do: "the
+             * landing at Chambons" has no address. The club's own map has the
+             * field to the metre, so the page shows the feature's name and
+             * links to its coordinates, while calendars keep the string they
+             * can look up.
+             *
+             * A reference, so an event never carries a copy of a coordinate
+             * that could drift from the one pilots load (rule 9).
+             */
+            meetingPoint: z.preprocess(
+              (value) => (value === '' || value === null ? undefined : value),
+              reference('mapFeatures').optional(),
+            ),
           })
           .optional(),
       ),
