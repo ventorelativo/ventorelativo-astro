@@ -23,6 +23,16 @@ function assetPath(
   return path;
 }
 
+/** "18" and "ott", the way the news teaser writes an event's day. */
+function eventDay(start: Date) {
+  const it = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat('it-IT', options);
+  return {
+    day: it({ day: 'numeric' }).format(start),
+    month: it({ month: 'short' }).format(start).replace('.', ''),
+  };
+}
+
 export const getStaticPaths: GetStaticPaths = async () => {
   const [news, sites, pages] = await Promise.all([
     getCollection('news', ({ data }) => !data.draft),
@@ -46,7 +56,11 @@ export const getStaticPaths: GetStaticPaths = async () => {
       params: { route: `news/${entry.id}` },
       props: {
         title: entry.data.title,
-        kind: 'News',
+        /* A post with event fields is an event wherever else it appears: the
+           teaser's chip, the panel, the structured data. The card says so
+           too, and carries the same day-over-month chip as the teaser. */
+        kind: entry.data.event ? 'Evento' : 'News',
+        when: entry.data.event && eventDay(entry.data.event.start),
         backgroundPath: assetPath(entry.data.image),
       } satisfies CardOptions,
     })),

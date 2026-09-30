@@ -37,7 +37,7 @@ import satori from 'satori';
 import sharp from 'sharp';
 
 /** Bump on any change to `card()` below. Part of the cache key. */
-const TEMPLATE_VERSION = 12;
+const TEMPLATE_VERSION = 13;
 
 const WIDTH = 1280;
 const HEIGHT = 640;
@@ -84,6 +84,12 @@ export interface CardOptions {
    * flat blue rectangle says nothing about where the club flies.
    */
   washed?: boolean;
+  /**
+   * The day of an event, drawn as the same chip the news teaser puts on its
+   * image: day over month. A shared link to an event is mostly asking one
+   * question, and the title does not always answer it.
+   */
+  when?: { day: string; month: string };
 }
 
 /**
@@ -98,6 +104,7 @@ function card(
   background: string | null,
   washed = false,
   wordmark = false,
+  when?: CardOptions['when'],
 ) {
   return {
     type: 'div',
@@ -184,6 +191,42 @@ function card(
             style: { position: 'absolute', top: 44, left: 52 },
           },
         },
+        /*
+          The date chip, top right, level with the lockup. The teaser's chip
+          scaled up: brand blue, day over month. Over the flat blue card it
+          would be blue on blue, so there it gets a keyline.
+        */
+        when && {
+          type: 'div',
+          props: {
+            style: {
+              position: 'absolute',
+              top: 44,
+              right: 52,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              minWidth: 168,
+              padding: '20px 28px 22px',
+              borderRadius: 20,
+              backgroundColor: BRAND_BLUE,
+              border: background ? 'none' : '3px solid rgba(255,255,255,0.85)',
+              boxShadow: '0 8px 24px rgba(9,14,22,0.35)',
+              color: '#ffffff',
+              lineHeight: 1.05,
+            },
+            children: [
+              { type: 'div', props: { style: { fontSize: 92 }, children: when.day } },
+              {
+                type: 'div',
+                props: {
+                  style: { fontSize: 34, letterSpacing: 5, textTransform: 'uppercase' },
+                  children: when.month,
+                },
+              },
+            ],
+          },
+        },
         // Kind + title, bottom left.
         {
           type: 'div',
@@ -240,6 +283,7 @@ export async function renderCard({
   backgroundPath,
   washed = false,
   wordmark = false,
+  when,
 }: CardOptions): Promise<Buffer> {
   const background = backgroundPath ? await readFile(backgroundPath) : null;
 
@@ -250,6 +294,7 @@ export async function renderCard({
     .update(background ?? 'no-photo')
     .update(washed ? 'washed' : 'full')
     .update(wordmark ? 'wordmark' : 'plain')
+    .update(when ? `${when.day} ${when.month}` : 'no-date')
     .digest('hex')
     .slice(0, 16);
 
@@ -282,6 +327,7 @@ export async function renderCard({
       fitted ? `data:image/jpeg;base64,${fitted.toString('base64')}` : null,
       washed,
       wordmark,
+      when,
     ) as never,
     {
       width: WIDTH,
