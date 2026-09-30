@@ -61,7 +61,7 @@ const CONFIG = {
   /* Members who should hold the first numbers, in this order. See rinumera. */
   primi: ['Luca Odetto'],
 
-  mittente: 'Parapendio Club Ventorelativo',
+  mittente: 'VentoRelativo',
 
   /*
     The address members see, which is not the account the script runs as.
