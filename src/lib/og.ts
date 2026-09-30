@@ -277,14 +277,38 @@ function card(
 }
 
 /** Renders a card, or returns the cached image when nothing about it changed. */
+/**
+ * The title without its emoji.
+ *
+ * The card is set in Metropolis, which has none, and satori draws a missing
+ * glyph as a box with "NO GLYPH" written in it: two of them sat at the end of
+ * the X-CRO card. The writing kit allows an emoji at the end of a title, so
+ * this is the normal case, not a rare one. The page keeps the emoji; only the
+ * card drops it. A variation selector or a joiner left behind would be a box
+ * of its own, so they go too.
+ *
+ * Not plain `Extended_Pictographic`: that class holds the copyright and
+ * trademark signs, which the font does have and a title may mean.
+ */
+function cardTitle(title: string): string {
+  return title
+    .replace(
+      /\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F|[0-9#*]\uFE0F?\u20E3|\u200D|\uFE0F/gu,
+      '',
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export async function renderCard({
-  title,
+  title: rawTitle,
   kind,
   backgroundPath,
   washed = false,
   wordmark = false,
   when,
 }: CardOptions): Promise<Buffer> {
+  const title = cardTitle(rawTitle);
   const background = backgroundPath ? await readFile(backgroundPath) : null;
 
   const key = createHash('sha256')
